@@ -1,3 +1,4 @@
 cmake_minimum_required(VERSION 3.1)
-project(check_system)
+set(APP_NAME check_system)
+project(${APP_NAME})
 add_subdirectory(src)

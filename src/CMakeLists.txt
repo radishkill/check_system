@@ -1,10 +1,8 @@
-set(APP_NAME check_system)
-set(CROSS_COMPILE /home/vm/gcc-6.3.1/bin/arm-linux-gnueabihf-)
+set(CROSS_COMPILE $ENV{HOME}/gcc-6.3.1/bin/arm-linux-gnueabihf-)
 
 #set (CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 #set (CMAKE_CXX_COMPILER "g++")
 set (CMAKE_CXX_COMPILER ${CROSS_COMPILE}g++)
-
 
 set(CMAKE_BUILD_TYPE "Debug")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/)
