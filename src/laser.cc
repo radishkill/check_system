@@ -25,6 +25,17 @@ int Laser::SendOpenCmd() {
   data_frame_[p++] = 0x16;
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
+  i = 0;
+  while (1) {
+    if (ReadBuffer(3000)) {
+      break;
+    }
+    if (i >= 3) {
+      return -1;
+    }
+    i++;
+  }
+  status_ = 1;
   return 0;
 }
 
@@ -48,9 +59,45 @@ int Laser::SendCloseCmd() {
   data_frame_[p++] = 0x16;
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
+  i = 0;
+  while (1) {
+    if (ReadBuffer(3000)) {
+      break;
+    }
+    if (i >= 3) {
+      return -1;
+    }
+    i++;
+  }
+  status_ = 0;
   return 0;
 }
 
 int Laser::SendCheckCmd() {
   return 0;
+}
+
+int Laser::ReadBuffer(int timeout) {
+  fd_set fdsr;
+  struct timeval tv;
+  FD_ZERO(&fdsr);
+  FD_SET(usart_.GetFd(), &fdsr);
+  // timeout setting
+  tv.tv_sec = timeout;
+  tv.tv_usec = 0;
+  int ret = select(usart_.GetFd()+1, &fdsr, NULL, NULL, &tv);
+  if (ret < 0) {
+    perror("select");
+    return -1;
+  } else if (ret == 0) {
+    std::cout << "timeout or empty data" << std::endl;
+    return 0;
+  } else {
+    int res_len = read(usart_.GetFd(), data_frame_, 1024);
+    for (int i = 0; i < res_len; i++){
+      std::cout << std::hex << (int)data_frame_[i] << " ";
+    }
+    std::cout << std::endl;
+    return res_len;
+  }
 }
