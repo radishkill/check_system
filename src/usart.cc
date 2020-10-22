@@ -1,23 +1,31 @@
 #include "usart.h"
 
-Usart::Usart(string name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl)
-{
-    device_name_ = name;
+Usart::Usart() {
 
-    fd_ = open(device_name_.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-    if (fd_ == -1) {
-        perror("open serialPort fail");
-        return;
-    }
-    SetParity(baud_rate, databits, stopbits, parity, flow_ctrl);
 }
 
-bool Usart::SetParity(int baud_rate, int databits, int stopbits, char parity, int flow_ctrl)
+Usart::Usart(const char* name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl) {
+  Open(name, baud_rate, databits, stopbits, parity, flow_ctrl);
+}
+
+int Usart::Open(const char* name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl) {
+  device_name_ = name;
+
+  fd_ = open(device_name_.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+  if (fd_ == -1) {
+      perror("open serialPort fail");
+      return -1;
+  }
+  SetParity(baud_rate, databits, stopbits, parity, flow_ctrl);
+  return 0;
+}
+
+int Usart::SetParity(int baud_rate, int databits, int stopbits, char parity, int flow_ctrl)
 {
     struct termios options;
     if  ( tcgetattr( fd_, &options)  !=  0)
     {
-        return (false);
+        return (-1);
     }
     bzero(&options, sizeof(options));
     options.c_cflag |= (CLOCAL | CREAD);
@@ -71,7 +79,7 @@ bool Usart::SetParity(int baud_rate, int databits, int stopbits, char parity, in
         break;
     default:
         fprintf(stderr,"Unsupported stop bits\n");
-        return (false);
+        return -1;
     }
     // 校验码
     switch (parity)
@@ -111,22 +119,15 @@ bool Usart::SetParity(int baud_rate, int databits, int stopbits, char parity, in
     options.c_cc[VMIN]  = 0; /*非规范模式读取时的最小字符数*/
     tcflush(fd_ ,TCIFLUSH);/*tcflush清空终端未完成的输入/输出请求及数据；TCIFLUSH表示清空正收到的数据，且不读取出来 */
 
-    if (tcsetattr(fd_, TCSAFLUSH, &options))
-    {
-        cout << "error" << endl;
-    }
-    return (true);
+    return tcsetattr(fd_, TCSAFLUSH, &options);
 }
 
-bool Usart::SendData(string msg) {
-  write(fd_, msg.c_str(), msg.size());
-  return true;
+int Usart::SendData(char* buf, int len) {
+  return write(fd_, buf, len);
 }
 
-string Usart::ReadData() {
-  char buf[1024];
-  read(fd_, buf, 1024);
-  return buf;
+int Usart::ReadData(char* buf, int len) {
+  return read(fd_, buf, len);
 }
 
 int Usart::GetFd() {

@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += console c++11
+CONFIG += console c++14
 CONFIG -= app_bundle
 CONFIG -= qt
 
@@ -7,9 +7,16 @@ INCLUDEPATH += $$PWD/src/include
 DEPENDPATH += $$PWD/src/include
 
 SOURCES += src/main.cc \
-    src/usart.cpp
+    src/camera_manager.cc \
+    src/laser.cc \
+    src/usart.cc \
+    src/utils.cc
 
-LIBS += -L$$PWD/lib/ -lCKCameraSDK_x64 -lpthread
+LIBS += -L$$PWD/lib/x64 -lCKCameraSDK -lpthread
 
 HEADERS += \
-    src/usart.h
+    src/camera_manager.h \
+    src/laser.h \
+    src/screen_manager.h \
+    src/usart.h \
+    src/utils.h

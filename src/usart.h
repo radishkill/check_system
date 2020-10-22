@@ -11,20 +11,20 @@
 #include <stdio.h>
 #include <string>
 
-using namespace std;
-
 class Usart
 {
-public:
-    Usart(string name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);
-    bool SetParity(int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);
-    int GetFd();
-    bool SendData(string msg);
-    string ReadData();
-    void CloseFd();
-private:
-    string device_name_;
-    int fd_;
+  public:
+  Usart();
+  Usart(const char* name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);
+  int Open(const char* name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);
+  int SetParity(int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);
+  int GetFd();
+  int SendData(char* buf, int len);
+  int ReadData(char* buf, int len);
+  void CloseFd();
+  private:
+  std::string device_name_;
+  int fd_;
 };
 
 #endif // USART_H
