@@ -12,7 +12,7 @@ SOURCES += src/main.cc \
     src/usart.cc \
     src/utils.cc
 
-LIBS += -L$$PWD/lib/x64 -lCKCameraSDK -lpthread
+LIBS += -L$$PWD/lib/x64 -Wl,-Bstatic -lCKCameraSDK -Wl,-Bdynamic -lpthread
 
 HEADERS += \
     src/camera_manager.h \
