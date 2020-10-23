@@ -21,6 +21,10 @@ add_definitions(
 add_executable(CheckSystem
     main.cc
     usart.cc
+    global_arg.cc
+    camera_manager.cc
+    laser.cc
+    utils.cc
     )
 
 target_link_libraries(CheckSystem
