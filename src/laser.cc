@@ -2,7 +2,12 @@
 
 Laser::Laser(const char* device_name)
   : status_(0) {
-  target_exist = 0;
+  target_exist_ = 0;
+  target_move_ = 0;
+  target_temperature_status = 0;
+  env_temperature_status_ = 0;
+  back_current_unit_ = 0;
+  is_back_current_empty_ = 0;
   usart_.Open(device_name, 9600, 8, 1, 'N', 0);
 }
 
@@ -27,6 +32,9 @@ int Laser::SendOpenCmd() {
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
   int ret = ReadBuffer(10);
+  if (ret <= 0) {
+    perror("open laser wrong!!!");
+  }
   status_ = 1;
   return 0;
 }
@@ -34,6 +42,7 @@ int Laser::SendOpenCmd() {
 int Laser::SendCloseCmd() {
   int i;
   int p = 0;
+  int ret;
 
   data_frame_[p++] = 0x68;
   for (i = 0; i < 4; i++) {
@@ -53,7 +62,10 @@ int Laser::SendCloseCmd() {
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
   i = 0;
-  ReadBuffer(10);
+  ret = ReadBuffer(10);
+  if (ret <= 0) {
+    perror("close laser wrong!!!");
+  }
   status_ = 0;
   return 0;
 }
@@ -81,9 +93,22 @@ int Laser::SendCheckCmd() {
   usart_.SendData(data_frame_, p);
   i = 0;
   int ret = ReadBuffer(10);
-  if (ret > 0) {
-
+  if (ret <= 0) {
+    perror("check laser fault!!");
+    return -1;
   }
+  //如果数据格式不对
+  if (data_frame_[5] != 0x01 && data_frame_[7] != 0x12) {
+    perror("bad data!!!");
+    return -1;
+  }
+  target_exist_ = data_frame_[8];
+  target_temperature_status = data_frame_[9];
+  target_move_ = data_frame_[10];
+  env_temperature_status_ = data_frame_[11];
+  back_current_unit_ = data_frame_[12];
+  is_back_current_empty_ = data_frame_[13];
+  // and etc...
   return 0;
 }
 
