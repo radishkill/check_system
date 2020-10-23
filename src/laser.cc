@@ -34,6 +34,7 @@ int Laser::SendOpenCmd() {
   int ret = ReadBuffer(10);
   if (ret <= 0) {
     perror("open laser wrong!!!");
+    return -1;
   }
   status_ = 1;
   return 0;
@@ -65,6 +66,7 @@ int Laser::SendCloseCmd() {
   ret = ReadBuffer(10);
   if (ret <= 0) {
     perror("close laser wrong!!!");
+    return -1;
   }
   status_ = 0;
   return 0;

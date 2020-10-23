@@ -4,9 +4,11 @@
 
 class StateMachine {
  public:
-
+  StateMachine();
+  int SelfTest();
+  int Register();
+  int Authentication();
  private:
 };
-
 
 #endif // STATE_MACHINE_H

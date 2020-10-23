@@ -21,7 +21,7 @@ class Usart
   int GetFd();
   int SendData(char* buf, int len);
   int ReadData(char* buf, int len);
-  void CloseFd();
+  void Close();
   private:
   std::string device_name_;
   int fd_;
