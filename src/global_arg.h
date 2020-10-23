@@ -3,12 +3,14 @@
 
 class Laser;
 class CameraManager;
+class StateMachine;
 
 class GlobalArg {
  public:
   static GlobalArg* GetInstance();
   Laser* laser;
   CameraManager* camera;
+  StateMachine* sm;
  private:
   static GlobalArg* global_arg_;
 };

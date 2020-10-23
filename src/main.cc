@@ -3,26 +3,25 @@
 #include <fstream>
 #include <unistd.h>
 
+#include "global_arg.h"
 #include "usart.h"
 #include "laser.h"
+#include "camera_manager.h"
+#include "utils.h"
+#include "state_machine.h"
 
-#include"camera_manager.h"
 
 void InitSystem() {
-  Laser laser("/dev/ttyUSB0");
-  laser.SendCloseCmd();
-  sleep(5);
-  laser.SendOpenCmd();
-  sleep(20);
-  laser.SendCheckCmd();
-  sleep(20);
-  laser.SendCloseCmd();
+  GlobalArg* arg = GlobalArg::GetInstance();
+  arg->laser = new Laser("/dev/ttyUSB0");
+  arg->camera = new CameraManager();
 }
-void InitCamera() {
-  CameraManager();
-}
+
 int main() {
+  GlobalArg* arg = GlobalArg::GetInstance();
+  arg->sm = new StateMachine();
   InitSystem();
-  InitCamera();
+
+
   return 0;
 }

@@ -1,7 +1,7 @@
 #include "usart.h"
 
-Usart::Usart() {
-
+Usart::Usart()
+    : fd_(-1), device_name_("") {
 }
 
 Usart::Usart(const char* name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl) {
@@ -133,6 +133,7 @@ int Usart::ReadData(char* buf, int len) {
 int Usart::GetFd() {
     return fd_;
 }
-void Usart::CloseFd() {
+void Usart::Close() {
     close(fd_);
+    fd_ = -1;
 }
