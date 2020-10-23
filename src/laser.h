@@ -18,9 +18,9 @@ class Laser {
   Usart usart_;
   int status_;
   int target_exist_;
-  int target_temperature_;
+  int target_temperature_status;
   int target_move_;
-  int env_temperature_;
+  int env_temperature_status_;
   int back_current_unit_;
   int is_back_current_empty_;
   int max_current_;

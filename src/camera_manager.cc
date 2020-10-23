@@ -3,6 +3,8 @@
 
 
 CameraManager::CameraManager() {
+  pRBGBuffer_ = nullptr;
+  dwRGBBufSize_ = 0;
   GetDeviceList();
   if (device_list_.empty()) {
     perror("none camera device!!!");
@@ -36,13 +38,14 @@ int CameraManager::GetPic() {
   HANDLE hBuf;
   BYTE* pbyBuffer;
   UINT disFrameCnt = 0;
-  FrameStatistic curFS, lastFS;
+//  FrameStatistic curFs;
+//  FrameStatistic lastFS;
   stImageInfo imageInfo;
 
   //打开相机
   CameraPlay(hCamera_);
   // 获取统计信息来统计帧率
-  CameraGetFrameStatistic(hCamera_, &lastFS);
+//  CameraGetFrameStatistic(hCamera_, &lastFS);
   // 获取raw image data 1000ms超时时间
   status = CameraGetRawImageBuffer(hCamera_, &hBuf, 1000);
   if (status != CAMERA_STATUS_SUCCESS) {
@@ -52,18 +55,18 @@ int CameraManager::GetPic() {
   // 获取图像帧信息
   pbyBuffer = CameraGetImageInfo(hCamera_, hBuf, &imageInfo);
   // 申请RGB image buffer内存
-  if (pRBGBuffer == NULL || imageInfo.iWidth * imageInfo.iHeight * 4 > dwRGBBufSize) {
-      if (pRBGBuffer)
-          delete []pRBGBuffer;
-      dwRGBBufSize = imageInfo.iWidth * imageInfo.iHeight * 4;
-      pRBGBuffer = new BYTE[dwRGBBufSize];
+  if (pRBGBuffer_ == NULL || imageInfo.iWidth * imageInfo.iHeight * 4 > dwRGBBufSize_) {
+      if (pRBGBuffer_)
+          delete []pRBGBuffer_;
+      dwRGBBufSize_ = imageInfo.iWidth * imageInfo.iHeight * 4;
+      pRBGBuffer_ = new BYTE[dwRGBBufSize_];
   }
   //处理原始图像
-  status = CameraGetOutImageBuffer(hCamera_, &imageInfo, pbyBuffer, pRBGBuffer);
+  status = CameraGetOutImageBuffer(hCamera_, &imageInfo, pbyBuffer, pRBGBuffer_);
   CameraReleaseFrameHandle(hCamera_, hBuf);
   if (status == CAMERA_STATUS_SUCCESS) {
       // 叠加十字线等
-      CameraImageOverlay(hCamera_, pRBGBuffer, &imageInfo);
+      CameraImageOverlay(hCamera_, pRBGBuffer_, &imageInfo);
       disFrameCnt++;
   } else {
     perror("error");
@@ -72,5 +75,27 @@ int CameraManager::GetPic() {
   }
   //停止相机
   CameraPause(hCamera_);
+  pic_width_ = imageInfo.iWidth;
+  pic_height_ = imageInfo.iHeight;
   return 0;
+}
+
+char *CameraManager::GetRBGBuffer() {
+  return (char*)pRBGBuffer_;
+}
+
+int CameraManager::CheckPic() {
+  int average_data = 0;
+  if (pRBGBuffer_ == nullptr)
+    return -1;
+  average_data = pRBGBuffer_[0];
+
+  for (unsigned int i = 1; i < pic_height_*pic_width_*4; i++) {
+    average_data += pRBGBuffer_[i];
+    average_data /= 2;
+  }
+  if (average_data < 100 || average_data > 200) {
+    return 0;
+  }
+  return -1;
 }
