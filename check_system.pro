@@ -18,7 +18,7 @@ SOURCES += src/main.cc \
 LIBS += -L$$PWD/lib/x64 -Wl,-Bstatic -lCKCameraSDK -Wl,-Bdynamic -lpthread
 
 HEADERS += \
-    src/camera_ma。nager.h \
+    src/camera_manager.h \
     src/global_arg.h \
     src/key_file.h \
     src/laser.h \

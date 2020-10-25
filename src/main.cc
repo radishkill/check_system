@@ -21,8 +21,13 @@ int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->sm = new StateMachine();
   InitSystem();
-  KeyFile* file_k = new KeyFile("/home/vm/PUFData");
-  file_k->AppendPufFile();
-  file_k->AppendSeed();
+  KeyFile* file_k = new KeyFile("./resource/PUFData");
+//  file_k->GetSeed(0, 0);
+//  file_k->GetPic(0, 0);
+//  file_k->SavePic(0, 1);
+//  file_k->SavePic(1, 1);
+
+//  file_k->AppendPufFile();
+//  file_k->AppendSeed();
   return 0;
 }
