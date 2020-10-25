@@ -9,7 +9,7 @@
 #include "camera_manager.h"
 #include "utils.h"
 #include "state_machine.h"
-
+#include "key_file.h"
 
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
@@ -21,7 +21,8 @@ int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->sm = new StateMachine();
   InitSystem();
-
-
+  KeyFile* file_k = new KeyFile("/home/vm/PUFData");
+  file_k->AppendPufFile();
+  file_k->AppendSeed();
   return 0;
 }
