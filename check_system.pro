@@ -2,7 +2,6 @@ TEMPLATE = app
 CONFIG += console c++14
 CONFIG -= app_bundle
 CONFIG -= qt
-
 INCLUDEPATH += $$PWD/src/include
 DEPENDPATH += $$PWD/src/include
 
