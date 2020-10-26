@@ -41,19 +41,22 @@ KeyFile::KeyFile(const char* base_path) {
     std::cout << "not found " << seed_file << std::endl;
     std::cout << "not found " << pic_file << std::endl;
   }
-
 }
 //添加PUTData文件0-99
 int KeyFile::AppendPufFile() {
   int i = 0;
   while(1) {
-    std::string addpuf_path = std::string(base_path_ + "/PUF") + Utils::DecToStr(i, 2);
-    if(access(addpuf_path.c_str(), 0) != 0) {
-      mkdir(addpuf_path.c_str(), 777);
-      //创建PUF_Pic和PUF_Seed
-      break;
+    std::string addpuf_path = std::string("/PUF" + Utils::DecToStr(i, 2));
+    std::string addpufseed_path = base_path_ + addpuf_path + addpuf_path+"_Seed";
+    std::string addpufpic_path = base_path_ + addpuf_path + addpuf_path+"_Pic";
+    if(access((base_path_+addpuf_path).c_str(), 0) != 0) {
+      mkdir((base_path_+addpuf_path).c_str(), 0777);
+       //创建PUF_Pic和PUF_Seed
+      mkdir(addpufseed_path.c_str(),0777);
+      mkdir(addpufpic_path.c_str(),0777);
+      std::cout << addpuf_path.c_str() <<  "mkdir seccess"<< std::endl;
     }
-    if (i >= 100) {
+    if (i >= 6) {
       break;
     }
     i++;
@@ -112,18 +115,18 @@ int KeyFile::GetPic(int id, int index) {
   }
   return 0;
 }
-
+//得到照片的缓存路径
 char *KeyFile::GetPicBuffer() {
   return **pic_buffer_;
 }
-
+//获得照片到缓存区
 int KeyFile::CopyPicToBuffer(char *pic, int width, int height) {
   for (int i = 0; i < 1080; i++) {
     std::memcpy(*pic_buffer_[i], pic + i*1920*4, 1920*4);
   }
   return 0;
 }
-
+//从缓存区保存照片
 int KeyFile::SavePic(int id, int index) {
   std::ofstream ofs;
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
@@ -144,35 +147,35 @@ int KeyFile::SavePic(int id, int index) {
   ofs.close();
   return 0;
 }
-//添加Seed 0-1000文件
-int KeyFile::AppendSeedPic()
-{
-  int i=0;
-  while(1){
-    std::string addseedpic = Utils::DecToStr(i,4);
-    std::string addseed_path = base_path_+ "/PUF00/PUF00_Seed"+"/PUF00_Seed"+addseedpic;
-    std::string addpic_path = base_path_+ "/PUF00/PUF00_Pic"+"/PUF00_Pic"+addseedpic;
-    if(access(addseed_path.c_str(), 0) != 0)
-      std::cout << addseed_path.c_str() <<"has not exist" << std::endl;
-    if(access(addpic_path.c_str(), 0) != 0)
-      std::cout << addpic_path.c_str() <<"has not exist" << std::endl;
+////添加Seed 0-1000文件
+//int KeyFile::AppendSeedPic()
+//{
+//  int i=0;
+//  while(1){
+//    std::string addseedpic = Utils::DecToStr(i,4);
+//    std::string addseed_path = base_path_+ "/PUF00/PUF00_Seed"+"/PUF00_Seed"+addseedpic;
+//    std::string addpic_path = base_path_+ "/PUF00/PUF00_Pic"+"/PUF00_Pic"+addseedpic;
+//    if(access(addseed_path.c_str(), 0) != 0)
+//      std::cout << addseed_path.c_str() <<"has not exist" << std::endl;
+//    if(access(addpic_path.c_str(), 0) != 0)
+//      std::cout << addpic_path.c_str() <<"has not exist" << std::endl;
 
-    if(access(addseed_path.c_str(), 0) != 0|access(addpic_path.c_str(), 0) != 0){
-      remove(addseed_path.c_str());
-      remove(addpic_path.c_str());
-      creat(addseed_path.c_str(),0777);
-      creat(addpic_path.c_str(),0777);
-      }
-    else{
-     creat(addseed_path.c_str(),0777);
-     creat(addpic_path.c_str(),0777);
-    }
-    i++;
-    if(i>2)
-      break;
-  }
-  return 0;
-}
+//    if(access(addseed_path.c_str(), 0) != 0|access(addpic_path.c_str(), 0) != 0){
+//      remove(addseed_path.c_str());
+//      remove(addpic_path.c_str());
+//      creat(addseed_path.c_str(),0777);
+//      creat(addpic_path.c_str(),0777);
+//      }
+//    else{
+//     creat(addseed_path.c_str(),0777);
+//     creat(addpic_path.c_str(),0777);
+//    }
+//    i++;
+//    if(i>2)
+//      break;
+//  }
+//  return 0;
+//}
 
 
 

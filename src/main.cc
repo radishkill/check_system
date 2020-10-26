@@ -27,7 +27,7 @@ int main() {
 //  file_k->SavePic(0, 1);
 //  file_k->SavePic(1, 1);
 
-//  file_k->AppendPufFile();
+    file_k->AppendPufFile();
 //  file_k->AppendSeed();
   return 0;
 }
