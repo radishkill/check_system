@@ -74,18 +74,28 @@ int KeyFile::GetSeed(int id,int index){
 int KeyFile::GetPic(int id, int index){
 
 }
-//添加Seed0-1000文件
-int KeyFile::AppendSeed()
+//添加Seed 0-1000文件
+int KeyFile::AppendSeedPic()
 {
   int i=0;
   while(1){
-    std::string addseed = Utils::DecToStr(i,4);
-    std::string addseed_path = base_path_+ "/PUF00/PUF00_Seed"+"/PUF00_Seed"+addseed;
-    if(access(addseed_path.c_str(), 0) == 0){
-      std::cout << addseed_path <<"has exist" << std::endl;
+    std::string addseedpic = Utils::DecToStr(i,4);
+    std::string addseed_path = base_path_+ "/PUF00/PUF00_Seed"+"/PUF00_Seed"+addseedpic;
+    std::string addpic_path = base_path_+ "/PUF00/PUF00_Pic"+"/PUF00_Pic"+addseedpic;
+    if(access(addseed_path.c_str(), 0) != 0)
+      std::cout << addseed_path.c_str() <<"has not exist" << std::endl;
+    if(access(addpic_path.c_str(), 0) != 0)
+      std::cout << addpic_path.c_str() <<"has not exist" << std::endl;
+
+    if(access(addseed_path.c_str(), 0) != 0|access(addpic_path.c_str(), 0) != 0){
+      remove(addseed_path.c_str());
+      remove(addpic_path.c_str());
+      creat(addseed_path.c_str(),0777);
+      creat(addpic_path.c_str(),0777);
       }
     else{
      creat(addseed_path.c_str(),0777);
+     creat(addpic_path.c_str(),0777);
     }
     i++;
     if(i>2)
