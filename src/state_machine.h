@@ -8,6 +8,9 @@ class StateMachine {
   int SelfTest();
   int Register();
   int Authentication();
+  //生成随机的seed
+  int GenerateRandomSeed();
+  int FindKey();
  private:
 };
 
