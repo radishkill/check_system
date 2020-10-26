@@ -49,5 +49,6 @@ std::string Utils::DecToStr(int para, int w){
   } else {
     ss << std::setfill('0') << std::setw(w) << para;
   }
+  ss.flush();
   return ss.str();
 }
