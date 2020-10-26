@@ -23,6 +23,6 @@ int main() {
   InitSystem();
   KeyFile* file_k = new KeyFile("/home/vm/PUFData");
   file_k->AppendPufFile();
-  file_k->AppendSeed();
+  file_k->AppendSeedPic();
   return 0;
 }
