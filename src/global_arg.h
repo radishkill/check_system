@@ -4,7 +4,8 @@
 class Laser;
 class CameraManager;
 class StateMachine;
-
+class KeyFile;
+class Lcd;
 
 class GlobalArg {
  public:
@@ -12,6 +13,8 @@ class GlobalArg {
   Laser* laser;
   CameraManager* camera;
   StateMachine* sm;
+  KeyFile* key_file;
+  Lcd* lcd;
 
  private:
   static GlobalArg* global_arg_;
