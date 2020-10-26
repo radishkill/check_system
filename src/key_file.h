@@ -33,7 +33,7 @@ class KeyFile {
   char* GetPicBuffer();
   int CopyPicToBuffer(char* pic, int width, int height);
   int SavePic(int id, int index);
-  int AppendSeed();
+  int AppendSeedPic(int id,int bulid_id, std::string index);
  private:
   //base_path应该指向PUFData文件夹的内部,地址最后不包括/
   std::string base_path_;

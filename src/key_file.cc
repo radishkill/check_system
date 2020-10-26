@@ -147,9 +147,27 @@ int KeyFile::SavePic(int id, int index) {
   ofs.close();
   return 0;
 }
-////添加Seed 0-1000文件
-//int KeyFile::AppendSeedPic()
-//{
+//添加seed和pic文件
+int KeyFile::AppendSeedPic(int id, int bulid_id,string index)
+{
+  std::string addpuf_name = std::string("/PUF" + Utils::DecToStr(id, 2));
+  std::string addpufseed_name = base_path_ + addpuf_name + addpuf_name+"_Seed";
+  std::string addpufpic_name = base_path_ + addpuf_name + addpuf_name+"_Pic";
+  if(access((base_path_+addpuf_name+addpufseed_name+addpufseed_name+Utils::DecToStr(bulid_id,4)).c_str(), 0) != 0 | access((base_path_+addpuf_name+addpufpic_name+addpufpic_name+Utils::DecToStr(bulid_id,4)).c_str(), 0) != 0) {
+    std::cout<< base_path_+addpuf_name+addpufseed_name+addpufseed_name+Utils::DecToStr(bulid_id,4)<<"or"<< base_path_+addpuf_name+addpufpic_name+addpufpic_name+Utils::DecToStr(bulid_id,4)<< " not exist" << std::endl;
+    //删除不完整的seed或者pic激励对
+    remove((base_path_+addpuf_name+addpufseed_name+addpufseed_name+Utils::DecToStr(bulid_id,4)).c_str());
+    remove((base_path_+addpuf_name+addpufpic_name+addpufpic_name+Utils::DecToStr(bulid_id,4)).c_str());
+    //创建新的激励对
+    creat((base_path_+addpuf_name+addpufseed_name+addpufseed_name+Utils::DecToStr(bulid_id,4)).c_str(),0777);
+    creat((base_path_+addpuf_name+addpufpic_name+addpufpic_name+Utils::DecToStr(bulid_id,4)).c_str(),0777);
+    }
+  else{
+
+      }
+  return bulid_id;
+}
+
 //  int i=0;
 //  while(1){
 //    std::string addseedpic = Utils::DecToStr(i,4);
@@ -174,8 +192,7 @@ int KeyFile::SavePic(int id, int index) {
 //    if(i>2)
 //      break;
 //  }
-//  return 0;
-//}
+
 
 
 
