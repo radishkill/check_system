@@ -16,6 +16,7 @@ class GlobalArg {
   KeyFile* key_file;
   Lcd* lcd;
 
+
  private:
   static GlobalArg* global_arg_;
 };

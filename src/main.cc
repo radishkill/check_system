@@ -25,12 +25,16 @@ int main() {
   arg->sm = new StateMachine();
   InitSystem();
 
+//arg->key_file->SaveSeed(0,0,2);
 //  arg->key_file->GetSeed(0, 0);
 //  arg->key_file->GetPic(0, 0);
 //  arg->key_file->SavePic(0, 1);
 //  arg->key_file->SavePic(1, 1);
 
-    arg->key_file->AppendPufFile();
+// arg->key_file->AppendPufFile();
 //  arg->key_file->AppendSeed();
+  arg->key_file->DeleteSeed(0,1);
+  arg->key_file->DeletePic(0,1);
+
   return 0;
 }

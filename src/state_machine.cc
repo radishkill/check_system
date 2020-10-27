@@ -10,6 +10,7 @@
 #include "camera_manager.h"
 #include "key_file.h"
 #include "lcd.h"
+#include "key_file.h"
 
 
 StateMachine::StateMachine() {
@@ -46,16 +47,16 @@ int StateMachine::Register() {
 
   return 0;
 }
-
+//验证
 int StateMachine::Authentication() {
   return 0;
 }
-
+//随机生成seed
 int StateMachine::GenerateRandomSeed() {
   std::srand(std::time(nullptr));
   return std::rand()%100000;
 }
-
+//库定位算法
 int StateMachine::FindKey() {
   GlobalArg* arg = GlobalArg::GetInstance();
   assert(arg->camera != nullptr);
@@ -80,4 +81,43 @@ int StateMachine::FindKey() {
     i++;
   }
   return i;
+}
+//插入检测算法
+int StateMachine::CheckKey()
+{
+  GlobalArg* arg = GlobalArg::GetInstance();
+  int seed = arg->sm->GenerateRandomSeed();
+  arg->lcd->ShowBySeed(seed);
+  arg->camera->GetPic();
+ return 1;
+
+}
+//采集算法
+int StateMachine::Collection()
+{
+  GlobalArg* arg = GlobalArg::GetInstance();
+  int seed = arg->sm->GenerateRandomSeed();
+  arg->lcd->ShowBySeed(seed);
+  arg->camera->GetPic();
+  return 0;
+}
+
+int StateMachine::CheckAdminKey()
+{
+    GlobalArg* arg = GlobalArg::GetInstance();
+    int rand= std::rand()%10000;
+    int seed = arg->key_file->GetSeed(0,rand);
+    arg->key_file->GetPic(0,rand);
+    arg->lcd->ShowBySeed(seed);
+    arg->camera->GetPic();
+    //将TEMP与Pic进行运算，得出结果值和阈值T进行比较，
+
+    arg->key_file->DeletePic(0,rand);
+    arg->key_file->DeleteSeed(0,rand);
+    int rand_seed = arg->sm->GenerateRandomSeed();
+    arg->lcd->ShowBySeed(rand_seed);
+    arg->camera->GetPic();
+    arg->key_file->SaveSeed(0,rand,rand_seed);
+    arg->key_file->SavePic(0,rand);
+    return 0;
 }

@@ -15,7 +15,6 @@ class KeyFile {
   struct Puf {
     int id;
     std::string adress;
-
   };
   /*
    * 激励响应对
@@ -33,7 +32,9 @@ class KeyFile {
   char* GetPicBuffer();
   int CopyPicToBuffer(char* pic, int width, int height);
   int SavePic(int id, int index);
-  int AppendSeedPic(int id,int bulid_id, std::string index);
+  int SaveSeed(int id,int index,int seed);
+  int DeletePic(int id,int index);
+  int DeleteSeed(int id,int index);
  private:
   //base_path应该指向PUFData文件夹的内部,地址最后不包括/
   std::string base_path_;
