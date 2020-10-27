@@ -147,51 +147,37 @@ int KeyFile::SavePic(int id, int index) {
   ofs.close();
   return 0;
 }
-//添加seed和pic文件
-int KeyFile::AppendSeedPic(int id, int bulid_id,string index)
+//保存seed
+int KeyFile::SaveSeed(int id, int index, int seed)
 {
-  std::string addpuf_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  std::string addpufseed_name = base_path_ + addpuf_name + addpuf_name+"_Seed";
-  std::string addpufpic_name = base_path_ + addpuf_name + addpuf_name+"_Pic";
-  if(access((base_path_+addpuf_name+addpufseed_name+addpufseed_name+Utils::DecToStr(bulid_id,4)).c_str(), 0) != 0 | access((base_path_+addpuf_name+addpufpic_name+addpufpic_name+Utils::DecToStr(bulid_id,4)).c_str(), 0) != 0) {
-    std::cout<< base_path_+addpuf_name+addpufseed_name+addpufseed_name+Utils::DecToStr(bulid_id,4)<<"or"<< base_path_+addpuf_name+addpufpic_name+addpufpic_name+Utils::DecToStr(bulid_id,4)<< " not exist" << std::endl;
-    //删除不完整的seed或者pic激励对
-    remove((base_path_+addpuf_name+addpufseed_name+addpufseed_name+Utils::DecToStr(bulid_id,4)).c_str());
-    remove((base_path_+addpuf_name+addpufpic_name+addpufpic_name+Utils::DecToStr(bulid_id,4)).c_str());
-    //创建新的激励对
-    creat((base_path_+addpuf_name+addpufseed_name+addpufseed_name+Utils::DecToStr(bulid_id,4)).c_str(),0777);
-    creat((base_path_+addpuf_name+addpufpic_name+addpufpic_name+Utils::DecToStr(bulid_id,4)).c_str(),0777);
-    }
-  else{
-
-      }
-  return bulid_id;
+  std::ofstream ofs;
+  std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
+  ofs.open(base_path_ + puf_file_name + puf_file_name + "_Seed" + puf_file_name + "_Seed" + Utils::DecToStr(index, 4));
+  if (!ofs.is_open()) {
+    std::cout << "open seed file " << "PUF" << Utils::DecToStr(id, 2) << " wrong!!!" << std::endl;
+    return 0;
+  }
+  ofs << seed;
+  ofs.close();
+  return 0;
+}
+//删除pic
+int KeyFile::DeletePic(int id, int index)
+{
+  std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
+  std::string deletepic = base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4);
+  remove(deletepic.c_str());
+  return 0;
+}
+//删除seed
+int KeyFile::DeleteSeed(int id, int index)
+{
+  std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
+  std::string deleteseed = base_path_ + puf_file_name + puf_file_name + "_Seed" + puf_file_name + "_Seed" + Utils::DecToStr(index, 4);
+  remove(deleteseed.c_str());
+  return 0;
 }
 
-//  int i=0;
-//  while(1){
-//    std::string addseedpic = Utils::DecToStr(i,4);
-//    std::string addseed_path = base_path_+ "/PUF00/PUF00_Seed"+"/PUF00_Seed"+addseedpic;
-//    std::string addpic_path = base_path_+ "/PUF00/PUF00_Pic"+"/PUF00_Pic"+addseedpic;
-//    if(access(addseed_path.c_str(), 0) != 0)
-//      std::cout << addseed_path.c_str() <<"has not exist" << std::endl;
-//    if(access(addpic_path.c_str(), 0) != 0)
-//      std::cout << addpic_path.c_str() <<"has not exist" << std::endl;
-
-//    if(access(addseed_path.c_str(), 0) != 0|access(addpic_path.c_str(), 0) != 0){
-//      remove(addseed_path.c_str());
-//      remove(addpic_path.c_str());
-//      creat(addseed_path.c_str(),0777);
-//      creat(addpic_path.c_str(),0777);
-//      }
-//    else{
-//     creat(addseed_path.c_str(),0777);
-//     creat(addpic_path.c_str(),0777);
-//    }
-//    i++;
-//    if(i>2)
-//      break;
-//  }
 
 
 
