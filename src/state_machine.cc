@@ -38,20 +38,55 @@ int StateMachine::SelfTest() {
 
 int StateMachine::Register() {
   GlobalArg* arg = GlobalArg::GetInstance();
-  if (!arg->laser->IsOpen()) {
-    return -1;
+   if (!arg->laser->IsOpen()) {
+     return -1;
+   }
+   arg->laser->SendOpenCmd();
+   Utils::MSleep(10000);
+   arg->laser->SendCheckCmd();
+   arg->sm->CheckKey();
+   arg->sm->CheckAdminKey();
+   arg->sm->CheckKey();
+   int key_id = arg->sm->FindKey();
+  arg->sm->CheckLibrary(key_id);
+  for (int i = 0; i < empty_pairs.size(); i++) {
+    std::cout << empty_pairs[i] << std::endl;
   }
-  arg->laser->SendOpenCmd();
-  Utils::MSleep(10000);
-  arg->laser->SendCheckCmd();
+ for (int i = 0; i < empty_pairs.size(); i++){
+    arg->sm->Collection();
+  }
+    arg->laser->SendCloseCmd();
+  return 0;
+}
+//认证
+int StateMachine::Authentication() {
+    GlobalArg* arg = GlobalArg::GetInstance();
+    arg->sm->CheckKey();
+   int key_id = arg->sm->FindKey();
+   int seed_index = std::rand()%10000;
+   int seed = arg->key_file->GetSeed(key_id,seed_index);
+   arg->lcd->ShowBySeed(seed);
+   arg->camera->GetPic();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return 0;
 }
-//验证
-int StateMachine::Authentication() {
-  return 0;
-}
-//随机生成seed
+//随机生成seed a number range from 0 to 100000
 int StateMachine::GenerateRandomSeed() {
   std::srand(std::time(nullptr));
   return std::rand()%100000;
@@ -101,7 +136,7 @@ int StateMachine::Collection()
   arg->camera->GetPic();
   return 0;
 }
-
+//管理员KEY检测算法
 int StateMachine::CheckAdminKey()
 {
     GlobalArg* arg = GlobalArg::GetInstance();
@@ -120,4 +155,17 @@ int StateMachine::CheckAdminKey()
     arg->key_file->SaveSeed(0,rand,rand_seed);
     arg->key_file->SavePic(0,rand);
     return 0;
+}
+//库遍历算法
+int StateMachine::CheckLibrary(int id) {
+  GlobalArg* arg = GlobalArg::GetInstance();
+  empty_pairs.clear();
+  for (int i = 0; i < 1000; i++) {
+    if (arg->key_file->IsSeedAvailable(id, i)) continue;
+    empty_pairs.push_back(i);
+    if (empty_pairs.size() == 100) {
+      break;
+    }
+  }
+  return empty_pairs.size();
 }

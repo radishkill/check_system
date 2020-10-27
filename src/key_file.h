@@ -28,6 +28,7 @@ class KeyFile {
   //向PufData文件夹追加新的puf数据
   int AppendPufFile();
   int GetSeed(int id,int index);
+  int IsSeedAvailable(int id, int index);
   int GetPic(int id,int index);
   char* GetPicBuffer();
   int CopyPicToBuffer(char* pic, int width, int height);

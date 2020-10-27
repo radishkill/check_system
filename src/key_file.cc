@@ -70,7 +70,7 @@ int KeyFile::GetSeed(int id, int index){
   ifs.open(base_path_ + puf_file_name + puf_file_name + "_Seed" + puf_file_name + "_Seed" + Utils::DecToStr(index, 4));
   if (!ifs.is_open()) {
     std::cout << "open seed file " << "PUF" << Utils::DecToStr(id, 2) << " wrong!!!" << std::endl;
-    return 0;
+    return -1;
   }
   int seed = 0;
   ifs >> seed;
@@ -79,6 +79,17 @@ int KeyFile::GetSeed(int id, int index){
   }
   ifs.close();
   return seed;
+}
+//可获得seed
+int KeyFile::IsSeedAvailable(int id, int index) {
+  std::ifstream ifs;
+  std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
+  ifs.open(base_path_ + puf_file_name + puf_file_name + "_Seed" + puf_file_name + "_Seed" + Utils::DecToStr(index, 4));
+  if (!ifs.is_open()) {
+    return 0;
+  }
+  ifs.close();
+  return 1;
 }
 //获得Pic内容
 int KeyFile::GetPic(int id, int index) {
