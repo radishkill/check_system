@@ -24,6 +24,7 @@ int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->sm = new StateMachine();
   InitSystem();
+  arg->sm->Register();
 
 //arg->key_file->SaveSeed(0,0,2);
 //  arg->key_file->GetSeed(0, 0);
@@ -33,8 +34,8 @@ int main() {
 
 // arg->key_file->AppendPufFile();
 //  arg->key_file->AppendSeed();
-  arg->key_file->DeleteSeed(0,1);
-  arg->key_file->DeletePic(0,1);
+//  arg->key_file->DeleteSeed(0,1);
+//  arg->key_file->DeletePic(0,1);
 
   return 0;
 }
