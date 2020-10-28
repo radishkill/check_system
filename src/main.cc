@@ -14,8 +14,6 @@
 #include "key_file.h"
 #include "lcd.h"
 
-
-
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->laser = new Laser("/dev/ttyUSB0");
