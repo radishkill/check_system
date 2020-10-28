@@ -13,7 +13,7 @@ class CameraManager {
   const std::vector<std::string>& GetDeviceList();
   int GetPic();
   char* GetRBGBuffer();
-  int CheckPic();
+  int CheckPic(int threshold);
   unsigned int pic_width_;
   unsigned int pic_height_;
  private:

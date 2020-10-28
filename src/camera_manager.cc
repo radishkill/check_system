@@ -84,7 +84,7 @@ char *CameraManager::GetRBGBuffer() {
   return (char*)pRBGBuffer_;
 }
 
-int CameraManager::CheckPic() {
+int CameraManager::CheckPic(int threshold) {
   int average_data = 0;
   if (pRBGBuffer_ == nullptr)
     return -1;
@@ -94,7 +94,7 @@ int CameraManager::CheckPic() {
     average_data += pRBGBuffer_[i];
     average_data /= 2;
   }
-  if (average_data < 100 || average_data > 200) {
+  if (average_data <= threshold) {
     return 0;
   }
   return -1;

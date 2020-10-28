@@ -44,14 +44,14 @@ int StateMachine::SelfTest() {
   Utils::MSleep(3000);
   ret = arg->laser->SendOpenCmd();
   Utils::MSleep(3000);
-  //此次还需要在LCD上显示随机的SEED图
-  //Seed生成方法还不知道
-
+  int seed = GenerateRandomSeed();
+  arg->lcd->ShowBySeed(seed);
   ret = arg->camera->GetPic();
-  ret = arg->camera->CheckPic();
+  ret = arg->camera->CheckPic(200);
   ret = arg->laser->SendCloseCmd();
   return 0;
 }
+
 
 int StateMachine::Register() {
   GlobalArg* arg = GlobalArg::GetInstance();
@@ -60,8 +60,12 @@ int StateMachine::Register() {
    }
    arg->laser->SendOpenCmd();
    Utils::MSleep(10000);
-   arg->laser->SendCheckCmd();
-   arg->sm->CheckKey();
+//   arg->laser->SendCheckCmd();
+   if (arg->sm->CheckKey() == -1) {
+     //检测到无key插入
+     //设置灯显示 并返回到起始点
+     return -1;
+   }
    arg->sm->CheckAdminKey();
    arg->sm->CheckKey();
    int key_id = arg->sm->FindKey();
@@ -124,8 +128,7 @@ int StateMachine::CheckKey()
   int seed = arg->sm->GenerateRandomSeed();
   arg->lcd->ShowBySeed(seed);
   arg->camera->GetPic();
- return 1;
-
+  return arg->camera->CheckPic(200);
 }
 //采集算法
 int StateMachine::Collection()
@@ -140,12 +143,16 @@ int StateMachine::Collection()
 int StateMachine::CheckAdminKey()
 {
     GlobalArg* arg = GlobalArg::GetInstance();
-    int rand= std::rand()%10000;
+    int rand= std::rand()%1000;
     int seed = arg->key_file->GetSeed(0,rand);
-    arg->key_file->GetPic(0,rand);
+    arg->key_file->GetPic(0, rand);
     arg->lcd->ShowBySeed(seed);
     arg->camera->GetPic();
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较，
+    double result = AuthPic(arg->camera->GetRBGBuffer(), 1920, 1080, arg->key_file->GetPicBuffer(), 1920, 1080);
+    if (result < 0.1) {
+      //图片不匹配
+    }
 
     arg->key_file->DeletePic(0,rand);
     arg->key_file->DeleteSeed(0,rand);
@@ -281,9 +288,6 @@ double hamming(Mat input1, Mat input2)
 }
 
 int StateMachine::AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2) {
-
-
-
 
   // Initialize the application.
   gabor_im_initialize();
