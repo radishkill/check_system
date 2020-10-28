@@ -42,24 +42,26 @@ KeyFile::KeyFile(const char* base_path) {
     std::cout << "not found " << pic_file << std::endl;
   }
 }
-//添加PUTData文件0-99
+
 int KeyFile::AppendPufFile() {
   int i = 0;
-  while(1) {
+  while (i < 100) {
     std::string addpuf_path = std::string("/PUF" + Utils::DecToStr(i, 2));
-    std::string addpufseed_path = base_path_ + addpuf_path + addpuf_path+"_Seed";
-    std::string addpufpic_path = base_path_ + addpuf_path + addpuf_path+"_Pic";
     if(access((base_path_+addpuf_path).c_str(), 0) != 0) {
-      mkdir((base_path_+addpuf_path).c_str(), 0777);
+      std::string addpufseed_path = base_path_ + addpuf_path + addpuf_path+"_Seed";
+      std::string addpufpic_path = base_path_ + addpuf_path + addpuf_path+"_Pic";
+
+      mkdir((base_path_+addpuf_path).c_str(), 777);
        //创建PUF_Pic和PUF_Seed
-      mkdir(addpufseed_path.c_str(),0777);
-      mkdir(addpufpic_path.c_str(),0777);
+      mkdir(addpufseed_path.c_str(), 777);
+      mkdir(addpufpic_path.c_str(), 777);
       std::cout << addpuf_path.c_str() <<  "mkdir seccess"<< std::endl;
-    }
-    if (i >= 6) {
       break;
     }
     i++;
+  }
+  if (i >= 100) {
+    i = -1;
   }
   return i;
 }

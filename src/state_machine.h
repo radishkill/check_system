@@ -15,12 +15,13 @@ class StateMachine {
   int CheckKey();           //插入检测算法
   int Collection();         //采集算法
   int CheckAdminKey();      //管理员KEY检测算法
-  int CheckLibrary(int id);//库遍历算法
+  int CheckEmptyPair(int id); //库遍历算法
+  int CheckAvailablePair(int id);
 
   int AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2);
 
  private:
-  std::vector<int> empty_pairs;
+  std::vector<int> pair_list_;
 };
 
 #endif // STATE_MACHINE_H

@@ -59,39 +59,91 @@ int StateMachine::Register() {
      return -1;
    }
    arg->laser->SendOpenCmd();
-   Utils::MSleep(10000);
-//   arg->laser->SendCheckCmd();
+   Utils::MSleep(2 *1000);
    if (arg->sm->CheckKey() == -1) {
      //检测到无key插入
      //设置灯显示 并返回到起始点
+     arg->laser->SendCloseCmd();
      return -1;
    }
    arg->sm->CheckAdminKey();
-   arg->sm->CheckKey();
+   //給用户插入新卡的时间
+   Utils::MSleep(10 * 1000);
+   if (arg->sm->CheckKey() == -1) {
+     //检测到无key插入
+     //设置灯显示 并返回到起始点
+     arg->laser->SendCloseCmd();
+     return -1;
+   }
    int key_id = arg->sm->FindKey();
-  arg->sm->CheckLibrary(key_id);
-  for (int i = 0; i < empty_pairs.size(); i++) {
-    std::cout << empty_pairs[i] << std::endl;
-  }
- for (int i = 0; i < empty_pairs.size(); i++){
+   if (key_id == -1) {
+     //没找到库 并新建
+     int key_id = arg->key_file->AppendPufFile();
+     if (key_id == -1) {
+       //库满
+       arg->laser->SendCloseCmd();
+       return -1;
+     }
+   }
+  arg->sm->CheckEmptyPair(key_id);
+  for (int i = 0; i < pair_list_.size() && i < 100; i++){
     arg->sm->Collection();
   }
-    arg->laser->SendCloseCmd();
+  arg->laser->SendCloseCmd();
   return 0;
 }
 //认证
 int StateMachine::Authentication() {
-    GlobalArg* arg = GlobalArg::GetInstance();
-    arg->sm->CheckKey();
-   int key_id = arg->sm->FindKey();
-   int seed_index = std::rand()%10000;
-   int seed = arg->key_file->GetSeed(key_id,seed_index);
-   arg->lcd->ShowBySeed(seed);
-   arg->camera->GetPic();
+  GlobalArg* arg = GlobalArg::GetInstance();
+  if (!arg->laser->IsOpen()) {
+    return -1;
+  }
+  Utils::MSleep(2 * 1000);
+  if (arg->sm->CheckKey() == -1) {
+    //检测到无key插入
+    //设置灯显示 并返回到起始点
+    arg->laser->SendCloseCmd();
+    return -1;
+  }
+  int key_id = arg->sm->FindKey();
+  if (key_id == -1) {
+    arg->laser->SendCloseCmd();
+    return -1;
+  }
 
-  //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-  arg->key_file->DeleteSeed(key_id,seed_index);
-  arg->key_file->DeletePic(key_id,seed_index);
+  int ret = CheckAvailablePair(key_id);
+  if (ret == 0) {
+    //没有激励对了
+    arg->laser->SendCloseCmd();
+    return -1;
+  }
+  int n = 10;
+  while (n--) {
+    int index = std::rand()%ret;
+    int seed_index = pair_list_[index];
+
+    int seed = arg->key_file->GetSeed(key_id, seed_index);
+
+    arg->lcd->ShowBySeed(seed);
+
+    arg->camera->GetPic();
+
+    //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
+    int result = AuthPic(arg->camera->GetRBGBuffer(), 1080, 1920, arg->key_file->GetPicBuffer(), 1080, 1920);
+
+    arg->key_file->DeleteSeed(key_id,seed_index);
+    arg->key_file->DeletePic(key_id,seed_index);
+    if (result > 0.25) {
+      //认证成功了
+      break;
+    }
+  }
+  //认证失败
+  if (n < 0) {
+    arg->laser->SendCloseCmd();
+    return -1;
+  }
+  arg->laser->SendCloseCmd();
   return 0;
 }
 //随机生成seed a number range from 0 to 100000
@@ -99,7 +151,7 @@ int StateMachine::GenerateRandomSeed() {
   std::srand(std::time(nullptr));
   return std::rand()%100000;
 }
-//库定位算法
+//库定位算法 判断一枚key是否已经建立过数据库了
 int StateMachine::FindKey() {
   GlobalArg* arg = GlobalArg::GetInstance();
   assert(arg->camera != nullptr);
@@ -118,11 +170,16 @@ int StateMachine::FindKey() {
     arg->camera->GetPic();
     temp_pic = arg->camera->GetRBGBuffer();
     pic = arg->key_file->GetPicBuffer();
-
     //运算temp_pic 与 pic 得到结果
-
+    int result = AuthPic(pic, 1080, 1920, temp_pic, 1080, 1920);
+    if (result > 2.5) {
+      //找到相应的库
+      break;
+    }
     i++;
   }
+  if (i >= 100)
+    i = -1;
   return i;
 }
 //插入检测算法
@@ -135,8 +192,7 @@ int StateMachine::CheckKey()
   return arg->camera->CheckPic(200);
 }
 //采集算法
-int StateMachine::Collection()
-{
+int StateMachine::Collection() {
   GlobalArg* arg = GlobalArg::GetInstance();
   int seed = arg->sm->GenerateRandomSeed();
   arg->lcd->ShowBySeed(seed);
@@ -144,41 +200,62 @@ int StateMachine::Collection()
   return 0;
 }
 //管理员KEY检测算法
-int StateMachine::CheckAdminKey()
-{
-    GlobalArg* arg = GlobalArg::GetInstance();
-    int rand= std::rand()%1000;
-    int seed = arg->key_file->GetSeed(0,rand);
-    arg->key_file->GetPic(0, rand);
+int StateMachine::CheckAdminKey() {
+  int n = 10;
+
+  GlobalArg* arg = GlobalArg::GetInstance();
+  while (n--) {
+    int seed_index = std::rand()%1000;
+    int seed = arg->key_file->GetSeed(0, seed_index);
+    arg->key_file->GetPic(0, seed_index);
     arg->lcd->ShowBySeed(seed);
     arg->camera->GetPic();
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较，
     double result = AuthPic(arg->camera->GetRBGBuffer(), 1920, 1080, arg->key_file->GetPicBuffer(), 1920, 1080);
-    if (result < 0.1) {
-      //图片不匹配
+    if (result > 0.25) {
+      //结果匹配
+      //.....
+      return 1;
     }
 
-    arg->key_file->DeletePic(0,rand);
-    arg->key_file->DeleteSeed(0,rand);
+    arg->key_file->DeletePic(0, seed_index);
+    arg->key_file->DeleteSeed(0, seed_index);
+
     int rand_seed = arg->sm->GenerateRandomSeed();
     arg->lcd->ShowBySeed(rand_seed);
+
     arg->camera->GetPic();
-    arg->key_file->SaveSeed(0,rand,rand_seed);
-    arg->key_file->SavePic(0,rand);
-    return 0;
+
+    arg->key_file->CopyPicToBuffer(arg->camera->GetRBGBuffer(), 1920, 1080);
+    arg->key_file->SaveSeed(0, seed_index, rand_seed);
+    arg->key_file->SavePic(0, seed_index);
+  }
+  //非管理员key插入
+  return 0;
 }
 //库遍历算法
-int StateMachine::CheckLibrary(int id) {
+int StateMachine::CheckEmptyPair(int id) {
   GlobalArg* arg = GlobalArg::GetInstance();
-  empty_pairs.clear();
+  //清空empty_pairs
+  std::vector<int>().swap(pair_list_);
+
   for (int i = 0; i < 1000; i++) {
     if (arg->key_file->IsSeedAvailable(id, i)) continue;
-    empty_pairs.push_back(i);
-    if (empty_pairs.size() == 100) {
-      break;
-    }
+    pair_list_.push_back(i);
   }
-  return empty_pairs.size();
+  return pair_list_.size();
+}
+
+int StateMachine::CheckAvailablePair(int id) {
+  GlobalArg* arg = GlobalArg::GetInstance();
+  //清空empty_pairs
+  std::vector<int>().swap(pair_list_);
+
+  for (int i = 0; i < 1000; i++) {
+    if (!arg->key_file->IsSeedAvailable(id, i)) continue;
+    pair_list_.push_back(i);
+  }
+  return pair_list_.size();
 }
 
 emxArray_uint8_T* Mat2Emx_U8(Mat& srcImage)

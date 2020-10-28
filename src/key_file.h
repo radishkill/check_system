@@ -25,7 +25,7 @@ class KeyFile {
   };
 
   KeyFile(const char* base_path);
-  //向PufData文件夹追加新的puf数据
+  //向PufData文件夹追加一个新的文件
   int AppendPufFile();
   int GetSeed(int id,int index);
   int IsSeedAvailable(int id, int index);
