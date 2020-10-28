@@ -27,8 +27,8 @@ void InitSystem() {
 int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->sm = new StateMachine();
+  arg->sm->AuthPic(nullptr, 0, 0, nullptr, 0, 0);
 //  InitSystem();
 //  arg->sm->Register();
-
   return 0;
 }

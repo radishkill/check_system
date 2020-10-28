@@ -130,7 +130,7 @@ int KeyFile::GetPic(int id, int index) {
 char *KeyFile::GetPicBuffer() {
   return **pic_buffer_;
 }
-//获得照片到缓存区
+//复制图片到文件图片缓冲区
 int KeyFile::CopyPicToBuffer(char *pic, int width, int height) {
   for (int i = 0; i < 1080; i++) {
     std::memcpy(*pic_buffer_[i], pic + i*1920*4, 1920*4);
