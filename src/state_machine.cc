@@ -68,22 +68,13 @@ int StateMachine::Authentication() {
    arg->lcd->ShowBySeed(seed);
    arg->camera->GetPic();
 
+  //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+  arg->key_file->DeleteSeed(key_id,seed_index);
+  arg->key_file->DeletePic(key_id,seed_index);
   return 0;
 }
 //随机生成seed a number range from 0 to 100000
