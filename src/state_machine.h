@@ -16,6 +16,9 @@ class StateMachine {
   int Collection();         //采集算法
   int CheckAdminKey();      //管理员KEY检测算法
   int CheckLibrary(int id);//库遍历算法
+
+  int AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2);
+
  private:
   std::vector<int> empty_pairs;
 };
