@@ -15,7 +15,7 @@ class GlobalArg {
   StateMachine* sm;
   KeyFile* key_file;
   Lcd* lcd;
-
+  int interrupt_flag;
 
  private:
   static GlobalArg* global_arg_;
