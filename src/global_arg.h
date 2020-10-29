@@ -18,6 +18,7 @@ class GlobalArg {
   KeyFile* key_file;
   Lcd* lcd;
   EpollRepertory* epoll;
+  int interrupt_flag;
 
  private:
   static GlobalArg* global_arg_;
