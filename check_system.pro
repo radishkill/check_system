@@ -8,6 +8,7 @@ DEPENDPATH += $$PWD/src/include
 
 SOURCES += src/main.cc \
     src/camera_manager.cc \
+    src/eventmanager.cc \
     src/global_arg.cc \
     src/key_file.cc \
     src/laser.cc \
@@ -15,6 +16,7 @@ SOURCES += src/main.cc \
     src/usart.cc \
     src/utils.cc \
     src/state_machine.cc \
+    src/epollrepertory.cc \
     src/gabor_im/bluesteinSetup.cpp \
     src/gabor_im/cosd.cpp \
     src/gabor_im/createNormalizedFrequencyVector.cpp \
@@ -41,14 +43,16 @@ LIBS += -lopencv_core -lopencv_features2d -lopencv_imgproc -lopencv_highgui -lop
 LIBS += -lgomp -lopencv_xfeatures2d
 HEADERS += \
     src/camera_manager.h \
+    src/eventmanager.h \
+    src/fd_manager.h \
     src/global_arg.h \
     src/key_file.h \
     src/laser.h \
     src/lcd.h \
-    src/screen_manager.h \
     src/state_machine.h \
     src/usart.h \
     src/utils.h \
+    src/epollrepertory.h \
     src/gabor_im/bluesteinSetup.h \
     src/gabor_im/cosd.h \
     src/gabor_im/createNormalizedFrequencyVector.h \

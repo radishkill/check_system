@@ -437,12 +437,12 @@ int StateMachine::AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2
   emxInitArray_boolean_T(&K3, 2);
 
   // Initialize function input argument 'image'.
-//  Mat speckle_database = imread("./13.bmp",CV_8U);
-//  Mat speckle_auth = imread("./14.bmp", CV_8U);
-  Mat speckle_database(h1, w1, CV_8UC4);
-  Mat speckle_auth(h2, w2, CV_8UC4);
-  std::memcpy(speckle_database.data, pic1, h1*w1*4);
-  std::memcpy(speckle_auth.data, pic2, h2*w2*4);
+  Mat speckle_database = imread("./13.bmp",CV_8U);
+  Mat speckle_auth = imread("./14.bmp", CV_8U);
+//  Mat speckle_database(h1, w1, CV_8UC4);
+//  Mat speckle_auth(h2, w2, CV_8UC4);
+//  std::memcpy(speckle_database.data, pic1, h1*w1*4);
+//  std::memcpy(speckle_auth.data, pic2, h2*w2*4);
 
   Mat ROI = speckle_database;//= speckle_database(Rect(50,50, speckle_database.cols-50, speckle_database.rows-50));
   Mat ROI2 = speckle_auth;//= speckle_auth(Rect(50, 50, speckle_auth.cols - 50, speckle_auth.rows - 50));
@@ -480,25 +480,24 @@ int StateMachine::AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2
   double FHD=hamming(bw_im, bw_im2);
 
 
-  namedWindow("Display bw_im", WINDOW_AUTOSIZE); // Create a window for display.
-  imshow("Display bw_im", bw_im);
-  namedWindow("Display bw_im2", WINDOW_AUTOSIZE); // Create a window for display.
-  imshow("Display bw_im2", bw_im2);
+//  namedWindow("Display bw_im", WINDOW_AUTOSIZE); // Create a window for display.
+//  imshow("Display bw_im", bw_im);
+//  namedWindow("Display bw_im2", WINDOW_AUTOSIZE); // Create a window for display.
+//  imshow("Display bw_im2", bw_im2);
 
   double FHD2 = 0;
-  if (FHD >= 0.1 && FHD <= 0.25)
-  {
+  if (FHD >= 0.1 && FHD <= 0.25) {
     transform_my(speckle_database, speckle_auth, speckle_auth);
     image3 = Mat2Emx_U8(speckle_auth);
     gabor_im(image3, 8, 45, Gimage_im3, BW_im3, K3);
     Gim_mat3 = Emx2Mat_U8(Gimage_im3);
     threshold(Gim_mat3, bw_im3, 0, 255, THRESH_BINARY_INV);
-    imshow("bw_im3", bw_im3);
+//    imshow("bw_im3", bw_im3);
     bw_im3.convertTo(bw_im3, CV_8U, 1, 0);
     FHD2 = hamming(bw_im, bw_im3);
     cout << "FHD=" << FHD2 << endl;
   }
-  waitKey(0);
+//  waitKey(0);
   emxDestroyArray_boolean_T(K);
   emxDestroyArray_boolean_T(BW_im);
   emxDestroyArray_real_T(Gimage_im);
