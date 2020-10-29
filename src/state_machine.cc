@@ -49,10 +49,13 @@ int StateMachine::SelfTest() {
   ret = arg->camera->GetPic();
   ret = arg->camera->CheckPic(200);
   ret = arg->laser->SendCloseCmd();
+
+  //逻辑“与,输出LED灯的状态
+
   return 0;
 }
 
-
+//注册
 int StateMachine::Register() {
   GlobalArg* arg = GlobalArg::GetInstance();
    if (!arg->laser->IsOpen()) {
@@ -86,8 +89,26 @@ int StateMachine::Register() {
      }
    }
   arg->sm->CheckEmptyPair(key_id);
+
+  //中断返回复位状态
+
+  if (arg->interrupt_flag == 1) {
+    arg->laser->SendCloseCmd();
+    arg->interrupt_flag=0;
+    return -1;
+    }
+
+  //
   for (int i = 0; i < pair_list_.size() && i < 100; i++){
     arg->sm->Collection();
+
+    //中断返回复位状态
+    if (arg->interrupt_flag == 1) {
+      arg->laser->SendCloseCmd();
+      arg->interrupt_flag=0;
+      return -1;
+      }
+
   }
   arg->laser->SendCloseCmd();
   return 0;
@@ -113,7 +134,7 @@ int StateMachine::Authentication() {
 
   int ret = CheckAvailablePair(key_id);
   if (ret == 0) {
-    //没有激励对了
+    //没有激励对了,直接跳转至“认证失败”处理模块
     arg->laser->SendCloseCmd();
     return -1;
   }
@@ -133,17 +154,24 @@ int StateMachine::Authentication() {
 
     arg->key_file->DeleteSeed(key_id,seed_index);
     arg->key_file->DeletePic(key_id,seed_index);
-    if (result > 0.25) {
+
+    //值越小说明两张图片越相似
+    if (result < 0.25) {
       //认证成功了
       break;
     }
   }
   //认证失败
   if (n < 0) {
-    arg->laser->SendCloseCmd();
-    return -1;
+    //中断返回复位状态
+    if (arg->interrupt_flag == 1) {
+      arg->laser->SendCloseCmd();
+      arg->interrupt_flag=0;
+      return -1;
+      }
   }
   arg->laser->SendCloseCmd();
+
   return 0;
 }
 //随机生成seed a number range from 0 to 100000
@@ -180,6 +208,12 @@ int StateMachine::FindKey() {
   }
   if (i >= 100)
     i = -1;
+
+  //中断返回复位状态
+  if(arg->interrupt_flag==1){
+    arg->interrupt_flag=0;
+    return -1;
+  }
   return i;
 }
 //插入检测算法
@@ -243,9 +277,14 @@ int StateMachine::CheckEmptyPair(int id) {
     if (arg->key_file->IsSeedAvailable(id, i)) continue;
     pair_list_.push_back(i);
   }
+  // //中断返回复位状态
+  if(arg->interrupt_flag==1){
+    arg->interrupt_flag=0;
+    return -1;
+  }
   return pair_list_.size();
 }
-
+//检查可用激励对
 int StateMachine::CheckAvailablePair(int id) {
   GlobalArg* arg = GlobalArg::GetInstance();
   //清空empty_pairs
