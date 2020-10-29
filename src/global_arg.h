@@ -6,6 +6,8 @@ class CameraManager;
 class StateMachine;
 class KeyFile;
 class Lcd;
+class EpollRepertory;
+
 
 class GlobalArg {
  public:
@@ -15,7 +17,7 @@ class GlobalArg {
   StateMachine* sm;
   KeyFile* key_file;
   Lcd* lcd;
-
+  EpollRepertory* epoll;
 
  private:
   static GlobalArg* global_arg_;
