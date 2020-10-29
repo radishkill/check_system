@@ -244,7 +244,7 @@ int StateMachine::CheckAdminKey() {
     arg->key_file->GetPic(0, seed_index);
     arg->lcd->ShowBySeed(seed);
     arg->camera->GetPic();
-    //将TEMP与Pic进行运算，得出结果值和阈值T进行比较，
+    //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
     double result = AuthPic(arg->camera->GetRBGBuffer(), 1920, 1080, arg->key_file->GetPicBuffer(), 1920, 1080);
     if (result > 0.25) {
       //结果匹配
