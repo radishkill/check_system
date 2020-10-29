@@ -10,7 +10,13 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/)
 add_compile_options("-std=c++14")
 include_directories(
 	${PROJECT_SOURCE_DIR}/src/include
+  ~/opencv/include
+  ${PROJECT_SOURCE_DIR}/src/gabor_im
 	)
+link_directories(
+    ~/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
+    ~/opencv/lib
+    )
 
 add_definitions(
         -o3 -g -w -Wall
@@ -22,13 +28,45 @@ add_executable(CheckSystem
     main.cc
     usart.cc
     global_arg.cc
+    key_file.cc
+    lcd.cc
     camera_manager.cc
+    eventmanager.cc 
     laser.cc
     utils.cc
+    state_machine.cc
+    epollrepertory.cc 
+    gabor_im/bluesteinSetup.cpp 
+    gabor_im/cosd.cpp 
+    gabor_im/createNormalizedFrequencyVector.cpp 
+    gabor_im/fft1.cpp 
+    gabor_im/fft2.cpp 
+    gabor_im/gabor_im.cpp 
+    gabor_im/gabor_im_data.cpp 
+    gabor_im/gabor_im_emxAPI.cpp 
+    gabor_im/gabor_im_emxutil.cpp 
+    gabor_im/gabor_im_initialize.cpp 
+    gabor_im/gabor_im_rtwutil.cpp 
+    gabor_im/gabor_im_terminate.cpp 
+    gabor_im/imgaborfilt.cpp 
+    gabor_im/ipermute.cpp 
+    gabor_im/padarray.cpp 
+    gabor_im/power.cpp 
+    gabor_im/rtGetInf.cpp 
+    gabor_im/rtGetNaN.cpp 
+    gabor_im/rt_nonfinite.cpp 
+    gabor_im/sind.cpp
     )
 
 target_link_libraries(CheckSystem
-	~/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib/libpthread.so
-	#	${CMAKE_THREAD_LIBS_INIT}
+	pthread
+  opencv_highgui
+  opencv_core
+  opencv_imgproc
+  opencv_features2d
+  opencv_imgcodecs
+  opencv_calib3d
+  opencv_xfeatures2d
+  gomp
 	~/workspace/check_system/lib/armhf/libCKCameraSDK.a
 )

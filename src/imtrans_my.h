@@ -7,7 +7,7 @@
 #include <numeric>
 
 #include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
+//#include <opencv2/highgui.hpp>
 #include <opencv2/features2d.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/imgproc.hpp>
@@ -102,7 +102,7 @@ int transform_my(Mat& img1, Mat& img2, Mat rI2) {
 
     drawMatches(img1, keypoints1, img2, keypoints2, good_good_matches, img_matches, cv::Scalar(0, 255, 0), cv::Scalar(0, 255, 255));
     bitwise_not(img1, img1);
-    imshow("img1", img1);
+//    imshow("img1", img1);
 
 
     //-- Localize the object
@@ -321,9 +321,9 @@ int transform_my(Mat& img1, Mat& img2, Mat rI2) {
     rI1 = Mat(img1, rect);
 
     ////-- Show detected matches
-    imshow("Matches", img_matches);
-    imshow("rI2", rI2);
-    waitKey();
+//    imshow("Matches", img_matches);
+//    imshow("rI2", rI2);
+//    waitKey();
     return 0;
 
 }
