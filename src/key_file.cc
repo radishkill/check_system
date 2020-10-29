@@ -82,7 +82,7 @@ int KeyFile::GetSeed(int id, int index){
   ifs.close();
   return seed;
 }
-//可获得seed
+//可用的seed
 int KeyFile::IsSeedAvailable(int id, int index) {
   std::ifstream ifs;
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
