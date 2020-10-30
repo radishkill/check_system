@@ -20,6 +20,7 @@ class EventManager {
   enum EventType {
     kEventRead,
     kEventWrite,
+    kEventPri,
     kEventError
   };
   EventManager();

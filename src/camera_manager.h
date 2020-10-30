@@ -6,7 +6,7 @@
 
 #include "CKCameraInterface.h"
 
-
+namespace check_system {
 class CameraManager {
  public:
   CameraManager();
@@ -24,5 +24,8 @@ class CameraManager {
   BYTE* pRBGBuffer_;
   DWORD dwRGBBufSize_;
 };
+}
+
+
 
 #endif // CAMERAMANAGER_H
