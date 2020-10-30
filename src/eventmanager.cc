@@ -103,6 +103,7 @@ void EventManager::RunThread() {
   while (is_running_) {
     int timeout = -1;
     lk.unlock();
+    //该函数用于轮询I/O事件的发生
     int ret = epoll_wait(epoll_fd_, events, kMaxEvents, timeout);
     lk.lock();
 
