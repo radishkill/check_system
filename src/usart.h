@@ -11,8 +11,7 @@
 #include <stdio.h>
 #include <string>
 
-class Usart
-{
+class Usart {
   public:
   Usart();
   Usart(const char* name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);

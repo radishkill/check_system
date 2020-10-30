@@ -90,7 +90,7 @@ int CameraManager::CheckPic(int threshold) {
     return -1;
   average_data = pRBGBuffer_[0];
 
-  for (unsigned int i = 1; i < pic_height_*pic_width_*4; i++) {
+  for (unsigned int i = 1; i < pic_width_*pic_height_*4; i++) {
     average_data += pRBGBuffer_[i];
     average_data /= 2;
   }

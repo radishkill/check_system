@@ -9,6 +9,7 @@ class StateMachine;
 class KeyFile;
 class Lcd;
 class EventManager;
+class LedController;
 
 
 class GlobalArg {
@@ -20,6 +21,8 @@ class GlobalArg {
   KeyFile* key_file;
   Lcd* lcd;
   EventManager* em;
+  LedController* led;
+
   int interrupt_flag;
 
  private:

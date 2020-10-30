@@ -59,15 +59,9 @@ int StateMachine::SelfTest() {
 //注册
 int StateMachine::Register() {
   GlobalArg* arg = GlobalArg::GetInstance();
-   if (!arg->laser->IsOpen()) {
-     return -1;
-   }
-   arg->laser->SendOpenCmd();
-   Utils::MSleep(2 *1000);
    if (arg->sm->CheckKey() == -1) {
      //检测到无key插入
      //设置灯显示 并返回到起始点
-     arg->laser->SendCloseCmd();
      return -1;
    }
    arg->sm->CheckAdminKey();
@@ -76,42 +70,47 @@ int StateMachine::Register() {
    if (arg->sm->CheckKey() == -1) {
      //检测到无key插入
      //设置灯显示 并返回到起始点
-     arg->laser->SendCloseCmd();
      return -1;
    }
    int key_id = arg->sm->FindKey();
    if (key_id == -1) {
+     //被中断
+     if (arg->interrupt_flag) {
+       arg->interrupt_flag = 0;
+       return -1;
+     }
+
      //没找到库 并新建
      int key_id = arg->key_file->AppendPufFile();
      if (key_id == -1) {
        //库满
-       arg->laser->SendCloseCmd();
        return -1;
      }
    }
   arg->sm->CheckEmptyPair(key_id);
 
   //中断返回复位状态
-
-  if (arg->interrupt_flag == 1) {
-    arg->laser->SendCloseCmd();
+  if (arg->interrupt_flag) {
     arg->interrupt_flag=0;
     return -1;
-    }
+   }
 
-  //
-  for (int i = 0; i < pair_list_.size() && i < 100; i++){
-    arg->sm->Collection();
+  for (unsigned int i = 0; i < pair_list_.size() && i < 100; i++){
+    GlobalArg* arg = GlobalArg::GetInstance();
+    int seed = arg->sm->GenerateRandomSeed();
+    arg->lcd->ShowBySeed(seed);
+    arg->camera->GetPic();
+    //保存激励对
+    arg->key_file->SaveSeed(key_id, pair_list_[i], seed);
+    arg->key_file->CopyPicToBuffer(arg->camera->GetRBGBuffer(), 1920, 1080);
+    arg->key_file->SavePic(key_id, pair_list_[i]);
 
     //中断返回复位状态
     if (arg->interrupt_flag == 1) {
-      arg->laser->SendCloseCmd();
       arg->interrupt_flag=0;
       return -1;
-      }
-
+    }
   }
-  arg->laser->SendCloseCmd();
   return 0;
 }
 //认证
@@ -192,6 +191,9 @@ int StateMachine::FindKey() {
   std::srand(std::time(nullptr));
   int i = 0;
   while (i < 100) {
+    if (arg->interrupt_flag) {
+      return -1;
+    }
     int seed_index = std::rand()%1000;
     int seed = arg->key_file->GetSeed(i, seed_index);
     arg->lcd->ShowBySeed(seed);
@@ -201,7 +203,7 @@ int StateMachine::FindKey() {
     pic = arg->key_file->GetPicBuffer();
     //运算temp_pic 与 pic 得到结果
     int result = AuthPic(pic, 1080, 1920, temp_pic, 1080, 1920);
-    if (result > 2.5) {
+    if (result <= 5) {
       //找到相应的库
       break;
     }
@@ -225,14 +227,6 @@ int StateMachine::CheckKey()
   arg->lcd->ShowBySeed(seed);
   arg->camera->GetPic();
   return arg->camera->CheckPic(200);
-}
-//采集算法
-int StateMachine::Collection() {
-  GlobalArg* arg = GlobalArg::GetInstance();
-  int seed = arg->sm->GenerateRandomSeed();
-  arg->lcd->ShowBySeed(seed);
-  arg->camera->GetPic();
-  return 0;
 }
 //管理员KEY检测算法
 int StateMachine::CheckAdminKey() {
@@ -278,11 +272,7 @@ int StateMachine::CheckEmptyPair(int id) {
     if (arg->key_file->IsSeedAvailable(id, i)) continue;
     pair_list_.push_back(i);
   }
-  // //中断返回复位状态
-  if(arg->interrupt_flag==1){
-    arg->interrupt_flag=0;
-    return -1;
-  }
+
   return pair_list_.size();
 }
 //检查可用激励对
@@ -486,7 +476,7 @@ int StateMachine::AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2
 //  namedWindow("Display bw_im2", WINDOW_AUTOSIZE); // Create a window for display.
 //  imshow("Display bw_im2", bw_im2);
 
-  double FHD2 = 0;
+//  double FHD2 = 0;
   if (FHD >= 0.1 && FHD <= 0.25) {
     TransformPic(speckle_database, speckle_auth, speckle_auth);
     image3 = Mat2Emx_U8(speckle_auth);
@@ -495,8 +485,8 @@ int StateMachine::AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2
     threshold(Gim_mat3, bw_im3, 0, 255, THRESH_BINARY_INV);
 //    imshow("bw_im3", bw_im3);
     bw_im3.convertTo(bw_im3, CV_8U, 1, 0);
-    FHD2 = hamming(bw_im, bw_im3);
-    cout << "FHD=" << FHD2 << endl;
+    FHD = hamming(bw_im, bw_im3);
+//    cout << "FHD=" << FHD2 << endl;
   }
 //  waitKey(0);
   emxDestroyArray_boolean_T(K);
@@ -510,6 +500,6 @@ int StateMachine::AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2
 
   // Terminate the application.
   gabor_im_terminate();
-  return FHD2;
+  return FHD;
 }
 }
