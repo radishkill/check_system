@@ -58,7 +58,6 @@ bool EventManager::RemoveFd(int fd, EventManager::EventType type) {
   if (fds_.find(fd) == fds_.end()) {
     return false;
   }
-
   if (fds_[fd].size() == 1 &&
       fds_[fd].find(type) != fds_[fd].end()) {
     EpollUpdate(fd, EPOLL_CTL_DEL);
@@ -99,7 +98,7 @@ void EventManager::EpollUpdate(int fd, int epoll_op) {
 
 void EventManager::RunThread() {
   const int kMaxEvents = 32;
-  const int kEpollDefaultWait = 10000;
+//  const int kEpollDefaultWait = 10000;
 
   struct epoll_event events[kMaxEvents];
   std::unique_lock<std::mutex> lk(mutex_);
