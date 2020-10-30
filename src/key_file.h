@@ -3,6 +3,8 @@
 
 #include <string>
 #include <list>
+
+namespace check_system {
 /*
  * 此类用来操作Puf File数据文件夹
  * 从Puf File数据文件夹 增加 删除 查改数据都要从此类进入
@@ -41,6 +43,6 @@ class KeyFile {
   std::string base_path_;
   char pic_buffer_[1080][1920][4];
 };
-
+}
 
 #endif // KEY_FILE_H

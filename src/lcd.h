@@ -3,6 +3,7 @@
 
 #include <string>
 
+namespace check_system {
 class Lcd {
  public:
   Lcd(const char* device_name);
@@ -10,5 +11,8 @@ class Lcd {
  private:
   std::string device_name_;
 };
+}
+
+
 
 #endif // LCD_H
