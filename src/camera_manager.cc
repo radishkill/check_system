@@ -1,6 +1,6 @@
 #include "camera_manager.h"
 
-
+namespace check_system {
 
 CameraManager::CameraManager() {
   pRBGBuffer_ = nullptr;
@@ -98,4 +98,5 @@ int CameraManager::CheckPic(int threshold) {
     return 0;
   }
   return -1;
+}
 }

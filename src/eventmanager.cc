@@ -82,6 +82,9 @@ void EventManager::EpollUpdate(int fd, int epoll_op) {
       case EventManager::kEventWrite:
         ev.events |= EPOLLOUT;
         break;
+      case EventManager::kEventPri:
+        ev.events |= EPOLLPRI;
+        break;
       case EventManager::kEventError:
         ev.events |= EPOLLRDHUP | EPOLLHUP;
         break;

@@ -16,7 +16,6 @@ SOURCES += src/main.cc \
     src/usart.cc \
     src/utils.cc \
     src/state_machine.cc \
-    src/epollrepertory.cc \
     src/gabor_im/bluesteinSetup.cpp \
     src/gabor_im/cosd.cpp \
     src/gabor_im/createNormalizedFrequencyVector.cpp \
@@ -44,7 +43,6 @@ LIBS += -lgomp -lopencv_xfeatures2d
 HEADERS += \
     src/camera_manager.h \
     src/eventmanager.h \
-    src/fd_manager.h \
     src/global_arg.h \
     src/key_file.h \
     src/laser.h \
@@ -52,7 +50,6 @@ HEADERS += \
     src/state_machine.h \
     src/usart.h \
     src/utils.h \
-    src/epollrepertory.h \
     src/gabor_im/bluesteinSetup.h \
     src/gabor_im/cosd.h \
     src/gabor_im/createNormalizedFrequencyVector.h \

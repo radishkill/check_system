@@ -1,5 +1,6 @@
 #include "laser.h"
 
+namespace check_system {
 Laser::Laser(const char* device_name)
   : status_(0) {
   target_exist_ = 0;
@@ -137,4 +138,5 @@ int Laser::ReadBuffer(int timeout) {
     std::cout << std::endl;
     return res_len;
   }
+}
 }
