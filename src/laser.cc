@@ -32,7 +32,7 @@ int Laser::SendOpenCmd() {
   data_frame_[p++] = 0x16;
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
-  int ret = ReadBuffer(10);
+  int ret = ReadBuffer(6);
   if (ret <= 0) {
     perror("open laser wrong!!!");
     return -1;
@@ -64,7 +64,7 @@ int Laser::SendCloseCmd() {
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
   i = 0;
-  ret = ReadBuffer(10);
+  ret = ReadBuffer(5);
   if (ret <= 0) {
     perror("close laser wrong!!!");
     return -1;

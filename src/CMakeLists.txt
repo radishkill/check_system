@@ -60,7 +60,7 @@ add_executable(CheckSystem
 
 target_link_libraries(CheckSystem
 	pthread
-  opencv_highgui
+  #  opencv_highgui
   opencv_core
   opencv_imgproc
   opencv_features2d

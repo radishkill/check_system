@@ -4,16 +4,14 @@
 #include <list>
 #include <map>
 #include <set>
-#include <tr1/functional>
-#include <tr1/memory>
+#include <functional>
+#include <memory>
 #include <vector>
 #include <thread>
 #include <mutex>
 
 namespace check_system {
 using namespace std;
-using std::tr1::function;
-using std::tr1::shared_ptr;
 
 class EventManager {
  public:

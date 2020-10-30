@@ -13,6 +13,7 @@ SOURCES += src/main.cc \
     src/key_file.cc \
     src/laser.cc \
     src/lcd.cc \
+    src/led.cc \
     src/usart.cc \
     src/utils.cc \
     src/state_machine.cc \
@@ -38,7 +39,7 @@ SOURCES += src/main.cc \
     src/gabor_im/sind.cpp
 
 LIBS += -L$$PWD/lib/x64 -Wl,-Bstatic -lCKCameraSDK -Wl,-Bdynamic -lpthread
-LIBS += -lopencv_core -lopencv_features2d -lopencv_imgproc -lopencv_highgui -lopencv_imgcodecs -lopencv_calib3d
+LIBS += -lopencv_core -lopencv_features2d -lopencv_imgproc -lopencv_imgcodecs -lopencv_calib3d
 LIBS += -lgomp -lopencv_xfeatures2d
 HEADERS += \
     src/camera_manager.h \
@@ -47,6 +48,7 @@ HEADERS += \
     src/key_file.h \
     src/laser.h \
     src/lcd.h \
+    src/led.h \
     src/state_machine.h \
     src/usart.h \
     src/utils.h \
