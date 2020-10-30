@@ -6,6 +6,7 @@
 #include "usart.h"
 #include "utils.h"
 
+namespace check_system {
 class Laser {
  public:
   Laser(const char* device_name);
@@ -27,5 +28,8 @@ class Laser {
   int max_current_;
   int temperature_;
 };
+}
+
+
 
 #endif // LASER_H

@@ -1,12 +1,14 @@
 #ifndef GLOBAL_ARG_H
 #define GLOBAL_ARG_H
 
+
+namespace check_system {
 class Laser;
 class CameraManager;
 class StateMachine;
 class KeyFile;
 class Lcd;
-class EpollRepertory;
+class EventManager;
 
 
 class GlobalArg {
@@ -17,11 +19,12 @@ class GlobalArg {
   StateMachine* sm;
   KeyFile* key_file;
   Lcd* lcd;
-  EpollRepertory* epoll;
+  EventManager* em;
   int interrupt_flag;
 
  private:
   static GlobalArg* global_arg_;
 };
+}
 
 #endif // GLOBAL_ARG_H

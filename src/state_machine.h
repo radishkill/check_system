@@ -3,6 +3,8 @@
 
 #include <vector>
 
+namespace check_system {
+
 class StateMachine {
  public:
   StateMachine();
@@ -23,5 +25,6 @@ class StateMachine {
  private:
   std::vector<int> pair_list_;
 };
+}
 
 #endif // STATE_MACHINE_H

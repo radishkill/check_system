@@ -21,7 +21,7 @@ using std::endl;
 
 
 
-int transform_my(Mat& img1, Mat& img2, Mat rI2) {
+int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
     Mat rI1;
    
     if (img1.empty() || img2.empty())

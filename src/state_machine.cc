@@ -5,7 +5,6 @@
 #include <cassert>
 #include <omp.h>
 
-#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -26,6 +25,8 @@
 #include "key_file.h"
 #include "lcd.h"
 #include "key_file.h"
+
+namespace check_system {
 
 using namespace cv;
 using namespace std;
@@ -487,7 +488,7 @@ int StateMachine::AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2
 
   double FHD2 = 0;
   if (FHD >= 0.1 && FHD <= 0.25) {
-    transform_my(speckle_database, speckle_auth, speckle_auth);
+    TransformPic(speckle_database, speckle_auth, speckle_auth);
     image3 = Mat2Emx_U8(speckle_auth);
     gabor_im(image3, 8, 45, Gimage_im3, BW_im3, K3);
     Gim_mat3 = Emx2Mat_U8(Gimage_im3);
@@ -510,4 +511,5 @@ int StateMachine::AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2
   // Terminate the application.
   gabor_im_terminate();
   return FHD2;
+}
 }
