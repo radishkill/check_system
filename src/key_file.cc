@@ -175,6 +175,13 @@ int KeyFile::SaveSeed(int id, int index, int seed)
   ofs.close();
   return 0;
 }
+
+int KeyFile::SavePicAndSeed(int key_id, int index, int seed)
+{
+  SavePic(key_id, index);
+  SaveSeed(key_id, index, seed);
+  return 0;
+}
 //删除pic
 int KeyFile::DeletePic(int id, int index)
 {

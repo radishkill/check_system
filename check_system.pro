@@ -10,6 +10,7 @@ SOURCES += src/main.cc \
     src/camera_manager.cc \
     src/eventmanager.cc \
     src/global_arg.cc \
+    src/hostcontroller.cc \
     src/key_file.cc \
     src/laser.cc \
     src/lcd.cc \
@@ -45,6 +46,7 @@ HEADERS += \
     src/camera_manager.h \
     src/eventmanager.h \
     src/global_arg.h \
+    src/hostcontroller.h \
     src/key_file.h \
     src/laser.h \
     src/lcd.h \

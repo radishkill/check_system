@@ -66,7 +66,7 @@ int StateMachine::SelfTest() {
 //正确ok
   else{
   arg->led->ErrorLed(0);
-    for(int i = 0 ; i < \3; i++ ){
+    for(int i = 0 ; i < 3; i++ ){
       arg->led->LaserLed(0);
       arg->led->CmosLed(0);
       arg->led->LcdLed(0);
@@ -162,10 +162,10 @@ int StateMachine::Register() {
     int seed = arg->sm->GenerateRandomSeed();
     arg->lcd->ShowBySeed(seed);
     arg->camera->GetPic();
-    //保存激励对
-    arg->key_file->SaveSeed(key_id, pair_list_[i], seed);
+
     arg->key_file->CopyPicToBuffer(arg->camera->GetRBGBuffer(), 1920, 1080);
-    arg->key_file->SavePic(key_id, pair_list_[i]);
+    //保存激励对
+    arg->key_file->SavePicAndSeed(key_id, pair_list_[i], seed);
 
     //中断返回复位状态
     if (arg->interrupt_flag == 1) {
@@ -337,8 +337,8 @@ int StateMachine::CheckAdminKey() {
     arg->camera->GetPic();
 
     arg->key_file->CopyPicToBuffer(arg->camera->GetRBGBuffer(), 1920, 1080);
-    arg->key_file->SaveSeed(0, seed_index, rand_seed);
-    arg->key_file->SavePic(0, seed_index);
+    arg->key_file->SavePicAndSeed(0, seed_index, rand_seed);
+
   }
   //非管理员key插入
   return 0;
