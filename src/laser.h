@@ -15,6 +15,7 @@ class Laser {
   int SendCheckCmd();
   int ReadBuffer(int timeout);
   int IsOpen() {return status_;}
+  Usart& GetUsart() {return usart_;};
  private:
   char data_frame_[310];
   Usart usart_;
