@@ -2,13 +2,14 @@
 #define UTILS_H
 
 #include <linux/types.h>
-#include<iostream>
+#include <iostream>
 
 class Utils {
   public:
   static unsigned char CheckSum(unsigned char* p, int datalen);
   static int MSleep(unsigned int ms, bool force_sleep = true);
   static std::string DecToStr(int para,int w);
+  static std::pair<unsigned, unsigned> Crc16(void const* b, std::size_t l);
 };
 
 
