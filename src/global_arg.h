@@ -10,6 +10,7 @@ class KeyFile;
 class Lcd;
 class EventManager;
 class LedController;
+class HostController;
 
 
 class GlobalArg {
@@ -22,6 +23,7 @@ class GlobalArg {
   Lcd* lcd;
   EventManager* em;
   LedController* led;
+  HostController* host;
 
   int interrupt_flag;
 

@@ -17,7 +17,7 @@
 #include "lcd.h"
 #include "eventmanager.h"
 #include "led.h"
-
+#include "hostcontroller.h"
 using check_system::GlobalArg;
 using check_system::Laser;
 using check_system::CameraManager;
@@ -26,6 +26,7 @@ using check_system::Lcd;
 using check_system::EventManager;
 using check_system::StateMachine;
 using check_system::LedController;
+using check_system::HostController;
 
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
@@ -51,6 +52,8 @@ void InitSystem() {
   }
   arg->lcd = new Lcd("");
   arg->key_file = new KeyFile("./resource/PUFData");
+
+  arg->host = new HostController("");
 
 for(int i = 0; i < 3; i++){
   arg->led->CmosLed(0);
@@ -78,10 +81,12 @@ int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->sm = new StateMachine();
 //  arg->sm->AuthPic(nullptr, 0, 0, nullptr, 0, 0);
-  InitSystem();
+//  InitSystem();
 
 //  arg->sm->Register();
 
-  arg->em->Start(1);
+ // arg->em->Start(1);
+  arg->host = new HostController("");
+  arg->host->HandConfirm();
   return 0;
 }

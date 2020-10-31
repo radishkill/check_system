@@ -12,10 +12,13 @@ class HostController {
   void Open(const char* device_file);
   int CheckStatus();//状态查询
   int HandConfirm();//握手确认
-  int Authentication();//认证
+  int AuthenticationSuccess();//认证
+  int AuthenticationFail();
   int HandCancel();//握手取消
-  int Reset();//复位
-  int Register();//注册
+  int ResetSuccess();//复位
+  int ResetFail();
+  int RegisterSuccess();//注册
+  int RegisterFail();
  private:
   Usart usart;
   char data[300];
