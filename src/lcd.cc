@@ -26,6 +26,13 @@ int Lcd::ShowBySeed(int seed) {
 
   return 0;
 }
+
+bool Lcd::IsOpen() const {
+  if (fd_ <= 0) {
+    return false;
+  }
+  return true;
+}
 }
 
 

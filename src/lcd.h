@@ -15,7 +15,10 @@ class Lcd {
  public:
   Lcd(const char* device_name);
   int ShowBySeed(int seed);
+  bool IsOpen() const;
  private:
+  int width_;
+  int height_;
   int fd_;
   std::string device_name_;
 };

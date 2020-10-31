@@ -68,6 +68,5 @@ std::pair<unsigned, unsigned> Utils::Crc16AndXmodem(const void *b, size_t l) {
   crc1.get_reflect_remainder() );
   crc1.process_bytes( b, l );
   result.second = crc1.checksum();
-
   return result;
 }
