@@ -65,12 +65,12 @@ for(int i = 0; i < 3; i++){
 
   std::stringstream ss;
 
-//  ss << "/sys/class/gpio/gpio/152/xxx";
-//  int fd1 = open(ss.str().c_str(), O_RDONLY);
-//  arg->em->ListenFd(fd1, EventManager::kEventPri, []() {
-//    std::cout << "152 button" << std::endl;
-//  });
-//  ss.str("");
+  ss << "/sys/class/gpio/gpio/152/xxx";
+  int fd1 = open(ss.str().c_str(), O_RDONLY);
+  arg->em->ListenFd(fd1, EventManager::kEventPri, []() {
+    std::cout << "152 button" << std::endl;
+  });
+  ss.str("");
 }
 
 int main() {
