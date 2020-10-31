@@ -1,18 +1,19 @@
+#include<ctime>
+
 #include "hostcontroller.h"
+#include "utils.h"
 
+namespace check_system {
 
-
-
-
-check_system::HostController::HostController(const char *device_file) {
+HostController::HostController(const char *device_file) {
   Open(device_file);
 }
 
-void check_system::HostController::Open(const char *device_file) {
+void HostController::Open(const char *device_file) {
   usart.Open(device_file, 115200, 8, 1, 0, 0);
 }
 //状态查询反馈
-int check_system::HostController::CheckStatus(){
+int HostController::CheckStatus(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
@@ -28,20 +29,26 @@ int check_system::HostController::CheckStatus(){
 }
 
 //握手确认反馈
-int check_system::HostController::HandConfirm(){
+int HostController::HandConfirm(){
   int i=0;
-  data[i++] = 0xDD;
-  data[i++] = 0x7E;
-  data[i++] = 0xDA;
-//?????
+  data[i++] = (char) 0xDD;
+  data[i++] = (char) 0x7E;
+  data[i++] = 0x61;
+  data[i++] = 0x0A;
+  std::srand(std::time(nullptr));
+  for(int p = 0 ; p < 8; p++){
+  data[i++]=std::rand()%256;
+  }
+  auto result = Utils::Crc16AndXmodem((unsigned char *)data + 4 , 8 );
+  data[i++] = result.first/256;
+  data[i++] = result.first%256;
   data[i] = '\0';
   usart.SendData(data,i);
   return 0;
-
 }
 
 //认证反馈成功
-int check_system::HostController::AuthenticationSuccess(){
+int HostController::AuthenticationSuccess(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
@@ -59,7 +66,7 @@ int check_system::HostController::AuthenticationSuccess(){
 }
 
 //认证反馈失败
-int check_system::HostController::AuthenticationFail(){
+int HostController::AuthenticationFail(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
@@ -77,12 +84,26 @@ int check_system::HostController::AuthenticationFail(){
 }
 
 //握手取消反馈
-int check_system::HostController::HandCancel(){
-
+int HostController::HandCancel(){
+  int i=0;
+  data[i++] = (char) 0xDD;
+  data[i++] = (char) 0x7E;
+  data[i++] = 0x64;
+  data[i++] = 0x0A;
+  std::srand(std::time(nullptr));
+  for(int p = 0 ; p < 8; p++){
+  data[i++]=std::rand()%256;
+  }
+  auto result = Utils::Crc16AndXmodem((unsigned char *)data + 4 , 8 );
+  data[i++] = result.first/256;
+  data[i++] = result.first%256;
+  data[i] = '\0';
+  usart.SendData(data,i);
+  return 0;
 }
 
 //复位反馈成功
-int check_system::HostController::ResetSuccess(){
+int HostController::ResetSuccess(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
@@ -97,7 +118,7 @@ int check_system::HostController::ResetSuccess(){
 }
 
 //复位反馈失败
-int check_system::HostController::ResetFail(){
+int HostController::ResetFail(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
@@ -112,7 +133,7 @@ int check_system::HostController::ResetFail(){
 }
 
 //注册反馈成功
-int check_system::HostController::RegisterSuccess(){
+int HostController::RegisterSuccess(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
@@ -127,7 +148,7 @@ int check_system::HostController::RegisterSuccess(){
 }
 
 //注册反馈失败
-int check_system::HostController::RegisterFail(){
+int HostController::RegisterFail(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
@@ -139,4 +160,5 @@ int check_system::HostController::RegisterFail(){
   data[i] = '\0';
   usart.SendData(data,i);
   return 0;
+}
 }
