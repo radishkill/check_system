@@ -16,6 +16,7 @@ class CameraManager {
   int CheckPic(int threshold);
   unsigned int pic_width_;
   unsigned int pic_height_;
+  int is_open_flag_;
  private:
   std::vector<std::string> device_list_;
   HANDLE hCamera_;
