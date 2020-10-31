@@ -5,6 +5,7 @@ namespace check_system {
 CameraManager::CameraManager() {
   pRBGBuffer_ = nullptr;
   dwRGBBufSize_ = 0;
+  is_open_flag_ = 0;
   GetDeviceList();
   if (device_list_.empty()) {
     perror("none camera device!!!");
@@ -18,6 +19,7 @@ CameraManager::CameraManager() {
   }
   CameraGetOutImageSize(hCamera_, &dwWidth_, &dwHeight_);
   CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_BGR8);
+  is_open_flag_ = 1 ;
 }
 
 const std::vector<std::string>& CameraManager::GetDeviceList() {
