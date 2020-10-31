@@ -30,10 +30,11 @@ using check_system::LedController;
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
-  arg->led->RunBlink();
+//  arg->led->RunBlink();
   arg->em = new check_system::EventManager();
+
   arg->laser = new Laser("/dev/ttyUSB0");
-  if(arg->laser->GetUsart().GetFd() <= 0){
+  if(!arg->laser->IsOpen()){
     arg->led->laser_blink_=100;
     arg->led->lcd_blink_=100;
     arg->led->cmos_blink_=100;

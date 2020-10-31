@@ -20,6 +20,7 @@ class Usart {
   int GetFd();
   int SendData(char* buf, int len);
   int ReadData(char* buf, int len);
+  bool IsOpen() const;
   void Close();
   private:
   std::string device_name_;

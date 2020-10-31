@@ -14,7 +14,8 @@ class Laser {
   int SendCloseCmd();
   int SendCheckCmd();
   int ReadBuffer(int timeout);
-  int IsOpen() {return status_;}
+  int GetStatus() {return status_;}
+  bool IsOpen() const {return usart_.IsOpen();}
   Usart& GetUsart() {return usart_;};
  private:
   char data_frame_[310];

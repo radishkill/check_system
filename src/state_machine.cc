@@ -178,7 +178,7 @@ int StateMachine::Register() {
 //认证
 int StateMachine::Authentication() {
   GlobalArg* arg = GlobalArg::GetInstance();
-  if (!arg->laser->IsOpen()) {
+  if (!arg->laser->GetStatus()) {
     return -1;
   }
   Utils::MSleep(2 * 1000);
