@@ -37,18 +37,15 @@ void InitSystem() {
   arg->led = new LedController();
   arg->led->RunBlink();
 
-//  std::stringstream ss;
-//  int fd;
+  std::stringstream ss;
 
-//  ss << "/sys/class/gpio/gpio";
-//  ss << "152";
-//  ss << "/value";
-//  fd = open(ss.str().c_str(), O_RDONLY);
-//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
+//  ss << "/sys/class/gpio/gpio/152/xxx";
+//  int fd1 = open(ss.str().c_str(), O_RDONLY);
+//  arg->em->ListenFd(fd1, EventManager::kEventPri, []() {
 //    std::cout << "152 button" << std::endl;
 //  });
+//  ss.str("");
 }
-
 
 int main() {
   GlobalArg
