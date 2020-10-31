@@ -9,7 +9,7 @@ class Utils {
   static unsigned char CheckSum(unsigned char* p, int datalen);
   static int MSleep(unsigned int ms, bool force_sleep = true);
   static std::string DecToStr(int para,int w);
-  static std::pair<unsigned, unsigned> Crc16(void const* b, std::size_t l);
+  static std::pair<unsigned, unsigned> Crc16AndXmodem(void const* b, std::size_t l);
 };
 
 
