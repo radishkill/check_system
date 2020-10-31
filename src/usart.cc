@@ -130,6 +130,12 @@ int Usart::ReadData(char* buf, int len) {
   return read(fd_, buf, len);
 }
 
+bool Usart::IsOpen() const  {
+  if (fd_ <= 0)
+    return false;
+  return true;
+}
+
 int Usart::GetFd() {
     return fd_;
 }

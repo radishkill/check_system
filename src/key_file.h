@@ -36,6 +36,7 @@ class KeyFile {
   int CopyPicToBuffer(char* pic, int width, int height);
   int SavePic(int id, int index);
   int SaveSeed(int id,int index,int seed);
+  int SavePicAndSeed(int key_id, int index, int seed);
   int DeletePic(int id,int index);
   int DeleteSeed(int id,int index);
  private:
