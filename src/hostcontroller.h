@@ -8,7 +8,7 @@ namespace check_system {
 class HostController {
  public:
   HostController(const char* device_file);
-  bool IsOpen() const;
+  bool IsOpen() const {return usart.IsOpen();};
   void Open(const char* device_file);
   int CheckStatus();//状态查询
   int HandConfirm();//握手确认

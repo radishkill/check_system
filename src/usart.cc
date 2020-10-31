@@ -139,6 +139,7 @@ bool Usart::IsOpen() const  {
 int Usart::GetFd() {
     return fd_;
 }
+
 void Usart::Close() {
     close(fd_);
     fd_ = -1;
