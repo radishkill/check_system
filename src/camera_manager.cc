@@ -5,17 +5,21 @@ namespace check_system {
 CameraManager::CameraManager() {
   pRBGBuffer_ = nullptr;
   dwRGBBufSize_ = 0;
-  GetDeviceList();
+  CameraSdkStatus ret;
+  int camera_nums;
+  if((ret = CameraEnumerateDevice(&camera_nums)) != CAMERA_STATUS_SUCCESS || camera_nums <= 0)
+    return;
+  //  GetDeviceList();
   if (device_list_.empty()) {
     perror("none camera device!!!");
     return;
   }
-  CameraSdkStatus ret = CameraInit(&hCamera_, 0);
-  if (ret != CAMERA_STATUS_SUCCESS) {
-      perror("open camer error\n");
-      hCamera_ = NULL;
-      return;
-  }
+  if((ret = CameraInitEx(&hCamera_, camera_nums - 1, -1, -1)) != CAMERA_STATUS_SUCCESS)
+    return;
+//  if((ret = CameraDisplayInit(hCamera_, hwnd)) != CAMERA_STATUS_SUCCESS) {
+//    CameraUnInit(hCamera_);
+//    return;
+//  }
   CameraGetOutImageSize(hCamera_, &dwWidth_, &dwHeight_);
   CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_BGR8);
 }
