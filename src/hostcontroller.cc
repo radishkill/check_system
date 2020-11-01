@@ -48,7 +48,7 @@ int HostController::RecvData() {
     }
   }
   return 0;
-
+}
 //状态查询反馈
 int HostController::CheckStatus(){
   int i=0;
