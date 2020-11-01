@@ -8,8 +8,10 @@ namespace check_system {
 class HostController {
  public:
   HostController(const char* device_file);
-  bool IsOpen() const {return usart.IsOpen();};
+  bool IsOpen() const {return usart_.IsOpen();};
+  int GetFd() const {return usart_.GetFd();}
   void Open(const char* device_file);
+  int RecvData();
   int CheckStatus();//状态查询
   int HandConfirm();//握手确认
   int AuthenticationSuccess();//认证
@@ -20,8 +22,8 @@ class HostController {
   int RegisterSuccess();//注册
   int RegisterFail();
  private:
-  Usart usart;
-  char data[300];
+  Usart usart_;
+  char data[1024];
 };
 
 }

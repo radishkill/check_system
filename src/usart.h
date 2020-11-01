@@ -17,7 +17,7 @@ class Usart {
   Usart(const char* name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);
   int Open(const char* name, int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);
   int SetParity(int baud_rate, int databits, int stopbits, char parity, int flow_ctrl);
-  int GetFd();
+  int GetFd() const;
   int SendData(char* buf, int len);
   int ReadData(char* buf, int len);
   bool IsOpen() const;
