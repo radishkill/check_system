@@ -136,7 +136,7 @@ bool Usart::IsOpen() const  {
   return true;
 }
 
-int Usart::GetFd() {
+int Usart::GetFd() const {
     return fd_;
 }
 

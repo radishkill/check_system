@@ -10,8 +10,45 @@ HostController::HostController(const char *device_file) {
 }
 
 void HostController::Open(const char *device_file) {
-  usart.Open(device_file, 115200, 8, 1, 0, 0);
+  usart_.Open(device_file, 115200, 8, 1, 'N', 0);
 }
+
+int HostController::RecvData() {
+  char recved_data[3];
+  int len = usart_.ReadData(recved_data, 3);
+  if (len != 3 || recved_data[0] != (char)0xDD || recved_data[1] != (char)0x7E) {
+    perror("bad data");
+    return -1;
+  }
+  switch (recved_data[2]) {
+    case 0x01: {
+      break;
+    }
+    case 0x02: {
+      break;
+    }
+    case 0x03: {
+      break;
+    }
+    case 0x04: {
+      break;
+    }
+    case 0x05: {
+      break;
+    }
+    case 0x06: {
+      break;
+    }
+    case 0x07: {
+      break;
+    }
+    default: {
+      perror("bad data");
+      return -1;
+    }
+  }
+  return 0;
+
 //状态查询反馈
 int HostController::CheckStatus(){
   int i=0;
@@ -24,7 +61,7 @@ int HostController::CheckStatus(){
   data[i++] = 0x5A;
   data[i++] = 0x3C;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 
@@ -43,7 +80,7 @@ int HostController::HandConfirm(){
   data[i++] = result.first/256;
   data[i++] = result.first%256;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 
@@ -61,7 +98,7 @@ int HostController::AuthenticationSuccess(){
   data[i++] = 0x86;
   data[i++] = 0x0C;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 
@@ -79,7 +116,7 @@ int HostController::AuthenticationFail(){
   data[i++] = 0x59;
   data[i++] = 0x57;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 
@@ -98,7 +135,7 @@ int HostController::HandCancel(){
   data[i++] = result.first/256;
   data[i++] = result.first%256;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 
@@ -113,7 +150,7 @@ int HostController::ResetSuccess(){
   data[i++] = 0x3C;
   data[i++] = 0xA5;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 
@@ -128,7 +165,7 @@ int HostController::ResetFail(){
   data[i++] = 0xED;
   data[i++] = 0xAB;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 
@@ -143,7 +180,7 @@ int HostController::RegisterSuccess(){
   data[i++] = 0x6C;
   data[i++] = 0xFC;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 
@@ -158,7 +195,7 @@ int HostController::RegisterFail(){
   data[i++] = 0xBD;
   data[i++] = 0xF2;
   data[i] = '\0';
-  usart.SendData(data,i);
+  usart_.SendData(data,i);
   return 0;
 }
 }
