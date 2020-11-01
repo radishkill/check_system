@@ -32,14 +32,44 @@ namespace check_system {
 using namespace cv;
 using namespace std;
 
-StateMachine::StateMachine() {
+StateMachine::StateMachine()
+    : is_running_(false) {
 
+}
+
+int StateMachine::RunMachine(StateMachine::MachineState state) {
+  if (is_running_) {
+    return -1;
+  }
+  std::lock_guard<std::mutex> l(mutex_);
+  is_running_ = true;
+  int ret = 0;
+  switch (state) {
+    case kSelfTest: {
+      ret = SelfTest();
+      break;
+    }
+    case kRegister: {
+      ret = Register();
+      break;
+    }
+    case kAuth: {
+      ret = Authentication();
+      break;
+    }
+    default: {
+
+    }
+  }
+  is_running_ = false;
+  return ret;
 }
 /*
  * 此过程中但凡有一个步骤出错都应该退出
  *
  */
 int StateMachine::SelfTest() {
+
   int ret0,ret1,ret2,ret3;
   GlobalArg* arg = GlobalArg::GetInstance();
   ret0 = arg->laser->SendCloseCmd();
@@ -51,6 +81,7 @@ int StateMachine::SelfTest() {
   ret2 = arg->camera->GetPic();
   ret3 = arg->camera->CheckPic(200);
   ret0 = arg->laser->SendCloseCmd();
+
 //逻辑“与,输出LED灯的状态
 //错误
   if((ret0 != 0)||(ret1 != 0)||(ret2 != 0)||(ret3 != 0)){
@@ -62,10 +93,9 @@ int StateMachine::SelfTest() {
       arg->led->lcd_blink_ =100;
       arg->led->cmos_blink_ =100;
     }
-  }
-//正确ok
-  else{
-  arg->led->ErrorLed(0);
+  } else {
+    //正确ok
+    arg->led->ErrorLed(0);
     for(int i = 0 ; i < 3; i++ ){
       arg->led->LaserLed(0);
       arg->led->CmosLed(0);
@@ -76,9 +106,9 @@ int StateMachine::SelfTest() {
       arg->led->LcdLed(1);
       Utils::MSleep(250);
     }
-   arg->led->LaserLed(1);
-   arg->led->CmosLed(1);
-   arg->led->LcdLed(1);
+    arg->led->LaserLed(1);
+    arg->led->CmosLed(1);
+    arg->led->LcdLed(1);
   }
   return 0;
 }
@@ -86,6 +116,7 @@ int StateMachine::SelfTest() {
 //注册
 int StateMachine::Register() {
   GlobalArg* arg = GlobalArg::GetInstance();
+
    if (arg->sm->CheckKey() == -1) {
      //检测到无key插入
      //设置灯显示 并返回到起始点
