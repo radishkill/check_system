@@ -22,24 +22,34 @@ int HostController::RecvData() {
   }
   switch (recved_data[2]) {
     case 0x01: {
+      //状态查询
+      CheckStatus();
       break;
     }
     case 0x02: {
+      //握手确认
       break;
     }
     case 0x03: {
+
       break;
     }
     case 0x04: {
+      //认证
+
       break;
     }
     case 0x05: {
+      //握手取消
+
       break;
     }
     case 0x06: {
+      //复位
       break;
     }
     case 0x07: {
+      //注册
       break;
     }
     default: {
@@ -50,7 +60,7 @@ int HostController::RecvData() {
   return 0;
 }
 //状态查询反馈
-int HostController::CheckStatus(){
+int HostController::CheckStatus() {
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
