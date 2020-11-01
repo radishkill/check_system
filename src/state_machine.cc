@@ -26,6 +26,7 @@
 #include "lcd.h"
 #include "key_file.h"
 #include "led.h"
+#include "hostcontroller.h"
 
 namespace check_system {
 
@@ -53,14 +54,23 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kRegister: {
       ret = Register();
+      if (ret < 0 && arg->host->IsOpen()) {
+        arg->host->RegisterFail();
+      } else if (ret == 0 && arg->host->IsOpen()) {
+        arg->host->RegisterSuccess();
+      }
       break;
     }
     case kAuth: {
       ret = Authentication();
+      if (ret < 0 && arg->host->IsOpen()) {
+        arg->host->AuthFail();
+      } else if (ret == 0 && arg->host->IsOpen()) {
+        arg->host->AuthSuccess();
+      }
       break;
     }
     default: {
-
     }
   }
   is_running_ = false;

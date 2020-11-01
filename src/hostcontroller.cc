@@ -118,7 +118,7 @@ int HostController::HandConfirm(){
 }
 
 //认证反馈成功
-int HostController::AuthenticationSuccess(){
+int HostController::AuthSuccess(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
@@ -137,7 +137,7 @@ int HostController::AuthenticationSuccess(){
 }
 
 //认证反馈失败
-int HostController::AuthenticationFail(){
+int HostController::AuthFail(){
   int i=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
