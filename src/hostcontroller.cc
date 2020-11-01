@@ -1,7 +1,12 @@
-#include<ctime>
-
 #include "hostcontroller.h"
+
+#include <ctime>
+#include <thread>
+#include <functional>
+
 #include "utils.h"
+#include "global_arg.h"
+#include "state_machine.h"
 
 namespace check_system {
 
@@ -14,6 +19,7 @@ void HostController::Open(const char *device_file) {
 }
 
 int HostController::RecvData() {
+  GlobalArg* arg = GlobalArg::GetInstance();
   char recved_data[3];
   int len = usart_.ReadData(recved_data, 3);
   if (len != 3 || recved_data[0] != (char)0xDD || recved_data[1] != (char)0x7E) {
@@ -28,6 +34,8 @@ int HostController::RecvData() {
     }
     case 0x02: {
       //握手确认
+      HandConfirm();
+      arg->hsk_flag = true;
       break;
     }
     case 0x03: {
@@ -36,20 +44,30 @@ int HostController::RecvData() {
     }
     case 0x04: {
       //认证
-
+      if (!arg->hsk_flag)
+        break;
+      std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kAuth));
+      th.detach();
       break;
     }
     case 0x05: {
       //握手取消
-
+      HandCancel();
+      arg->hsk_flag = false;
       break;
     }
     case 0x06: {
       //复位
+      arg->interrupt_flag = 1;
+      ResetSuccess();
       break;
     }
     case 0x07: {
       //注册
+      if (!arg->hsk_flag)
+        break;
+      std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kRegister));
+      th.detach();
       break;
     }
     default: {

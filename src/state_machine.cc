@@ -38,11 +38,13 @@ StateMachine::StateMachine()
 }
 
 int StateMachine::RunMachine(StateMachine::MachineState state) {
+  GlobalArg* arg = GlobalArg::GetInstance();
   if (is_running_) {
     return -1;
   }
   std::lock_guard<std::mutex> l(mutex_);
   is_running_ = true;
+  arg->interrupt_flag = 0;
   int ret = 0;
   switch (state) {
     case kSelfTest: {
