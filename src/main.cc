@@ -92,8 +92,8 @@ int main() {
 
 //  arg->sm->Register();
 
-  arg->em->Start(1);
-  arg->host = new HostController("");
-  arg->host->HandConfirm();
+  //arg->em->Start(1);
+  arg->host = new HostController("fffff");
+  arg->host->CheckStatus();
   return 0;
 }
