@@ -2,6 +2,7 @@
 #define LCD_H
 
 #include <string>
+#include <linux/fb.h>
 
 namespace check_system {
 
@@ -13,13 +14,16 @@ namespace check_system {
  */
 class Lcd {
  public:
-  Lcd(const char* device_name);
+  Lcd(const char* device_file);
   int ShowBySeed(int seed);
   bool IsOpen() const;
  private:
   int width_;
   int height_;
   int fd_;
+  struct fb_var_screeninfo var_info_;
+  struct fb_fix_screeninfo fix_info_;
+  char* frame_buffer_;
   std::string device_name_;
 };
 }

@@ -14,8 +14,8 @@ class HostController {
   int RecvData();
   int CheckStatus();//状态查询
   int HandConfirm();//握手确认
-  int AuthenticationSuccess();//认证
-  int AuthenticationFail();
+  int AuthSuccess();//认证
+  int AuthFail();
   int HandCancel();//握手取消
   int ResetSuccess();//复位
   int ResetFail();
