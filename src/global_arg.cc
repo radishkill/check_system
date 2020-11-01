@@ -10,4 +10,9 @@ GlobalArg *GlobalArg::GetInstance() {
   }
   return global_arg_;
 }
+
+GlobalArg::GlobalArg() {
+  interrupt_flag = 0;
+  hsk_flag = 0;
+}
 }

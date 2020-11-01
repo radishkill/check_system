@@ -16,6 +16,7 @@ class HostController;
 class GlobalArg {
  public:
   static GlobalArg* GetInstance();
+  GlobalArg();
   Laser* laser;
   CameraManager* camera;
   StateMachine* sm;
@@ -26,7 +27,7 @@ class GlobalArg {
   HostController* host;
 
   int interrupt_flag;
-
+  int hsk_flag;//上位机握手控制
  private:
   static GlobalArg* global_arg_;
 };
