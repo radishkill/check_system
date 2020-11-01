@@ -2,12 +2,19 @@
 #define STATE_MACHINE_H
 
 #include <vector>
+#include <mutex>
 
 namespace check_system {
 
 class StateMachine {
  public:
+  enum MachineState {
+    kSelfTest,
+    kRegister,
+    kAuth
+  };
   StateMachine();
+  int RunMachine(MachineState state);
   int SelfTest();                   //自检
   int Register();                   //注册
   int Authentication();            //认证
@@ -21,10 +28,10 @@ class StateMachine {
 
   int AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2);
 
-
-
  private:
   std::vector<int> pair_list_;
+  bool is_running_;
+  std::mutex mutex_;
 };
 }
 

@@ -31,7 +31,7 @@ using check_system::HostController;
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
-//  arg->led->RunBlink();
+  //  arg->led->RunBlink();
   arg->em = new check_system::EventManager();
 
   arg->laser = new Laser("/dev/ttyUSB0");
@@ -55,23 +55,25 @@ void InitSystem() {
 
   arg->host = new HostController("");
 
-for(int i = 0; i < 3; i++){
-  arg->led->CmosLed(0);
-  arg->led->LaserLed(0);
-  arg->led->LcdLed(0);
-  Utils::MSleep(250);
-  arg->led->CmosLed(1);
-  arg->led->LaserLed(1);
-  arg->led->LcdLed(1);
-  Utils::MSleep(250);
-}
-  arg->sm->SelfTest();
+  for(int i = 0; i < 3; i++){
+    arg->led->CmosLed(0);
+    arg->led->LaserLed(0);
+    arg->led->LcdLed(0);
+    Utils::MSleep(250);
+    arg->led->CmosLed(1);
+    arg->led->LaserLed(1);
+    arg->led->LcdLed(1);
+    Utils::MSleep(250);
+  }
+
+  arg->sm->RunMachine(StateMachine::kSelfTest);
 
   std::stringstream ss;
 
   ss << "/sys/class/gpio/gpio/152/xxx";
   int fd0 = open(ss.str().c_str(), O_RDONLY);
   arg->em->ListenFd(fd0, EventManager::kEventPri, []() {
+    //处理正常流程应该要多线程
     std::cout << "152 button" << std::endl;
   });
   ss.str("");
@@ -90,7 +92,7 @@ int main() {
 
 //  arg->sm->Register();
 
- // arg->em->Start(1);
+  arg->em->Start(1);
   arg->host = new HostController("");
   arg->host->HandConfirm();
   return 0;
