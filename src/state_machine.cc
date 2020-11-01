@@ -118,14 +118,18 @@ int StateMachine::SelfTest() {
 //注册
 int StateMachine::Register() {
   GlobalArg* arg = GlobalArg::GetInstance();
-
+    //全灯OFF
+    arg->led->CmosLed(0);
+    arg->led->LaserLed(0);
+    arg->led->LcdLed(0);
+    arg->led->ErrorLed(0);
    if (arg->sm->CheckKey() == -1) {
      //检测到无key插入
      //设置灯显示 并返回到起始点
      arg->led->CmosLed(0);
      arg->led->LaserLed(0);
      arg->led->LcdLed(0);
-     arg->led->error_blink_=100;
+     arg->led->ErrorLed(1);
      return -1;
    }
 
@@ -164,7 +168,7 @@ int StateMachine::Register() {
      arg->led->CmosLed(0);
      arg->led->LaserLed(0);
      arg->led->LcdLed(0);
-     arg->led->error_blink_=100;
+     arg->led->ErrorLed(1);
      return -1;
    }
    int key_id = arg->sm->FindKey();
@@ -211,6 +215,11 @@ int StateMachine::Register() {
 //认证
 int StateMachine::Authentication() {
   GlobalArg* arg = GlobalArg::GetInstance();
+  //全灯OFF
+  arg->led->CmosLed(0);
+  arg->led->LaserLed(0);
+  arg->led->LcdLed(0);
+  arg->led->ErrorLed(0);
   if (!arg->laser->GetStatus()) {
     return -1;
   }
