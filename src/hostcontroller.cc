@@ -62,14 +62,16 @@ int HostController::RecvData() {
 //状态查询反馈
 int HostController::CheckStatus() {
   int i=0;
+  int j=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
   data[i++] = 0x60;
   data[i++] = 0x02;
   data[i++] = 0x01;
   data[i++] = 0x00;
-  data[i++] = 0x5A;
-  data[i++] = 0x3C;
+  auto result = Utils::Crc16AndXmodem((unsigned char *)data , 6 );
+  data[i++] = result.first%256;
+  data[i++] = result.first/256;
   data[i] = '\0';
   usart_.SendData(data,i);
   return 0;
@@ -87,8 +89,11 @@ int HostController::HandConfirm(){
   data[i++]=std::rand()%256;
   }
   auto result = Utils::Crc16AndXmodem((unsigned char *)data + 4 , 8 );
-  data[i++] = result.first/256;
   data[i++] = result.first%256;
+  data[i++] = result.first/256;
+  auto result_da = Utils::Crc16AndXmodem((unsigned char *)data , 12 );
+  data[i++] = result_da.first%256;
+  data[i++] = result_da.first/256;
   data[i] = '\0';
   usart_.SendData(data,i);
   return 0;
@@ -142,8 +147,11 @@ int HostController::HandCancel(){
   data[i++]=std::rand()%256;
   }
   auto result = Utils::Crc16AndXmodem((unsigned char *)data + 4 , 8 );
-  data[i++] = result.first/256;
   data[i++] = result.first%256;
+  data[i++] = result.first/256;
+  auto result_da = Utils::Crc16AndXmodem((unsigned char *)data , 12 );
+  data[i++] = result_da.first%256;
+  data[i++] = result_da.first/256;
   data[i] = '\0';
   usart_.SendData(data,i);
   return 0;
