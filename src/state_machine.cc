@@ -54,8 +54,12 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kRegister: {
       ret = Register();
+      if (ret < 0) {
+        //打灯
+      }
       if (ret < 0 && arg->host->IsOpen()) {
         arg->host->RegisterFail();
+
       } else if (ret == 0 && arg->host->IsOpen()) {
         arg->host->RegisterSuccess();
       }
@@ -63,8 +67,12 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kAuth: {
       ret = Authentication();
+      if (ret < 0) {
+        //打灯
+      }
       if (ret < 0 && arg->host->IsOpen()) {
         arg->host->AuthFail();
+
       } else if (ret == 0 && arg->host->IsOpen()) {
         arg->host->AuthSuccess();
       }
@@ -309,7 +317,7 @@ int StateMachine::Authentication() {
 //随机生成seed a number range from 0 to 100000
 int StateMachine::GenerateRandomSeed() {
   std::srand(std::time(nullptr));
-  return std::rand()%100000;
+  return std::rand()%1000;
 }
 
 //库定位算法 判断一枚key是否已经建立过数据库了
