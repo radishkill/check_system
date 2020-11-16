@@ -16,6 +16,7 @@ include_directories(
 link_directories(
     ~/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
     ~/opencv/lib
+    /usr/include
     )
 
 add_definitions(
@@ -35,7 +36,6 @@ add_executable(CheckSystem
     laser.cc
     utils.cc
     state_machine.cc
-    epollrepertory.cc 
     gabor_im/bluesteinSetup.cpp 
     gabor_im/cosd.cpp 
     gabor_im/createNormalizedFrequencyVector.cpp 
