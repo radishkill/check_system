@@ -7,6 +7,7 @@ INCLUDEPATH += $$PWD/src/gabor_im
 DEPENDPATH += $$PWD/src/include
 
 SOURCES += src/main.cc \
+    src/usart.cc \
     src/camera_manager.cc \
     src/eventmanager.cc \
     src/global_arg.cc \
@@ -15,7 +16,6 @@ SOURCES += src/main.cc \
     src/laser.cc \
     src/lcd.cc \
     src/led.cc \
-    src/usart.cc \
     src/utils.cc \
     src/state_machine.cc \
     src/gabor_im/bluesteinSetup.cpp \
