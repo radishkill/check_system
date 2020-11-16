@@ -68,13 +68,38 @@ void InitSystem() {
 
   arg->sm->RunMachine(StateMachine::kSelfTest);
 
+  //下面部分是用来打开button的
   std::stringstream ss;
-
-  ss << "/sys/class/gpio/gpio152/xxx";
-  int fd0 = open(ss.str().c_str(), O_RDONLY);
-  arg->em->ListenFd(fd0, EventManager::kEventPri, []() {
+  int fd;
+  ss << "/sys/class/gpio/gpio107/value";
+  fd = open(ss.str().c_str(), O_RDONLY);
+  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
     //处理正常流程应该要多线程
-    std::cout << "152 button" << std::endl;
+    std::cout << "107 button" << std::endl;
+  });
+  ss.str("");
+
+  ss << "/sys/class/gpio/gpio107/value";
+  fd = open(ss.str().c_str(), O_RDONLY);
+  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
+    //处理正常流程应该要多线程
+    std::cout << "171 button" << std::endl;
+  });
+  ss.str("");
+
+  ss << "/sys/class/gpio/gpio107/value";
+  fd = open(ss.str().c_str(), O_RDONLY);
+  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
+    //处理正常流程应该要多线程
+    std::cout << "98 button" << std::endl;
+  });
+  ss.str("");
+
+  ss << "/sys/class/gpio/gpio107/value";
+  fd = open(ss.str().c_str(), O_RDONLY);
+  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
+    //处理正常流程应该要多线程
+    std::cout << "165 button" << std::endl;
   });
   ss.str("");
 
