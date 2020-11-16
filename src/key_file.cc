@@ -36,7 +36,7 @@ KeyFile::KeyFile(const char* base_path) {
         std::cout << admin_pic_path <<"does not exist" << std::endl;
         return;
    }
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 10000; i++) {
     std::string seed_file = admin_seed_path + Utils::DecToStr(i, 4);
     std::string pic_file = admin_pic_path + Utils::DecToStr(i, 4);
     std::cout << "not found " << seed_file << std::endl;
