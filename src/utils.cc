@@ -6,8 +6,6 @@
 #include <sstream>
 #include <iomanip>
 
-#include <boost/crc.hpp>
-
 using namespace std;
 //生成校验码
 unsigned char Utils::CheckSum(unsigned char *p, int datalen) {
