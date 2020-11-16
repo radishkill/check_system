@@ -3,6 +3,7 @@
 
 #include <linux/types.h>
 #include <iostream>
+#include <boost/crc.hpp>
 
 class Utils {
   public:
