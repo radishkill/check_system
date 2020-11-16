@@ -1,6 +1,11 @@
 #include "led.h"
 
+
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <iostream>
+#include <string>
 
 #include "utils.h"
 
@@ -8,6 +13,40 @@
 namespace check_system {
 
 LedController::LedController() {
+  std::string addr;
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLaserGpioNumber) + "/value";
+  laser_fd_ = open(addr.c_str(), O_RDWR);
+  if (laser_fd_ == -1) {
+    std::cout << "can't open laser gpio " << std::endl;
+    exit(0);
+    return;
+  }
+
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLaserGpioNumber) + "/value";
+  laser_fd_ = open(addr.c_str(), O_RDWR);
+  if (laser_fd_ == -1) {
+    std::cout << "can't open laser gpio " << std::endl;
+    exit(0);
+    return;
+  }
+
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLaserGpioNumber) + "/value";
+  laser_fd_ = open(addr.c_str(), O_RDWR);
+  if (laser_fd_ == -1) {
+    std::cout << "can't open laser gpio " << std::endl;
+    exit(0);
+    return;
+  }
+
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLaserGpioNumber) + "/value";
+  laser_fd_ = open(addr.c_str(), O_RDWR);
+  if (laser_fd_ == -1) {
+    std::cout << "can't open laser gpio " << std::endl;
+    exit(0);
+    return;
+  }
+
+
   laser_status_ = 0;
   lcd_status_ = 0;
   cmos_status_ = 0;
@@ -20,6 +59,13 @@ LedController::LedController() {
 
 int LedController::LaserLed(int s) {
   std::cout << "laser :" << s << std::endl;
+  if (s == 0) {
+
+  } else if (s == 1) {
+
+  } else {
+
+  }
   laser_status_ = s;
   return 0;
 }
