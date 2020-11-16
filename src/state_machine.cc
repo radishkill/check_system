@@ -54,9 +54,6 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kRegister: {
       ret = Register();
-      if (ret < 0) {
-        //打灯
-      }
       if (ret < 0 && arg->host->IsOpen()) {
         arg->host->RegisterFail();
 
@@ -67,14 +64,21 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kAuth: {
       ret = Authentication();
-      if (ret < 0) {
-        //打灯
-      }
       if (ret < 0 && arg->host->IsOpen()) {
         arg->host->AuthFail();
+        //失败打灯:红灯开,3个绿灯关
+        arg->led->CmosLed(0);
+        arg->led->LaserLed(0);
+        arg->led->LcdLed(0);
+        arg->led->ErrorLed(1);
 
       } else if (ret == 0 && arg->host->IsOpen()) {
         arg->host->AuthSuccess();
+        //成功打灯:红灯关,3个绿灯开
+        arg->led->CmosLed(1);
+        arg->led->LaserLed(1);
+        arg->led->LcdLed(1);
+        arg->led->ErrorLed(0);
       }
       break;
     }
