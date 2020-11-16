@@ -36,8 +36,6 @@ class LedController {
   int lcd_fd_;
   int cmos_fd_;
   int error_fd_;
-
-
   std::thread blink_thread_;
 };
 }
