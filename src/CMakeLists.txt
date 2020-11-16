@@ -16,7 +16,6 @@ include_directories(
 link_directories(
     ~/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
     ~/opencv/lib
-    /usr/include
     )
 
 add_definitions(
