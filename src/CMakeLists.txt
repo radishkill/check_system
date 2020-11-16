@@ -31,11 +31,13 @@ add_executable(CheckSystem
     global_arg.cc
     key_file.cc
     lcd.cc
+    led.cc
     camera_manager.cc
     eventmanager.cc 
     laser.cc
     utils.cc
     state_machine.cc
+    hostcontroller.cc
     gabor_im/bluesteinSetup.cpp 
     gabor_im/cosd.cpp 
     gabor_im/createNormalizedFrequencyVector.cpp 
