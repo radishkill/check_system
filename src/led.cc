@@ -57,14 +57,24 @@ LedController::LedController() {
   error_blink_ = 0;
 }
 
+LedController::~LedController() {
+  ::close(laser_fd_);
+  ::close(lcd_fd_);
+  ::close(cmos_fd_);
+  ::close(error_fd_);
+}
+
 int LedController::LaserLed(int s) {
   std::cout << "laser :" << s << std::endl;
+  //重置读写位置到文件开头
+  lseek(laser_fd_, 0, SEEK_SET);
   if (s == 0) {
-
+    write(laser_fd_, "\x00", 1);
   } else if (s == 1) {
-
+    write(laser_fd_, "\x01", 1);
   } else {
-
+    std::cout << "bad status" << std::endl;
+    return -1;
   }
   laser_status_ = s;
   return 0;
