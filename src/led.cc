@@ -57,7 +57,7 @@ LedController::LedController() {
   error_blink_ = 0;
 }
 
-LedController::~LedController() {
+LedController::~LedController(){
   ::close(laser_fd_);
   ::close(lcd_fd_);
   ::close(cmos_fd_);
