@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "global_arg.h"
 #include "state_machine.h"
+#include "led.h"
 
 namespace check_system {
 
@@ -43,7 +44,12 @@ int HostController::RecvData() {
       break;
     }
     case 0x04: {
-      //认证
+      //全灯OFF
+    arg->led->CmosLed(0);
+    arg->led->LaserLed(0);
+    arg->led->LcdLed(0);
+    arg->led->ErrorLed(0);
+    //认证
       if (!arg->hsk_flag)
         break;
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kAuth));

@@ -22,26 +22,26 @@ LedController::LedController() {
     return;
   }
 
-  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLaserGpioNumber) + "/value";
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLcdGpioNumber) + "/value";
   laser_fd_ = open(addr.c_str(), O_RDWR);
   if (laser_fd_ == -1) {
-    std::cout << "can't open laser gpio " << std::endl;
+    std::cout << "can't open Lcd gpio " << std::endl;
     exit(0);
     return;
   }
 
-  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLaserGpioNumber) + "/value";
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kCmosGpioNumber) + "/value";
   laser_fd_ = open(addr.c_str(), O_RDWR);
   if (laser_fd_ == -1) {
-    std::cout << "can't open laser gpio " << std::endl;
+    std::cout << "can't open cmos gpio " << std::endl;
     exit(0);
     return;
   }
 
-  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLaserGpioNumber) + "/value";
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kErrorGpioNumber) + "/value";
   laser_fd_ = open(addr.c_str(), O_RDWR);
   if (laser_fd_ == -1) {
-    std::cout << "can't open laser gpio " << std::endl;
+    std::cout << "can't open Error gpio " << std::endl;
     exit(0);
     return;
   }
@@ -82,18 +82,48 @@ int LedController::LaserLed(int s) {
 
 int LedController::LcdLed(int s) {
   std::cout << "lcd :" << s << std::endl;
+  //重置读写位置到文件开头
+  lseek(lcd_fd_, 0, SEEK_SET);
+  if (s == 0) {
+    write(lcd_fd_, "\x00", 1);
+  } else if (s == 1) {
+    write(lcd_fd_, "\x01", 1);
+  } else {
+    std::cout << "bad status" << std::endl;
+    return -1;
+  }
   lcd_status_ = s;
   return 0;
 }
 
 int LedController::CmosLed(int s) {
   std::cout << "cmos :" << s << std::endl;
+  //重置读写位置到文件开头
+  lseek(cmos_fd_, 0, SEEK_SET);
+  if (s == 0) {
+    write(cmos_fd_, "\x00", 1);
+  } else if (s == 1) {
+    write(cmos_fd_, "\x01", 1);
+  } else {
+    std::cout << "bad status" << std::endl;
+    return -1;
+  }
   cmos_status_ = s;
   return 0;
 }
 
 int LedController::ErrorLed(int s) {
   std::cout << "error :" << s << std::endl;
+  //重置读写位置到文件开头
+  lseek(error_fd_, 0, SEEK_SET);
+  if (s == 0) {
+    write(error_fd_, "\x00", 1);
+  } else if (s == 1) {
+    write(error_fd_, "\x01", 1);
+  } else {
+    std::cout << "bad status" << std::endl;
+    return -1;
+  }
   error_status_ = s;
   return 0;
 }
