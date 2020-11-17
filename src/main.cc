@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <sys/epoll.h>
 
 #include <iostream>
 #include <thread>
@@ -31,100 +32,103 @@ using check_system::HostController;
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
-  arg->led->LcdLed(1);
-  sleep(1);
-  arg->led->LaserLed(1);
-  arg->led->LcdLed(0);
-  sleep(1);
-  arg->led->LaserLed(0);
   //启动LED闪烁线程
-//  arg->led->RunBlink();
+  arg->led->RunBlink();
   arg->em = new check_system::EventManager();
 
-//  arg->laser = new Laser("/dev/ttyUSB1");
-//  if(!arg->laser->IsOpen()) {
-//    arg->led->laser_blink_ = 100;
-//    arg->led->lcd_blink_ = 100;
-//    arg->led->cmos_blink_ = 100;
-//    arg->led->error_blink_ = 100;
-//    return ;
-//  }
-//  arg->camera = new CameraManager();
-//  if(arg->camera->is_open_flag_ == 0) {
+  arg->laser = new Laser("/dev/ttyS0");
+  if(!arg->laser->IsOpen()) {
+    arg->led->laser_blink_ = 100;
+    arg->led->lcd_blink_ = 100;
+    arg->led->cmos_blink_ = 100;
+    arg->led->error_blink_ = 100;
+    return ;
+  } else {
+    std::cout << "laser connect ok!!" <<std::endl;
+  }
+
+  arg->camera = new CameraManager();
+  if(arg->camera->is_open_flag_ == 0) {
 //    arg->led->laser_blink_=100;
 //    arg->led->lcd_blink_=100;
 //    arg->led->cmos_blink_=100;
 //    arg->led->error_blink_=100;
 //    return ;
-//  }
-//  arg->lcd = new Lcd("/dev/fb");
-//  arg->key_file = new KeyFile("./resource/PUFData");
+  } else {
+    std::cout << "camera connect ok!!" << std::endl;
+  }
 
-//  arg->host = new HostController("");
+  arg->lcd = new Lcd("/dev/fb0");
+  if (!arg->lcd->IsOpen()) {
+//    arg->led->laser_blink_=100;
+//    arg->led->lcd_blink_=100;
+//    arg->led->cmos_blink_=100;
+//    arg->led->error_blink_=100;
+//    return;
+  } else {
+    std::cout << "lcd buffer connect ok!!" << std::endl;
+  }
 
-//  for(int i = 0; i < 3; i++){
-//    arg->led->CmosLed(0);
-//    arg->led->LaserLed(0);
-//    arg->led->LcdLed(0);
-//    Utils::MSleep(250);
-//    arg->led->CmosLed(1);
-//    arg->led->LaserLed(1);
-//    arg->led->LcdLed(1);
-//    Utils::MSleep(250);
-//  }
+  arg->host = new HostController("/dev/ttyS3");
+  if (!arg->host->IsOpen()) {
+//    arg->led->laser_blink_=100;
+//    arg->led->lcd_blink_=100;
+//    arg->led->cmos_blink_=100;
+//    arg->led->error_blink_=100;
+//    return;
+  } else {
+    std::cout << "host tty connect ok!!" << std::endl;
+  }
 
-//  arg->sm->RunMachine(StateMachine::kSelfTest);
+  arg->key_file = new KeyFile("./resource/PUFData");
+
+
+  for(int i = 0; i < 3; i++) {
+    arg->led->CmosLed(0);
+    arg->led->LaserLed(0);
+    arg->led->LcdLed(0);
+    Utils::MSleep(250);
+    arg->led->CmosLed(1);
+    arg->led->LaserLed(1);
+    arg->led->LcdLed(1);
+    Utils::MSleep(250);
+  }
 
   //下面部分是用来打开button的
-//  std::stringstream ss;
-//  int fd;
-//  ss << "/sys/class/gpio/gpio107/value";
-//  fd = open(ss.str().c_str(), O_RDONLY);
-//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
-//    //处理正常流程应该要多线程
-//    std::cout << "107 button" << std::endl;
-//  });
-//  ss.str("");
+  std::stringstream ss;
+  int fd;
+  ss << "/sys/class/gpio/gpio107/value";
+  fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
+  if (fd == -1) {
+    perror("open gpio 107");
+    return;
+  } else {
+    std::cout << "gpio 107 " << fd << std::endl;
+  }
 
-//  ss << "/sys/class/gpio/gpio107/value";
-//  fd = open(ss.str().c_str(), O_RDONLY);
-//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
-//    //处理正常流程应该要多线程
-//    std::cout << "171 button" << std::endl;
-//  });
-//  ss.str("");
+  arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+    char key;
+    lseek(fd, 0, SEEK_SET);
+    read(fd, &key, 1);
+    //处理正常流程应该要多线程
+    std::cout << "107 button " << key << std::endl;
+  });
+  ss.str("");
 
-//  ss << "/sys/class/gpio/gpio107/value";
-//  fd = open(ss.str().c_str(), O_RDONLY);
-//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
-//    //处理正常流程应该要多线程
-//    std::cout << "98 button" << std::endl;
-//  });
-//  ss.str("");
-
-//  ss << "/sys/class/gpio/gpio107/value";
-//  fd = open(ss.str().c_str(), O_RDONLY);
-//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
-//    //处理正常流程应该要多线程
-//    std::cout << "165 button" << std::endl;
-//  });
-//  ss.str("");
 
 //  arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
 //    GlobalArg* arg = GlobalArg::GetInstance();
 //    arg->host->RecvData();
 //  });
+
+  //  arg->sm->RunMachine(StateMachine::kSelfTest);
 }
 
 int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->sm = new StateMachine();
   InitSystem();
-
-//  arg->sm->Register();
-
   arg->em->Start(1);
-//  arg->host = new HostController("fffff");
-//  arg->host->CheckStatus();
+
   return 0;
 }

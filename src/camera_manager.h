@@ -24,6 +24,7 @@ class CameraManager {
   DWORD dwHeight_;
   BYTE* pRBGBuffer_;
   DWORD dwRGBBufSize_;
+  int camera_nums_;
 };
 }
 

@@ -65,13 +65,13 @@ LedController::~LedController() {
 }
 
 int LedController::LaserLed(int s) {
-  std::cout << "laser :" << s << std::endl;
+//  std::cout << "laser :" << s << std::endl;
   //重置读写位置到文件开头
   lseek(laser_fd_, 0, SEEK_SET);
   if (s == 0) {
-    write(laser_fd_, "\x00", 1);
+    write(laser_fd_, "0", 1);
   } else if (s == 1) {
-    write(laser_fd_, "\x01", 1);
+    write(laser_fd_, "1", 1);
   } else {
     std::cout << "bad status" << std::endl;
     return -1;
@@ -81,13 +81,13 @@ int LedController::LaserLed(int s) {
 }
 
 int LedController::LcdLed(int s) {
-  std::cout << "lcd :" << s << std::endl;
+//  std::cout << "lcd :" << s << std::endl;
   //重置读写位置到文件开头
   lseek(lcd_fd_, 0, SEEK_SET);
   if (s == 0) {
-    write(lcd_fd_, "\x00", 1);
+    write(lcd_fd_, "0", 1);
   } else if (s == 1) {
-    write(lcd_fd_, "\x01", 1);
+    write(lcd_fd_, "1", 1);
   } else {
     std::cout << "bad status" << std::endl;
     return -1;
@@ -97,13 +97,13 @@ int LedController::LcdLed(int s) {
 }
 
 int LedController::CmosLed(int s) {
-  std::cout << "cmos :" << s << std::endl;
+//  std::cout << "cmos :" << s << std::endl;
   //重置读写位置到文件开头
   lseek(cmos_fd_, 0, SEEK_SET);
   if (s == 0) {
-    write(cmos_fd_, "\x00", 1);
+    write(cmos_fd_, "0", 1);
   } else if (s == 1) {
-    write(cmos_fd_, "\x01", 1);
+    write(cmos_fd_, "1", 1);
   } else {
     std::cout << "bad status" << std::endl;
     return -1;
@@ -113,13 +113,13 @@ int LedController::CmosLed(int s) {
 }
 
 int LedController::ErrorLed(int s) {
-  std::cout << "error :" << s << std::endl;
+//  std::cout << "error :" << s << std::endl;
   //重置读写位置到文件开头
   lseek(error_fd_, 0, SEEK_SET);
   if (s == 0) {
-    write(error_fd_, "\x00", 1);
+    write(error_fd_, "0", 1);
   } else if (s == 1) {
-    write(error_fd_, "\x01", 1);
+    write(error_fd_, "1", 1);
   } else {
     std::cout << "bad status" << std::endl;
     return -1;
