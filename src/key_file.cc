@@ -27,21 +27,21 @@ KeyFile::KeyFile(const char* base_path) {
     return;
   }
   std::string admin_seed_path = admin_path +"/PUF00_Seed";
-   if(access(admin_seed_path.c_str(), 0)!=0){
-        std::cout << admin_seed_path <<"does not exist" << std::endl;
-        return;
-   }
-   std::string admin_pic_path = admin_path+"/PUF00_Pic";
-   if(access(admin_pic_path.c_str(), 0)!=0){
-        std::cout << admin_pic_path <<"does not exist" << std::endl;
-        return;
-   }
-  for (int i = 0; i < 10000; i++) {
-    std::string seed_file = admin_seed_path + Utils::DecToStr(i, 4);
-    std::string pic_file = admin_pic_path + Utils::DecToStr(i, 4);
-    std::cout << "not found " << seed_file << std::endl;
-    std::cout << "not found " << pic_file << std::endl;
+  if(access(admin_seed_path.c_str(), 0)!=0) {
+    std::cout << admin_seed_path <<"does not exist" << std::endl;
+    return;
   }
+  std::string admin_pic_path = admin_path+"/PUF00_Pic";
+  if(access(admin_pic_path.c_str(), 0)!=0) {
+    std::cout << admin_pic_path <<"does not exist" << std::endl;
+    return;
+  }
+//  for (int i = 0; i < 10000; i++) {
+//    std::string seed_file = admin_seed_path + Utils::DecToStr(i, 4);
+//    std::string pic_file = admin_pic_path + Utils::DecToStr(i, 4);
+//    std::cout << "not found " << seed_file << std::endl;
+//    std::cout << "not found " << pic_file << std::endl;
+//  }
 }
 
 int KeyFile::AppendPufFile() {

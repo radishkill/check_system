@@ -1,39 +1,48 @@
 #include "camera_manager.h"
 
+#include <iostream>
+
 namespace check_system {
 
-CameraManager::CameraManager() {
+CameraManager::CameraManager()
+    : is_open_flag_(0) {
   pRBGBuffer_ = nullptr;
   dwRGBBufSize_ = 0;
   CameraSdkStatus ret;
-  int camera_nums;
-  if((ret = CameraEnumerateDevice(&camera_nums)) != CAMERA_STATUS_SUCCESS || camera_nums <= 0)
-    return;
-  //  GetDeviceList();
-  if (device_list_.empty()) {
-    perror("none camera device!!!");
+  if((ret = CameraEnumerateDevice(&camera_nums_)) != CAMERA_STATUS_SUCCESS || camera_nums_ <= 0) {
+    perror("none camera device");
     return;
   }
-  if((ret = CameraInitEx(&hCamera_, camera_nums - 1, -1, -1)) != CAMERA_STATUS_SUCCESS)
+  GetDeviceList();
+  if (device_list_.empty()) {
+    perror("none camera device");
     return;
+  }
+  //应该只有一个摄像头
+  if((ret = CameraInitEx(&hCamera_, camera_nums_-1, -1, -1)) != CAMERA_STATUS_SUCCESS) {
+    perror("camera init");
+    return;
+  }
+
 //  if((ret = CameraDisplayInit(hCamera_, hwnd)) != CAMERA_STATUS_SUCCESS) {
 //    CameraUnInit(hCamera_);
 //    return;
 //  }
+
   CameraGetOutImageSize(hCamera_, &dwWidth_, &dwHeight_);
   CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_BGR8);
-  is_open_flag_ = 1 ;
+  is_open_flag_ = 1;
 }
 
 const std::vector<std::string>& CameraManager::GetDeviceList() {
   int cameraNum = 0;
-  CameraEnumerateDevice(&cameraNum);
   for (int i = 0; i < cameraNum; i++) {
     tDevEnumInfo devAllInfo;
     CameraSdkStatus status = CameraGetEnumIndexInfo(i, &devAllInfo);
     if (status != CAMERA_STATUS_SUCCESS)
       continue;
     device_list_.push_back(devAllInfo.DevAttribute.Name);
+    std::cout << devAllInfo.DevAttribute.Name << std::endl;
   }
   return device_list_;
 }
