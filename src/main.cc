@@ -32,10 +32,7 @@ using check_system::HostController;
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
-<<<<<<< HEAD
   //启动LED闪烁线程
-=======
->>>>>>> 3692cd00bac46a75329c59dca7ee9d7cf659e3e5
   arg->led->RunBlink();
   arg->em = new check_system::EventManager();
 
@@ -132,13 +129,5 @@ int main() {
   arg->sm = new StateMachine();
   InitSystem();
   arg->em->Start(1);
-
-<<<<<<< HEAD
-=======
-  //arg->em->Start(1);
-  //arg->host = new HostController("fffff");
-  //arg->host->CheckStatus();
-
->>>>>>> 3692cd00bac46a75329c59dca7ee9d7cf659e3e5
   return 0;
 }
