@@ -23,24 +23,24 @@ LedController::LedController() {
   }
 
   addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLcdGpioNumber) + "/value";
-  laser_fd_ = open(addr.c_str(), O_RDWR);
-  if (laser_fd_ == -1) {
+  lcd_fd_ = open(addr.c_str(), O_RDWR);
+  if (lcd_fd_ == -1) {
     std::cout << "can't open Lcd gpio " << std::endl;
     exit(0);
     return;
   }
 
   addr = std::string("/sys/class/gpio/gpio") + std::to_string(kCmosGpioNumber) + "/value";
-  laser_fd_ = open(addr.c_str(), O_RDWR);
-  if (laser_fd_ == -1) {
+  cmos_fd_ = open(addr.c_str(), O_RDWR);
+  if (cmos_fd_ == -1) {
     std::cout << "can't open cmos gpio " << std::endl;
     exit(0);
     return;
   }
 
   addr = std::string("/sys/class/gpio/gpio") + std::to_string(kErrorGpioNumber) + "/value";
-  laser_fd_ = open(addr.c_str(), O_RDWR);
-  if (laser_fd_ == -1) {
+  error_fd_ = open(addr.c_str(), O_RDWR);
+  if (error_fd_ == -1) {
     std::cout << "can't open Error gpio " << std::endl;
     exit(0);
     return;
