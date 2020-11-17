@@ -14,6 +14,7 @@ const static int kErrorGpioNumber = 254;
 class LedController {
  public:
   LedController();
+  ~LedController();
   // s == 0关灯 s == 1 开灯
   int LaserLed(int s);
   int LcdLed(int s);

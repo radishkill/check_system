@@ -39,10 +39,14 @@ class KeyFile {
   int SavePicAndSeed(int key_id, int index, int seed);
   int DeletePic(int id,int index);
   int DeleteSeed(int id,int index);
+  bool Is_Open()const;
+
+
  private:
   //base_path应该指向PUFData文件夹的内部,地址最后不包括/
   std::string base_path_;
   char pic_buffer_[1080][1920][4];
+  int error = 0 ;
 };
 }
 
