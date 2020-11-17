@@ -31,15 +31,15 @@ using check_system::HostController;
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
-  //  arg->led->RunBlink();
+  arg->led->RunBlink();
   arg->em = new check_system::EventManager();
 
   arg->laser = new Laser("/dev/ttyUSB0");
   if(!arg->laser->IsOpen()){
-    arg->led->laser_blink_=100;
-    arg->led->lcd_blink_=100;
-    arg->led->cmos_blink_=100;
-    arg->led->error_blink_=100;
+    arg->led->laser_blink_ = 100;
+    arg->led->lcd_blink_ = 100;
+    arg->led->cmos_blink_ = 100;
+    arg->led->error_blink_ = 100;
     return ;
   }
   arg->camera = new CameraManager();
@@ -53,7 +53,7 @@ void InitSystem() {
   arg->lcd = new Lcd("");
   arg->key_file = new KeyFile("./resource/PUFData");
 
-  arg->host = new HostController("");
+//  arg->host = new HostController("");
 
   for(int i = 0; i < 3; i++){
     arg->led->CmosLed(0);
@@ -66,47 +66,47 @@ void InitSystem() {
     Utils::MSleep(250);
   }
 
-  arg->sm->RunMachine(StateMachine::kSelfTest);
+//  arg->sm->RunMachine(StateMachine::kSelfTest);
 
   //下面部分是用来打开button的
-  std::stringstream ss;
-  int fd;
-  ss << "/sys/class/gpio/gpio107/value";
-  fd = open(ss.str().c_str(), O_RDONLY);
-  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
-    //处理正常流程应该要多线程
-    std::cout << "107 button" << std::endl;
-  });
-  ss.str("");
+//  std::stringstream ss;
+//  int fd;
+//  ss << "/sys/class/gpio/gpio107/value";
+//  fd = open(ss.str().c_str(), O_RDONLY);
+//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
+//    //处理正常流程应该要多线程
+//    std::cout << "107 button" << std::endl;
+//  });
+//  ss.str("");
 
-  ss << "/sys/class/gpio/gpio107/value";
-  fd = open(ss.str().c_str(), O_RDONLY);
-  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
-    //处理正常流程应该要多线程
-    std::cout << "171 button" << std::endl;
-  });
-  ss.str("");
+//  ss << "/sys/class/gpio/gpio107/value";
+//  fd = open(ss.str().c_str(), O_RDONLY);
+//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
+//    //处理正常流程应该要多线程
+//    std::cout << "171 button" << std::endl;
+//  });
+//  ss.str("");
 
-  ss << "/sys/class/gpio/gpio107/value";
-  fd = open(ss.str().c_str(), O_RDONLY);
-  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
-    //处理正常流程应该要多线程
-    std::cout << "98 button" << std::endl;
-  });
-  ss.str("");
+//  ss << "/sys/class/gpio/gpio107/value";
+//  fd = open(ss.str().c_str(), O_RDONLY);
+//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
+//    //处理正常流程应该要多线程
+//    std::cout << "98 button" << std::endl;
+//  });
+//  ss.str("");
 
-  ss << "/sys/class/gpio/gpio107/value";
-  fd = open(ss.str().c_str(), O_RDONLY);
-  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
-    //处理正常流程应该要多线程
-    std::cout << "165 button" << std::endl;
-  });
-  ss.str("");
+//  ss << "/sys/class/gpio/gpio107/value";
+//  fd = open(ss.str().c_str(), O_RDONLY);
+//  arg->em->ListenFd(fd, EventManager::kEventPri, []() {
+//    //处理正常流程应该要多线程
+//    std::cout << "165 button" << std::endl;
+//  });
+//  ss.str("");
 
-  arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
-    GlobalArg* arg = GlobalArg::GetInstance();
-    arg->host->RecvData();
-  });
+//  arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
+//    GlobalArg* arg = GlobalArg::GetInstance();
+//    arg->host->RecvData();
+//  });
 }
 
 int main() {
