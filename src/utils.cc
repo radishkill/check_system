@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iomanip>
 
+
 using namespace std;
 //生成校验码
 unsigned char Utils::CheckSum(unsigned char *p, int datalen) {
@@ -56,17 +57,16 @@ std::string Utils::DecToStr(int para, int w){
 
 std::pair<unsigned, unsigned> Utils::Crc16AndXmodem(const void *b, size_t l) {
   std::pair<unsigned, unsigned>  result;
-//  boost::crc_basic<16> crc1( 0x8005u, 0u, 0u, true, true );
-//    boost::crc_basic<16> crc1( 0x1021, 0u, 0u, false, false );
+//  boost::crc_basic<16> crc12( 0x8005u, 0u, 0u, true, true );
+    boost::crc_basic<16> crc1( 0x1021, 0u, 0u, false, false );
 
-//  crc1.process_bytes( b, l );
-//  result.first = crc1.checksum();
+  crc1.process_bytes( b, l );
+  result.first = crc1.checksum();
 
-//  crc1 = boost::crc_basic<16>( 0x8408u, crc1.get_initial_remainder(),
-//  crc1.get_final_xor_value(), crc1.get_reflect_input(),
-//  crc1.get_reflect_remainder() );
-//  crc1.process_bytes( b, l );
-//  result.second = crc1.checksum();
-  result.first = 0x23;
+  crc1 = boost::crc_basic<16>( 0x8408u, crc1.get_initial_remainder(),
+  crc1.get_final_xor_value(), crc1.get_reflect_input(),
+  crc1.get_reflect_remainder() );
+  crc1.process_bytes( b, l );
+  result.second = crc1.checksum();
   return result;
 }

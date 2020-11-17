@@ -70,7 +70,7 @@ void InitSystem() {
 
   std::stringstream ss;
 
-  ss << "/sys/class/gpio/gpio/152/xxx";
+  ss << "/sys/class/gpio/gpio152/xxx";
   int fd0 = open(ss.str().c_str(), O_RDONLY);
   arg->em->ListenFd(fd0, EventManager::kEventPri, []() {
     //处理正常流程应该要多线程

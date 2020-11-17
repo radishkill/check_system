@@ -17,7 +17,10 @@ include_directories(
 link_directories(
     ~/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
     ~/opencv/lib
+<<<<<<< HEAD
     /usr/local/lib
+=======
+>>>>>>> 0dc276e1e962a389137fe3a9f85ead4715da2f11
     )
 
 add_definitions(
