@@ -113,6 +113,51 @@ void InitSystem() {
   });
   ss.str("");
 
+  ss << "/sys/class/gpio/gpio171/value";
+  fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
+  if (fd == -1) {
+    perror("open gpio 171");
+    return;
+  }
+  arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+    char key;
+    lseek(fd, 0, SEEK_SET);
+    read(fd, &key, 1);
+    //处理正常流程应该要多线程
+    std::cout << "171 button " << key << std::endl;
+  });
+  ss.str("");
+
+
+  ss << "/sys/class/gpio/gpio98/value";
+  fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
+  if (fd == -1) {
+    perror("open gpio 98");
+    return;
+  }
+  arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+    char key;
+    lseek(fd, 0, SEEK_SET);
+    read(fd, &key, 1);
+    //处理正常流程应该要多线程
+    std::cout << "98 button " << key << std::endl;
+  });
+  ss.str("");
+
+  ss << "/sys/class/gpio/gpio165/value";
+  fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
+  if (fd == -1) {
+    perror("open gpio 165");
+    return;
+  }
+  arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+    char key;
+    lseek(fd, 0, SEEK_SET);
+    read(fd, &key, 1);
+    //处理正常流程应该要多线程
+    std::cout << "165 button " << key << std::endl;
+  });
+  ss.str("");
 
   arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
     GlobalArg* arg = GlobalArg::GetInstance();
