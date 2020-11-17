@@ -12,11 +12,12 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/src/include
   ~/opencv/include
   ${PROJECT_SOURCE_DIR}/src/gabor_im
+  /usr/local/include
 	)
 link_directories(
     ~/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
     ~/opencv/lib
-    /usr/include
+    /usr/local/lib
     )
 
 add_definitions(
