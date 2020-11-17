@@ -18,27 +18,32 @@ namespace check_system {
 KeyFile::KeyFile(const char* base_path) {
   base_path_ = base_path;
   if(access(base_path,0) != 0){
+    error = 1;
     std::cout << base_path<<" does not exist"<< std::endl;
     return;
   }
   std::string admin_path = base_path_ + "/PUF00";
   if(access(admin_path.c_str(), 0)!=0){
+    error = 1;
     std::cout << admin_path <<" does not exist" << std::endl;
     return;
   }
   std::string admin_seed_path = admin_path +"/PUF00_Seed";
    if(access(admin_seed_path.c_str(), 0)!=0){
+     error = 1;
         std::cout << admin_seed_path <<"does not exist" << std::endl;
         return;
    }
    std::string admin_pic_path = admin_path+"/PUF00_Pic";
    if(access(admin_pic_path.c_str(), 0)!=0){
+     error = 1;
         std::cout << admin_pic_path <<"does not exist" << std::endl;
         return;
    }
   for (int i = 0; i < 10000; i++) {
     std::string seed_file = admin_seed_path + Utils::DecToStr(i, 4);
     std::string pic_file = admin_pic_path + Utils::DecToStr(i, 4);
+    error = 1;
     std::cout << "not found " << seed_file << std::endl;
     std::cout << "not found " << pic_file << std::endl;
   }
@@ -197,6 +202,13 @@ int KeyFile::DeleteSeed(int id, int index)
   std::string deleteseed = base_path_ + puf_file_name + puf_file_name + "_Seed" + puf_file_name + "_Seed" + Utils::DecToStr(index, 4);
   remove(deleteseed.c_str());
   return 0;
+}
+
+bool KeyFile::Is_Open() const
+{
+  if (error == 1)
+  return false;
+  return true;
 }
 }
 

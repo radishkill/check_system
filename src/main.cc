@@ -31,7 +31,7 @@ using check_system::HostController;
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
-  //  arg->led->RunBlink();
+  arg->led->RunBlink();
   arg->em = new check_system::EventManager();
 
   arg->laser = new Laser("/dev/ttyUSB0");
@@ -86,6 +86,8 @@ void InitSystem() {
 
 int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
+  arg->key_file = new KeyFile("./resource/PUFData");
+  std::cout << arg->key_file->Is_Open()<<std::endl;
   arg->sm = new StateMachine();
 //  arg->sm->AuthPic(nullptr, 0, 0, nullptr, 0, 0);
 //  InitSystem();
@@ -93,7 +95,8 @@ int main() {
 //  arg->sm->Register();
 
   //arg->em->Start(1);
-  arg->host = new HostController("fffff");
-  arg->host->CheckStatus();
+  //arg->host = new HostController("fffff");
+  //arg->host->CheckStatus();
+
   return 0;
 }
