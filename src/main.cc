@@ -105,8 +105,6 @@ void InitSystem() {
   if (fd == -1) {
     perror("open gpio 107");
     return;
-  } else {
-    std::cout << "gpio 107 " << fd << std::endl;
   }
 
   arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
@@ -119,10 +117,10 @@ void InitSystem() {
   ss.str("");
 
 
-//  arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
-//    GlobalArg* arg = GlobalArg::GetInstance();
-//    arg->host->RecvData();
-//  });
+  arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
+    GlobalArg* arg = GlobalArg::GetInstance();
+    arg->host->RecvData();
+  });
 
   //  arg->sm->RunMachine(StateMachine::kSelfTest);
 }
