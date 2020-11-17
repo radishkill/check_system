@@ -31,40 +31,47 @@ using check_system::HostController;
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
-  arg->led->RunBlink();
+  arg->led->LcdLed(1);
+  sleep(1);
+  arg->led->LaserLed(1);
+  arg->led->LcdLed(0);
+  sleep(1);
+  arg->led->LaserLed(0);
+  //启动LED闪烁线程
+//  arg->led->RunBlink();
   arg->em = new check_system::EventManager();
 
-  arg->laser = new Laser("/dev/ttyUSB0");
-  if(!arg->laser->IsOpen()){
-    arg->led->laser_blink_ = 100;
-    arg->led->lcd_blink_ = 100;
-    arg->led->cmos_blink_ = 100;
-    arg->led->error_blink_ = 100;
-    return ;
-  }
-  arg->camera = new CameraManager();
-  if(arg->camera->is_open_flag_ == 0){
-    arg->led->laser_blink_=100;
-    arg->led->lcd_blink_=100;
-    arg->led->cmos_blink_=100;
-    arg->led->error_blink_=100;
-    return ;
-  }
-  arg->lcd = new Lcd("");
-  arg->key_file = new KeyFile("./resource/PUFData");
+//  arg->laser = new Laser("/dev/ttyUSB1");
+//  if(!arg->laser->IsOpen()) {
+//    arg->led->laser_blink_ = 100;
+//    arg->led->lcd_blink_ = 100;
+//    arg->led->cmos_blink_ = 100;
+//    arg->led->error_blink_ = 100;
+//    return ;
+//  }
+//  arg->camera = new CameraManager();
+//  if(arg->camera->is_open_flag_ == 0) {
+//    arg->led->laser_blink_=100;
+//    arg->led->lcd_blink_=100;
+//    arg->led->cmos_blink_=100;
+//    arg->led->error_blink_=100;
+//    return ;
+//  }
+//  arg->lcd = new Lcd("/dev/fb");
+//  arg->key_file = new KeyFile("./resource/PUFData");
 
 //  arg->host = new HostController("");
 
-  for(int i = 0; i < 3; i++){
-    arg->led->CmosLed(0);
-    arg->led->LaserLed(0);
-    arg->led->LcdLed(0);
-    Utils::MSleep(250);
-    arg->led->CmosLed(1);
-    arg->led->LaserLed(1);
-    arg->led->LcdLed(1);
-    Utils::MSleep(250);
-  }
+//  for(int i = 0; i < 3; i++){
+//    arg->led->CmosLed(0);
+//    arg->led->LaserLed(0);
+//    arg->led->LcdLed(0);
+//    Utils::MSleep(250);
+//    arg->led->CmosLed(1);
+//    arg->led->LaserLed(1);
+//    arg->led->LcdLed(1);
+//    Utils::MSleep(250);
+//  }
 
 //  arg->sm->RunMachine(StateMachine::kSelfTest);
 
@@ -112,13 +119,12 @@ void InitSystem() {
 int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->sm = new StateMachine();
-//  arg->sm->AuthPic(nullptr, 0, 0, nullptr, 0, 0);
-//  InitSystem();
+  InitSystem();
 
 //  arg->sm->Register();
 
-  //arg->em->Start(1);
-  arg->host = new HostController("fffff");
-  arg->host->CheckStatus();
+  arg->em->Start(1);
+//  arg->host = new HostController("fffff");
+//  arg->host->CheckStatus();
   return 0;
 }

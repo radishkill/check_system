@@ -54,9 +54,6 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kRegister: {
       ret = Register();
-      if (ret < 0) {
-        //打灯
-      }
       if (ret < 0 && arg->host->IsOpen()) {
         arg->host->RegisterFail();
 
@@ -67,14 +64,21 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kAuth: {
       ret = Authentication();
-      if (ret < 0) {
-        //打灯
-      }
       if (ret < 0 && arg->host->IsOpen()) {
         arg->host->AuthFail();
+        //失败打灯:红灯开,3个绿灯关
+        arg->led->CmosLed(0);
+        arg->led->LaserLed(0);
+        arg->led->LcdLed(0);
+        arg->led->ErrorLed(1);
 
       } else if (ret == 0 && arg->host->IsOpen()) {
         arg->host->AuthSuccess();
+        //成功打灯:红灯关,3个绿灯开
+        arg->led->CmosLed(1);
+        arg->led->LaserLed(1);
+        arg->led->LcdLed(1);
+        arg->led->ErrorLed(0);
       }
       break;
     }
@@ -136,14 +140,18 @@ int StateMachine::SelfTest() {
 //注册
 int StateMachine::Register() {
   GlobalArg* arg = GlobalArg::GetInstance();
-
+    //全灯OFF
+    arg->led->CmosLed(0);
+    arg->led->LaserLed(0);
+    arg->led->LcdLed(0);
+    arg->led->ErrorLed(0);
    if (arg->sm->CheckKey() == -1) {
      //检测到无key插入
      //设置灯显示 并返回到起始点
      arg->led->CmosLed(0);
      arg->led->LaserLed(0);
      arg->led->LcdLed(0);
-     arg->led->error_blink_=100;
+     arg->led->ErrorLed(1);
      return -1;
    }
 
@@ -182,7 +190,7 @@ int StateMachine::Register() {
      arg->led->CmosLed(0);
      arg->led->LaserLed(0);
      arg->led->LcdLed(0);
-     arg->led->error_blink_=100;
+     arg->led->ErrorLed(1);
      return -1;
    }
    int key_id = arg->sm->FindKey();
@@ -229,6 +237,11 @@ int StateMachine::Register() {
 //认证
 int StateMachine::Authentication() {
   GlobalArg* arg = GlobalArg::GetInstance();
+  //全灯OFF
+  arg->led->CmosLed(0);
+  arg->led->LaserLed(0);
+  arg->led->LcdLed(0);
+  arg->led->ErrorLed(0);
   if (!arg->laser->GetStatus()) {
     return -1;
   }
