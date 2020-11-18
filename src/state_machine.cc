@@ -96,9 +96,27 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
  *
  */
 int StateMachine::SelfTest() {
-
   int ret0,ret1,ret2,ret3;
   GlobalArg* arg = GlobalArg::GetInstance();
+  assert(arg->led != nullptr);
+  assert(arg->lcd != nullptr);
+  assert(arg->laser != nullptr);
+  assert(arg->camera != nullptr);
+
+  if (!arg->camera->IsOpen()) {
+    std::cout << "camera not open" << std::endl;
+    return -1;
+  }
+
+  if (!arg->lcd->IsOpen()) {
+    std::cout << "lcd not open" << std::endl;
+    return -1;
+  }
+  if (!arg->laser->IsOpen()) {
+    std::cout << "laser not open" << std::endl;
+    return -1;
+  }
+
   ret0 = arg->laser->SendCloseCmd();
   Utils::MSleep(3000);
   ret1 = arg->laser->SendOpenCmd();
@@ -109,7 +127,7 @@ int StateMachine::SelfTest() {
   ret3 = arg->camera->CheckPic(200);
   ret0 = arg->laser->SendCloseCmd();
 
-//逻辑“与,输出LED灯的状态
+//逻辑与,输出LED灯的状态
 //错误
   if((ret0 != 0)||(ret1 != 0)||(ret2 != 0)||(ret3 != 0)){
       arg->led->error_blink_=100;
@@ -143,81 +161,90 @@ int StateMachine::SelfTest() {
 //注册
 int StateMachine::Register() {
   GlobalArg* arg = GlobalArg::GetInstance();
-    //全灯OFF
+
+  assert(arg->led != nullptr);
+  assert(arg->lcd != nullptr);
+  assert(arg->laser != nullptr);
+  assert(arg->camera != nullptr);
+
+  if (!arg->camera->IsOpen()) {
+    return -1;
+  }
+  //全灯OFF
+  arg->led->CmosLed(0);
+  arg->led->LaserLed(0);
+  arg->led->LcdLed(0);
+  arg->led->ErrorLed(0);
+  if (arg->sm->CheckKey() == -1) {
+    //检测到无key插入
+    //设置灯显示 并返回到起始点
     arg->led->CmosLed(0);
     arg->led->LaserLed(0);
     arg->led->LcdLed(0);
-    arg->led->ErrorLed(0);
-   if (arg->sm->CheckKey() == -1) {
-     //检测到无key插入
-     //设置灯显示 并返回到起始点
-     arg->led->CmosLed(0);
-     arg->led->LaserLed(0);
-     arg->led->LcdLed(0);
-     arg->led->ErrorLed(1);
-     return -1;
-   }
+    arg->led->ErrorLed(1);
+    return -1;
+  }
 
-   arg->sm->CheckAdminKey();
-   //非管理员key插入
+  arg->sm->CheckAdminKey();
+  //非管理员key插入
   if(arg->sm->CheckAdminKey() == 0){
-       arg->led->CmosLed(0);
-       arg->led->LaserLed(0);
-       arg->led->LcdLed(0);
-       for(int i = 0 ; i < 20 ; i++ ){
-         arg->led->ErrorLed(0);
-         Utils::MSleep(100);
-         arg->led->ErrorLed(1);
-         Utils::MSleep(100);
-       }
-     }
-  //管理员key插入
-   else{
+    arg->led->CmosLed(0);
+    arg->led->LaserLed(0);
+    arg->led->LcdLed(0);
+    for(int i = 0 ; i < 20 ; i++ ){
       arg->led->ErrorLed(0);
-      for(int i = 0 ; i < 20 ; i++ ){
-        arg->led->CmosLed(0);
-        arg->led->LaserLed(0);
-        arg->led->LcdLed(0);
-        Utils::MSleep(250);
-        arg->led->CmosLed(1);
-        arg->led->LaserLed(1);
-        arg->led->LcdLed(1);
-        Utils::MSleep(250);
-      }
-     }
-   //給用户插入新卡的时间
-   Utils::MSleep(10 * 1000);
-   if (arg->sm->CheckKey() == -1) {
-     //检测到无key插入
-     //设置灯显示 并返回到起始点
-     arg->led->CmosLed(0);
-     arg->led->LaserLed(0);
-     arg->led->LcdLed(0);
-     arg->led->ErrorLed(1);
-     return -1;
-   }
-   int key_id = arg->sm->FindKey();
-   if (key_id == -1) {
-     //被中断
-     if (arg->interrupt_flag) {
-       arg->interrupt_flag = 0;
-       return -1;
-     }
+      Utils::MSleep(100);
+      arg->led->ErrorLed(1);
+      Utils::MSleep(100);
+    }
+  }
+  //管理员key插入
+  else{
+    arg->led->ErrorLed(0);
+    for(int i = 0 ; i < 20 ; i++ ){
+      arg->led->CmosLed(0);
+      arg->led->LaserLed(0);
+      arg->led->LcdLed(0);
+      Utils::MSleep(250);
+      arg->led->CmosLed(1);
+      arg->led->LaserLed(1);
+      arg->led->LcdLed(1);
+      Utils::MSleep(250);
+    }
+  }
+  //給用户插入新卡的时间
+  Utils::MSleep(10 * 1000);
+  if (arg->sm->CheckKey() == -1) {
+    //检测到无key插入
+    //设置灯显示 并返回到起始点
+    arg->led->CmosLed(0);
+    arg->led->LaserLed(0);
+    arg->led->LcdLed(0);
+    arg->led->ErrorLed(1);
+    return -1;
+  }
+  int key_id = arg->sm->FindKey();
+  if (key_id == -1) {
+    //被中断
+    if (arg->interrupt_flag) {
+      arg->interrupt_flag = 0;
+      return -1;
+    }
 
-     //没找到库 并新建
-     int key_id = arg->key_file->AppendPufFile();
-     if (key_id == -1) {
-       //库满
-       return -1;
-     }
-   }
+    //没找到库 并新建
+    int key_id = arg->key_file->AppendPufFile();
+    if (key_id == -1) {
+      //库满
+      return -1;
+    }
+  }
   arg->sm->CheckEmptyPair(key_id);
 
   //中断返回复位状态
   if (arg->interrupt_flag) {
     arg->interrupt_flag=0;
     return -1;
-   }
+  }
 
   for (unsigned int i = 0; i < pair_list_.size() && i < 100; i++){
     GlobalArg* arg = GlobalArg::GetInstance();
@@ -240,6 +267,16 @@ int StateMachine::Register() {
 //认证
 int StateMachine::Authentication() {
   GlobalArg* arg = GlobalArg::GetInstance();
+
+  assert(arg->led != nullptr);
+  assert(arg->lcd != nullptr);
+  assert(arg->laser != nullptr);
+  assert(arg->camera != nullptr);
+
+  if (!arg->camera->IsOpen()) {
+    return -1;
+  }
+
   //全灯OFF
   arg->led->CmosLed(0);
   arg->led->LaserLed(0);

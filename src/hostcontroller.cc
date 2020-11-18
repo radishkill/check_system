@@ -35,13 +35,14 @@ int HostController::RecvData() {
   char recved_data[3];
   int len = usart_.ReadData(recved_data, 3);
   if (len != 3 || recved_data[0] != (char)0xDD || recved_data[1] != (char)0x7E) {
-    perror("bad data");
+    std::cout << "bad data" << std::endl;
     return -1;
   }
-  std::cout << "recv data" << std::hex;
+  std::cout << std::hex;
   for (int i = 0; i < 3; i++) {
     std::cout << static_cast<int>(recved_data[i]) << " ";
   }
+  std::cout << std::endl;
 
   switch (recved_data[2]) {
     case 0x01: {
@@ -56,16 +57,16 @@ int HostController::RecvData() {
       break;
     }
     case 0x03: {
-
+      //未定义
       break;
     }
     case 0x04: {
       //全灯OFF
-    arg->led->CmosLed(0);
-    arg->led->LaserLed(0);
-    arg->led->LcdLed(0);
-    arg->led->ErrorLed(0);
-    //认证
+      arg->led->CmosLed(0);
+      arg->led->LaserLed(0);
+      arg->led->LcdLed(0);
+      arg->led->ErrorLed(0);
+      //认证
       if (!arg->hsk_flag)
         break;
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kAuth));

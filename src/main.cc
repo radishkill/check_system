@@ -87,7 +87,7 @@ void InitSystem() {
     std::cout << "key file ok" << std::endl;
   }
 
-
+  //led闪烁提示
   for(int i = 0; i < 3; i++) {
     arg->led->CmosLed(0);
     arg->led->LaserLed(0);
@@ -111,18 +111,15 @@ void InitSystem() {
     perror("open gpio 107");
     return;
   }
-
   read(fd, &key, 1);
   arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+    GlobalArg* arg = GlobalArg::GetInstance();
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
     std::cout << "button 107 " << key << std::endl;
     if (key == 0x31) {
-      std::thread th([]() {
-        GlobalArg* arg = GlobalArg::GetInstance();
-        arg->sm->RunMachine(StateMachine::kRegister);
-      });
+      std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kRegister));
       th.detach();
     }
   });
@@ -137,16 +134,13 @@ void InitSystem() {
   }
   read(fd, &key, 1);
   arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
-
+    GlobalArg* arg = GlobalArg::GetInstance();
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
     std::cout << "button 171 " << key << std::endl;
     if (key == 0x31) {
-      std::thread th([]() {
-        GlobalArg* arg = GlobalArg::GetInstance();
-        arg->sm->RunMachine(StateMachine::kAuth);
-      });
+      std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kAuth));
       th.detach();
     }
   });
@@ -181,16 +175,13 @@ void InitSystem() {
   }
   read(fd, &key, 1);
   arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
-
+    GlobalArg* arg = GlobalArg::GetInstance();
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
     std::cout << "button 165 " << key << std::endl;
     if (key == 0x31) {
-      std::thread th([]() {
-        GlobalArg* arg = GlobalArg::GetInstance();
-        arg->sm->RunMachine(StateMachine::kSelfTest);
-      });
+      std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kSelfTest));
       th.detach();
     }
   });
@@ -198,7 +189,7 @@ void InitSystem() {
 
   arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
     GlobalArg* arg = GlobalArg::GetInstance();
-    std::cout << "recv data" << std::endl;
+    std::cout << "recv data " << std::endl;
     arg->host->RecvData();
   });
 
