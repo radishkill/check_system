@@ -40,7 +40,7 @@ int Lcd::Open(const char *device_file) {
   }
   var_info_.xres = width_;
   var_info_.yres = height_;
-//  var_info_.bits_per_pixel = per_pixel_;
+  var_info_.bits_per_pixel = per_pixel_;
   if (ioctl(fd_, FBIOPUT_VSCREENINFO, &var_info_) == -1) {
     perror("Error reading variable information");
     close(fd_);
@@ -62,13 +62,12 @@ int Lcd::Open(const char *device_file) {
 int Lcd::ShowBySeed(int seed) {
   int x, y;
   char* dest = frame_buffer_;
+  std::srand(seed);
   for (y = 0; y < height_; y++) {
     for (x = 0; x < width_; x++) {
-      if ((y*width_+x)%seed == 0) {
-        *dest = 0xff;
-        *(dest+1) = 0xff;
-        *(dest+2) = 0xff;
-      }
+      *dest = std::rand()%0x100;
+      *(dest+1) = std::rand()%0x100;
+      *(dest+2) = std::rand()%0x100;
       dest += 3;
     }
   }

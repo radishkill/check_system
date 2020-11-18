@@ -358,10 +358,11 @@ int StateMachine::Authentication() {
   return 0;
 }
 
-//随机生成seed a number range from 0 to 100000
+//随机生成seed a number range from 0 to RAND_MAX
 int StateMachine::GenerateRandomSeed() {
   std::srand(std::time(nullptr));
-  return std::rand()%1000;
+//  return (int)(std::rand()*48271ll%2147483647);
+  return std::rand();
 }
 
 //库定位算法 判断一枚key是否已经建立过数据库了
