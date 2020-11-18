@@ -81,6 +81,11 @@ void InitSystem() {
   }
 
   arg->key_file = new KeyFile("./resource/PUFData");
+  if (!arg->key_file->Is_Open()) {
+    std::cout << "key file have some wrong!!!" << std::endl;
+  } else {
+    std::cout << "key file ok" << std::endl;
+  }
 
 
   for(int i = 0; i < 3; i++) {
@@ -95,8 +100,11 @@ void InitSystem() {
   }
 
   //下面部分是用来打开button的
+
+  //注册按钮
   std::stringstream ss;
   int fd;
+  char key;
   ss << "/sys/class/gpio/gpio107/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
@@ -104,58 +112,87 @@ void InitSystem() {
     return;
   }
 
+  read(fd, &key, 1);
   arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    //处理正常流程应该要多线程
-    std::cout << "107 button " << key << std::endl;
+    std::cout << "button 107 " << key << std::endl;
+    if (key == 0x31) {
+      std::thread th([]() {
+        GlobalArg* arg = GlobalArg::GetInstance();
+        arg->sm->RunMachine(StateMachine::kRegister);
+      });
+      th.detach();
+    }
   });
   ss.str("");
 
+  //认证
   ss << "/sys/class/gpio/gpio171/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
     perror("open gpio 171");
     return;
   }
+  read(fd, &key, 1);
   arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    //处理正常流程应该要多线程
-    std::cout << "171 button " << key << std::endl;
+    std::cout << "button 171 " << key << std::endl;
+    if (key == 0x31) {
+      std::thread th([]() {
+        GlobalArg* arg = GlobalArg::GetInstance();
+        arg->sm->RunMachine(StateMachine::kAuth);
+      });
+      th.detach();
+    }
   });
   ss.str("");
 
-
+  //中断按钮
   ss << "/sys/class/gpio/gpio98/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
     perror("open gpio 98");
     return;
   }
+  read(fd, &key, 1);
   arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+    GlobalArg* arg = GlobalArg::GetInstance();
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    //处理正常流程应该要多线程
-    std::cout << "98 button " << key << std::endl;
+    std::cout << "button 98 " << key << std::endl;
+    if (key == 0x31) {
+      arg->interrupt_flag = 1;
+    }
   });
   ss.str("");
 
+  //自检
   ss << "/sys/class/gpio/gpio165/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
     perror("open gpio 165");
     return;
   }
+  read(fd, &key, 1);
   arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    //处理正常流程应该要多线程
-    std::cout << "165 button " << key << std::endl;
+    std::cout << "button 165 " << key << std::endl;
+    if (key == 0x31) {
+      std::thread th([]() {
+        GlobalArg* arg = GlobalArg::GetInstance();
+        arg->sm->RunMachine(StateMachine::kSelfTest);
+      });
+      th.detach();
+    }
   });
   ss.str("");
 
@@ -164,13 +201,15 @@ void InitSystem() {
     arg->host->RecvData();
   });
 
-  //  arg->sm->RunMachine(StateMachine::kSelfTest);
+//  std::thread th([&]() {
+//    arg->sm->RunMachine(StateMachine::kSelfTest);
+//  });
+//  th.detach();
 }
 
 int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->key_file = new KeyFile("./resource/PUFData");
-  std::cout << arg->key_file->Is_Open()<<std::endl;
   arg->sm = new StateMachine();
   InitSystem();
   arg->em->Start(1);

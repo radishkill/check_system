@@ -49,10 +49,12 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
   int ret = 0;
   switch (state) {
     case kSelfTest: {
+      std::cout << "Run Self Test" << std::endl;
       ret = SelfTest();
       break;
     }
     case kRegister: {
+      std::cout << "Run Register" << std::endl;
       ret = Register();
       if (ret < 0 && arg->host->IsOpen()) {
         arg->host->RegisterFail();
@@ -63,6 +65,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       break;
     }
     case kAuth: {
+      std::cout << "Run Auth" << std::endl;
       ret = Authentication();
       if (ret < 0 && arg->host->IsOpen()) {
         arg->host->AuthFail();
