@@ -27,6 +27,11 @@ int HostController::RecvData() {
     perror("bad data");
     return -1;
   }
+  std::cout << std::hex;
+  for (int i = 0; i < 3; i++) {
+    std::cout << static_cast<int>(recved_data[i]) << " ";
+  }
+
   switch (recved_data[2]) {
     case 0x01: {
       //状态查询

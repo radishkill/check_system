@@ -6,8 +6,8 @@
 namespace check_system {
 
 const static int kLaserGpioNumber = 223;
-const static int kLcdGpioNumber = 223;
-const static int kCmosGpioNumber = 255;
+const static int kLcdGpioNumber = 255;
+const static int kCmosGpioNumber = 223;
 const static int kErrorGpioNumber = 254;
 
 

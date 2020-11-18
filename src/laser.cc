@@ -34,7 +34,7 @@ int Laser::SendOpenCmd() {
   usart_.SendData(data_frame_, p);
   int ret = ReadBuffer(6);
   if (ret <= 0) {
-    perror("open laser wrong!!!");
+    std::cout << "open laser wrong!!!" << std::endl;
     return -1;
   }
   status_ = 1;
@@ -66,7 +66,7 @@ int Laser::SendCloseCmd() {
   i = 0;
   ret = ReadBuffer(5);
   if (ret <= 0) {
-    perror("close laser wrong!!!");
+    std::cout << "close laser wrong!!!" << std::endl;
     return -1;
   }
   status_ = 0;
