@@ -15,8 +15,19 @@ HostController::HostController(const char *device_file) {
   Open(device_file);
 }
 
+HostController::~HostController() {
+  ::close(fd_ctl_gpio_);
+}
+
 void HostController::Open(const char *device_file) {
   usart_.Open(device_file, 115200, 8, 1, 'N', 0);
+
+  std::string addr = std::string("/sys/class/gpio/gpio") + std::to_string(kRs485CtlGpio) + "/value";
+  fd_ctl_gpio_ = open(addr.c_str(), O_RDWR);
+  if (fd_ctl_gpio_ == -1) {
+    perror("open gpio");
+  }
+  write(fd_ctl_gpio_, "0", 1);
 }
 
 int HostController::RecvData() {
@@ -27,7 +38,7 @@ int HostController::RecvData() {
     perror("bad data");
     return -1;
   }
-  std::cout << std::hex;
+  std::cout << "recv data" << std::hex;
   for (int i = 0; i < 3; i++) {
     std::cout << static_cast<int>(recved_data[i]) << " ";
   }
@@ -91,7 +102,6 @@ int HostController::RecvData() {
 //状态查询反馈
 int HostController::CheckStatus() {
   int i=0;
-  int j=0;
   data[i++] = 0xDD;
   data[i++] = 0x7E;
   data[i++] = 0x60;
@@ -102,7 +112,11 @@ int HostController::CheckStatus() {
   data[i++] = result.first%256;
   data[i++] = result.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -124,7 +138,11 @@ int HostController::HandConfirm(){
   data[i++] = result_da.first%256;
   data[i++] = result_da.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -143,7 +161,11 @@ int HostController::AuthSuccess(){
   data[i++] = result.first%256;
   data[i++] = result.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -162,7 +184,11 @@ int HostController::AuthFail(){
   data[i++] = result.first%256;
   data[i++] = result.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -184,7 +210,11 @@ int HostController::HandCancel(){
   data[i++] = result_da.first%256;
   data[i++] = result_da.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -200,7 +230,11 @@ int HostController::ResetSuccess(){
   data[i++] = result.first%256;
   data[i++] = result.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -216,7 +250,11 @@ int HostController::ResetFail(){
   data[i++] = result.first%256;
   data[i++] = result.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -232,7 +270,11 @@ int HostController::RegisterSuccess(){
   data[i++] = result.first%256;
   data[i++] = result.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -248,7 +290,11 @@ int HostController::RegisterFail(){
   data[i++] = result.first%256;
   data[i++] = result.first/256;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
   usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 }

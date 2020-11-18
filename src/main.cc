@@ -69,7 +69,7 @@ void InitSystem() {
     std::cout << "lcd buffer connect ok!!" << std::endl;
   }
 
-  arg->host = new HostController("/dev/ttyS3");
+  arg->host = new HostController("/dev/ttyS1");
   if (!arg->host->IsOpen()) {
 //    arg->led->laser_blink_=100;
 //    arg->led->lcd_blink_=100;
@@ -198,6 +198,7 @@ void InitSystem() {
 
   arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
     GlobalArg* arg = GlobalArg::GetInstance();
+    std::cout << "recv data" << std::endl;
     arg->host->RecvData();
   });
 
@@ -209,7 +210,6 @@ void InitSystem() {
 
 int main() {
   GlobalArg* arg = GlobalArg::GetInstance();
-  arg->key_file = new KeyFile("./resource/PUFData");
   arg->sm = new StateMachine();
   InitSystem();
   arg->em->Start(1);
