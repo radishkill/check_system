@@ -14,6 +14,7 @@ class CameraManager {
   int GetPic();
   char* GetRBGBuffer();
   int CheckPic(int threshold);
+  bool IsOpen() {return is_open_flag_ == 1;};
   unsigned int pic_width_;
   unsigned int pic_height_;
   int is_open_flag_;

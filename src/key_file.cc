@@ -155,7 +155,6 @@ int KeyFile::SavePic(int id, int index) {
   }
   int i = 0;
   int j = 0;
-  int ret = 0;
   for (i = 0; i < 1080; i++) {
     for (j = 0; j< 1920; j++) {
       ofs.write(pic_buffer_[i][j], 4);
