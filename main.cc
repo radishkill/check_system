@@ -186,26 +186,26 @@ void* task(void* p)
 {
   char ch;
   int j = 0, nread = 0;
+  int fd = open_com_dev( DEV_UART );
+
+  if( fd < 0 )
+  {
+    printf( "open UART device error! %s\n", DEV_UART );
+  } else {
+    set_com_opt(fd, 9600, 8, 'n', 1);
+  }
   while(scanf ("%s", &ch) ==1)
   {
 //    pthread_mutex_lock (&mutex);
 //    arg.pin_sta = 1;     //设为高电平 发送态
 //    ioctl(fd_gpio, IOCTL_PIO_SETSTA, &arg);
-    ::system("echo -e -n 1 > /sys/class/gpio/gpio164/value");
+//    system("echo -e -n 1 > /sys/class/gpio/gpio164/value");
 
-    int fd = open_com_dev( DEV_UART );
-    if( fd < 0 )
-    {
-      printf( "open UART device error! %s\n", DEV_UART );
-    }
-    else
-      set_com_opt(fd, 2400,8,'n',1);
     //set_com_opt(fd, 9600,8,'n',1);
 
     char buff[] = {0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31};
-    int len = write(fd,buff,sizeof (buff));
-    if (len < 0)
-    {
+    int len = read(fd, buff, sizeof (buff));
+    if (len < 0) {
       perror ("write err");
       exit (-1);
     }
@@ -226,6 +226,6 @@ void* task(void* p)
 
 int main (void)
 {
-  task(nullptr);
+  task(NULL);
   return 0;
 }
