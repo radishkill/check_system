@@ -19,6 +19,7 @@
 #include "eventmanager.h"
 #include "led.h"
 #include "hostcontroller.h"
+
 using check_system::GlobalArg;
 using check_system::Laser;
 using check_system::CameraManager;
@@ -204,5 +205,6 @@ int main() {
   arg->sm = new StateMachine();
   InitSystem();
   arg->em->Start(1);
+  pause();
   return 0;
 }

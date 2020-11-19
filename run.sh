@@ -1,5 +1,12 @@
 #!/bin/bash
 
+//run vga
+echo off > /sys/class/drm/card0/card0-HDMI-A-1/status
+sleep 1
+echo on > /sys/class/drm/card0/card0-HDMI-A-1/status
+sleep 1
+echo off > /sys/class/drm/card0/card0-HDMI-A-1/status
+
 
 if [ ! -d "/sys/class/gpio/gpio223" ];then
   echo -e -n 223 > /sys/class/gpio/export

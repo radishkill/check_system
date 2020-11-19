@@ -33,9 +33,7 @@ HEADERS += \
 FORMS += \
         cameraplayer.ui
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../lib/release/ -lCKCameraSDK_x64
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../lib/debug/ -lCKCameraSDK_x64
-else:unix: LIBS += -L$$PWD/../../../lib/ -lCKCameraSDK_x64
+LIBS += -L$$PWD/../../../lib/x64 -lCKCameraSDK
 
 INCLUDEPATH += $$PWD/../../../include
 DEPENDPATH += $$PWD/../../../include
