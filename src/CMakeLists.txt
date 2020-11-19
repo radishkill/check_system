@@ -72,6 +72,7 @@ target_link_libraries(CheckSystem
   opencv_imgcodecs
   opencv_calib3d
   opencv_xfeatures2d
+  opencv_highgui
   gomp
 	~/workspace/check_system/lib/armhf/libCKCameraSDK.a
 )
