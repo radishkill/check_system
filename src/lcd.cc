@@ -48,7 +48,7 @@ int Lcd::Open(const char *device_file) {
     return -1;
   }
   int mem_size = fix_info_.smem_len;
-
+//  frame_buffer_ = new char[800*600];
   frame_buffer_ =(char *) mmap (0, mem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0);
   if (frame_buffer_ == MAP_FAILED) {
     perror ("Error: Failed to map framebuffer device to memory");

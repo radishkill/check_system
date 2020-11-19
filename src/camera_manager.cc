@@ -48,6 +48,7 @@ const std::vector<std::string>& CameraManager::GetDeviceList() {
 }
 
 int CameraManager::GetPic() {
+  //照片结果为800*600*8bit
   CameraSdkStatus status;
   HANDLE hBuf;
   BYTE* pbyBuffer;
