@@ -118,15 +118,109 @@ int Laser::SendCheckCmd() {
 }
 
 int Laser::SetTemperature(int Temp) {
-
+  if(Temp==20){
+    int i;
+    int p = 0;
+    data_frame_[p++] = 0x68;
+    for (i = 0; i < 4; i++) {
+      data_frame_[i+p] = 0;
+    }
+    p += i;
+    data_frame_[p++] = 0x04;
+    data_frame_[p++] = 0;
+    data_frame_[p++] = 0x04;
+    data_frame_[p++] = 0x41;
+    data_frame_[p++] = 0xA0;
+    for (i = 0; i < 2; i++) {
+      data_frame_[i+p] = 0;
+    }
+    p += i;
+    data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_+1, p-1);
+    p++;
+    data_frame_[p++] = 0x16;
+    data_frame_[p] = '\0';
+  }
   return 0;
 }
 
 int Laser::SetCurrent(int cur) {
+  if(cur==3000){
+    int i;
+    int p = 0;
+    data_frame_[p++] = 0x68;
+    for (i = 0; i < 4; i++) {
+      data_frame_[i+p] = 0;
+    }
+    p += i;
+    data_frame_[p++] = 0x02;
+    data_frame_[p++] = 0;
+    data_frame_[p++] = 0x04;
+    data_frame_[p++] = 0x45;
+    data_frame_[p++] = 0x3B;
+    data_frame_[p++] = 0x80;
+    for (i = 0; i < 1; i++) {
+      data_frame_[i+p] = 0;
+    }
+    p += i;
+    data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_+1, p-1);
+    p++;
+    data_frame_[p++] = 0x16;
+    data_frame_[p] = '\0';
+  }
   return 0;
 }
 
 int Laser::SetMaxCurrent(int max_cur) {
+  switch (max_cur) {
+  case 5000:
+      int i;
+      int p = 0;
+      data_frame_[p++] = 0x68;
+      for (i = 0; i < 4; i++) {
+        data_frame_[i+p] = 0;
+      }
+      p += i;
+      data_frame_[p++] = 0x02;
+      data_frame_[p++] = 0;
+      data_frame_[p++] = 0x04;
+      data_frame_[p++] = 0x45;
+      data_frame_[p++] = 0x9C;
+      data_frame_[p++] = 0x40;
+      for (i = 0; i < 1; i++) {
+        data_frame_[i+p] = 0;
+      }
+      p += i;
+      data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_+1, p-1);
+      p++;
+      data_frame_[p++] = 0x16;
+      data_frame_[p] = '\0';
+    break;
+  case 7000:
+      int i;
+      int p = 0;
+      data_frame_[p++] = 0x68;
+      for (i = 0; i < 4; i++) {
+        data_frame_[i+p] = 0;
+      }
+      p += i;
+      data_frame_[p++] = 0x02;
+      data_frame_[p++] = 0;
+      data_frame_[p++] = 0x04;
+      data_frame_[p++] = 0x45;
+      data_frame_[p++] = 0xEA;
+      data_frame_[p++] = 0x60;
+      for (i = 0; i < 1; i++) {
+        data_frame_[i+p] = 0;
+      }
+      p += i;
+      data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_+1, p-1);
+      p++;
+      data_frame_[p++] = 0x16;
+      data_frame_[p] = '\0';
+    break;
+  default:
+    break;
+  }
   return 0;
 }
 
