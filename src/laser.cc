@@ -102,7 +102,7 @@ int Laser::SendCheckCmd() {
     perror("check laser fault!!");
     return -1;
   }
-  //如果数据格式不对
+  //如果数据格式不对temperature
   if (data_frame_[5] != 0x01 && data_frame_[7] != 0x12) {
     perror("bad data!!!");
     return -1;
@@ -114,6 +114,19 @@ int Laser::SendCheckCmd() {
   back_current_unit_ = data_frame_[12];
   is_back_current_empty_ = data_frame_[13];
   // and etc...
+  return 0;
+}
+
+int Laser::SetTemperature(int Temp) {
+
+  return 0;
+}
+
+int Laser::SetCurrent(int cur) {
+  return 0;
+}
+
+int Laser::SetMaxCurrent(int max_cur) {
   return 0;
 }
 
