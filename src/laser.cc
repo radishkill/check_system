@@ -13,6 +13,7 @@ Laser::Laser(const char* device_name)
 }
 
 int Laser::SendOpenCmd() {
+  return 0;
   int i;
   int p = 0;
   data_frame_[p++] = 0x68;
@@ -32,9 +33,9 @@ int Laser::SendOpenCmd() {
   data_frame_[p++] = 0x16;
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
-  int ret = ReadBuffer(6);
+  int ret = ReadBuffer(5);
   if (ret <= 0) {
-    perror("open laser wrong!!!");
+    std::cout << "open laser wrong!!!" << std::endl;
     return -1;
   }
   status_ = 1;
@@ -42,6 +43,7 @@ int Laser::SendOpenCmd() {
 }
 
 int Laser::SendCloseCmd() {
+  return 0;
   int i;
   int p = 0;
   int ret;
@@ -66,7 +68,7 @@ int Laser::SendCloseCmd() {
   i = 0;
   ret = ReadBuffer(5);
   if (ret <= 0) {
-    perror("close laser wrong!!!");
+    std::cout << "close laser wrong!!!" << std::endl;
     return -1;
   }
   status_ = 0;
@@ -74,6 +76,7 @@ int Laser::SendCloseCmd() {
 }
 
 int Laser::SendCheckCmd() {
+  return 0;
   int i;
   int p = 0;
 
@@ -100,7 +103,7 @@ int Laser::SendCheckCmd() {
     perror("check laser fault!!");
     return -1;
   }
-  //如果数据格式不对
+  //如果数据格式不对temperature
   if (data_frame_[5] != 0x01 && data_frame_[7] != 0x12) {
     perror("bad data!!!");
     return -1;
@@ -112,6 +115,137 @@ int Laser::SendCheckCmd() {
   back_current_unit_ = data_frame_[12];
   is_back_current_empty_ = data_frame_[13];
   // and etc...
+  return 0;
+}
+
+int Laser::SetTemperature(int Temp) {
+  return 0;
+  int ret;
+  if(Temp == 20) {
+    int i;
+    int p = 0;
+    data_frame_[p++] = 0x68;
+    for (i = 0; i < 4; i++) {
+      data_frame_[i+p] = 0;
+    }
+    p += i;
+    data_frame_[p++] = 0x04;
+    data_frame_[p++] = 0;
+    data_frame_[p++] = 0x04;
+    data_frame_[p++] = 0x41;
+    data_frame_[p++] = 0xA0;
+    for (i = 0; i < 2; i++) {
+      data_frame_[i+p] = 0;
+    }
+    p += i;
+    data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_+1, p-1);
+    p++;
+    data_frame_[p++] = 0x16;
+    data_frame_[p] = '\0';
+
+  } else {
+    return -1;
+  }
+  ret = ReadBuffer(5);
+  if (ret <= 0) {
+    std::cout << "SetTemperature laser wrong!!!" << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+int Laser::SetCurrent(int cur) {
+  return 0;
+  int ret;
+  if(cur==3000) {
+    int i;
+    int p = 0;
+    data_frame_[p++] = 0x68;
+    for (i = 0; i < 4; i++) {
+      data_frame_[i+p] = 0;
+    }
+    p += i;
+    data_frame_[p++] = 0x02;
+    data_frame_[p++] = 0;
+    data_frame_[p++] = 0x04;
+    data_frame_[p++] = 0x45;
+    data_frame_[p++] = 0x3B;
+    data_frame_[p++] = 0x80;
+    for (i = 0; i < 1; i++) {
+      data_frame_[i+p] = 0;
+    }
+    p += i;
+    data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_+1, p-1);
+    p++;
+    data_frame_[p++] = 0x16;
+    data_frame_[p] = '\0';
+
+  } else {
+    return -1;
+  }
+  ret = ReadBuffer(5);
+  if (ret <= 0) {
+    std::cout << "SetCurrent laser wrong!!!" << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+int Laser::SetMaxCurrent(int max_cur) {
+  return 0;
+  int ret;
+  if (max_cur == 5000) {
+      int i;
+      int p = 0;
+      data_frame_[p++] = 0x68;
+      for (i = 0; i < 4; i++) {
+        data_frame_[i+p] = 0;
+      }
+      p += i;
+      data_frame_[p++] = 0x02;
+      data_frame_[p++] = 0;
+      data_frame_[p++] = 0x04;
+      data_frame_[p++] = 0x45;
+      data_frame_[p++] = 0x9C;
+      data_frame_[p++] = 0x40;
+      for (i = 0; i < 1; i++) {
+        data_frame_[i+p] = 0;
+      }
+      p += i;
+      data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_+1, p-1);
+      p++;
+      data_frame_[p++] = 0x16;
+      data_frame_[p] = '\0';
+  } else if (max_cur == 7000) {
+      int i;
+      int p = 0;
+      data_frame_[p++] = 0x68;
+      for (i = 0; i < 4; i++) {
+        data_frame_[i+p] = 0;
+      }
+      p += i;
+      data_frame_[p++] = 0x02;
+      data_frame_[p++] = 0;
+      data_frame_[p++] = 0x04;
+      data_frame_[p++] = 0x45;
+      data_frame_[p++] = 0xEA;
+      data_frame_[p++] = 0x60;
+      for (i = 0; i < 1; i++) {
+        data_frame_[i+p] = 0;
+      }
+      p += i;
+      data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_+1, p-1);
+      p++;
+      data_frame_[p++] = 0x16;
+      data_frame_[p] = '\0';
+  } else {
+    return -1;
+  }
+  ret = ReadBuffer(5);
+  if (ret <= 0) {
+    std::cout << "SetMaxCurrent laser wrong!!!" << std::endl;
+    return -1;
+  }
   return 0;
 }
 

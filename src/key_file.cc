@@ -18,30 +18,34 @@ namespace check_system {
 KeyFile::KeyFile(const char* base_path) {
   base_path_ = base_path;
   if(access(base_path,0) != 0){
+    error = 1;
     std::cout << base_path<<" does not exist"<< std::endl;
     return;
   }
   std::string admin_path = base_path_ + "/PUF00";
   if(access(admin_path.c_str(), 0)!=0){
+    error = 1;
     std::cout << admin_path <<" does not exist" << std::endl;
     return;
   }
   std::string admin_seed_path = admin_path +"/PUF00_Seed";
    if(access(admin_seed_path.c_str(), 0)!=0){
+     error = 1;
         std::cout << admin_seed_path <<"does not exist" << std::endl;
         return;
    }
    std::string admin_pic_path = admin_path+"/PUF00_Pic";
    if(access(admin_pic_path.c_str(), 0)!=0){
+     error = 1;
         std::cout << admin_pic_path <<"does not exist" << std::endl;
         return;
    }
-  for (int i = 0; i < 1; i++) {
-    std::string seed_file = admin_seed_path + Utils::DecToStr(i, 4);
-    std::string pic_file = admin_pic_path + Utils::DecToStr(i, 4);
-    std::cout << "not found " << seed_file << std::endl;
-    std::cout << "not found " << pic_file << std::endl;
-  }
+//  for (int i = 0; i < 10000; i++) {
+//    std::string seed_file = admin_seed_path + Utils::DecToStr(i, 4);
+//    std::string pic_file = admin_pic_path + Utils::DecToStr(i, 4);
+//    std::cout << "not found " << seed_file << std::endl;
+//    std::cout << "not found " << pic_file << std::endl;
+//  }
 }
 
 int KeyFile::AppendPufFile() {
@@ -106,37 +110,36 @@ int KeyFile::GetPic(int id, int index) {
   int i = 0;
   int j = 0;
   int ret = 0;
-  for (i = 0; i < 1080; i++) {
-    for (j = 0; j< 1920; j++) {
-      ret = ifs.readsome(pic_buffer_[i][j], 4);
-      if (ret != 4 && !ifs.eof()) {
+  for (i = 0; i < CAMERA_HEIGHT; i++) {
+    for (j = 0; j< CAMERA_WIDTH; j++) {
+      ret = ifs.readsome(&pic_buffer_[i][j], 1);
+      if (ret == 0 && !ifs.eof()) {
         ifs.sync();
-        ifs.readsome(pic_buffer_[i][j] + ret, 4-ret);
-        ret += ifs.gcount();
+        ret = ifs.readsome(&pic_buffer_[i][j], 1);
       }
-      if (ret  != 4 && ifs.eof()) {
+      if (ret == 0 && ifs.eof()) {
         std::cout << "read pic file " << "PUF" << Utils::DecToStr(id, 2) << " wrong!!!" << std::endl;
         break;
       }
     }
-    if (j != 1920) {
+    if (j != CAMERA_WIDTH) {
       break;
     }
   }
   ifs.close();
-  if (i != 1080) {
+  if (i != CAMERA_HEIGHT) {
     return -1;
   }
   return 0;
 }
 //得到照片的缓存路径
 char *KeyFile::GetPicBuffer() {
-  return **pic_buffer_;
+  return *pic_buffer_;
 }
 //复制图片到文件图片缓冲区
 int KeyFile::CopyPicToBuffer(char *pic, int width, int height) {
-  for (int i = 0; i < 1080; i++) {
-    std::memcpy(*pic_buffer_[i], pic + i*1920*4, 1920*4);
+  for (int i = 0; i < height; i++) {
+    std::memcpy(pic_buffer_[i], pic + i*width, width);
   }
   return 0;
 }
@@ -150,12 +153,8 @@ int KeyFile::SavePic(int id, int index) {
     return 0;
   }
   int i = 0;
-  int j = 0;
-  int ret = 0;
-  for (i = 0; i < 1080; i++) {
-    for (j = 0; j< 1920; j++) {
-      ofs.write(pic_buffer_[i][j], 4);
-    }
+  for (i = 0; i < CAMERA_HEIGHT; i++) {
+    ofs.write(pic_buffer_[i], CAMERA_WIDTH);
     ofs.flush();
   }
   ofs.close();
@@ -176,8 +175,8 @@ int KeyFile::SaveSeed(int id, int index, int seed)
   return 0;
 }
 
-int KeyFile::SavePicAndSeed(int key_id, int index, int seed)
-{
+int KeyFile::SavePicAndSeed(int key_id, int index, int seed) {
+
   SavePic(key_id, index);
   SaveSeed(key_id, index, seed);
   return 0;
@@ -197,6 +196,13 @@ int KeyFile::DeleteSeed(int id, int index)
   std::string deleteseed = base_path_ + puf_file_name + puf_file_name + "_Seed" + puf_file_name + "_Seed" + Utils::DecToStr(index, 4);
   remove(deleteseed.c_str());
   return 0;
+}
+
+bool KeyFile::Is_Open() const
+{
+  if (error == 1)
+  return false;
+  return true;
 }
 }
 

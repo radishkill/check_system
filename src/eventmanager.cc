@@ -9,7 +9,10 @@ namespace check_system {
 
 EventManager::EventManager()
     : is_running_(false) {
-  epoll_fd_ = epoll_create(0);
+  epoll_fd_ = epoll_create(20);
+  if (epoll_fd_ == -1) {
+    perror("epoll");
+  }
 
   event_fd_ = eventfd(0, 0);
 
@@ -25,7 +28,7 @@ EventManager::~EventManager() {
 }
 
 bool EventManager::Start(int num_threads) {
-  std::lock_guard<std::mutex> l(mutex_);
+//  std::lock_guard<std::mutex> l(mutex_);
 
 //  if (thread_set_.find(std::this_thread) != thread_set_.end()) {
 //    return false;
@@ -42,7 +45,7 @@ bool EventManager::Start(int num_threads) {
 
 void EventManager::ListenFd(int fd, EventManager::EventType type, function<void ()> f) {
   std::lock_guard<std::mutex> l(mutex_);
-  if (fds_.count(fd)) {
+  if (!fds_.count(fd)) {
     fds_[fd][type] = f;
     EpollUpdate(fd, EPOLL_CTL_ADD);
   } else {
@@ -111,7 +114,7 @@ void EventManager::RunThread() {
 
     if (ret < 0) {
       if (errno != EINTR) {
-        std::cout << "Epoll error: " << errno << " fd is " << epoll_fd_;
+        std::cout << "Epoll error: " << errno << " fd is " << epoll_fd_ << std::endl;
       }
       continue;
     }
@@ -136,6 +139,13 @@ void EventManager::RunThread() {
             fds_.find(fd) != fds_.end() &&
             fds_[fd].find(kEventWrite) != fds_[fd].end()) {
           function<void()> f = fds_[fd][kEventWrite];
+          lk.unlock();
+          f();
+          lk.lock();
+        }
+        if ((flags | EPOLLPRI) && fds_.find(fd) != fds_.end() &&
+            fds_[fd].find(kEventPri) != fds_[fd].end()) {
+          function<void()> f = fds_[fd][kEventPri];
           lk.unlock();
           f();
           lk.lock();
