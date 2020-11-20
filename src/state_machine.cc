@@ -57,7 +57,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "Run Register" << std::endl;
       if (arg->is_fault) {
         std::cout << "system fault" << std::endl;
-        break;
+//        break;
       }
       arg->laser->SendOpenCmd();
       //注册模块
@@ -74,7 +74,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "Run Auth" << std::endl;
       if (arg->is_fault) {
         std::cout << "system fault" << std::endl;
-        break;
+//        break;
       }
       arg->laser->SendOpenCmd();
       ret = Authentication();
@@ -165,24 +165,16 @@ int StateMachine::SelfTest() {
 
   ret1 = arg->laser->SendCloseCmd();
 
-  auto begin_tick = std::chrono::steady_clock::now();
-
-  arg->key_file->CopyPicToBuffer(arg->camera->GetRBGBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
-  arg->key_file->SavePicAndSeed(0, 0, random_seed);
-
-  auto end_tick = std::chrono::steady_clock::now();
-  std::cout << "save pic " << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
-
   //逻辑与,输出LED灯的状态
   //错误
   if((ret0 != 0)||(ret1 != 0)||(ret2 != 0)||(ret3 != 0)) {
-      arg->led->error_blink_=100;
+      arg->led->error_blink_=200;
     if((ret0 != 0)||(ret1 != 0)) {
-      arg->led->laser_blink_=100;
+      arg->led->laser_blink_=200;
     }
     if((ret2 != 0)||(ret3 != 0)){
-      arg->led->lcd_blink_ =100;
-      arg->led->cmos_blink_ =100;
+      arg->led->lcd_blink_ =200;
+      arg->led->cmos_blink_ =200;
     }
     arg->is_fault = 1;
   } else {
@@ -192,11 +184,11 @@ int StateMachine::SelfTest() {
       arg->led->LaserLed(0);
       arg->led->CmosLed(0);
       arg->led->LcdLed(0);
-      Utils::MSleep(250);
+      Utils::MSleep(500);
       arg->led->LaserLed(1);
       arg->led->CmosLed(1);
       arg->led->LcdLed(1);
-      Utils::MSleep(250);
+      Utils::MSleep(500);
     }
     arg->led->LaserLed(1);
     arg->led->CmosLed(1);
@@ -220,6 +212,12 @@ int StateMachine::Register() {
     std::cout << "The camera can't turned on" << std::endl;
     return -1;
   }
+
+  arg->led->lcd_blink_ =0;
+  arg->led->cmos_blink_ =0;
+  arg->led->laser_blink_=0;
+  arg->led->error_blink_=0;
+  Utils::MSleep(100);
 
   //全灯OFF
   arg->led->CmosLed(0);
@@ -350,9 +348,6 @@ int StateMachine::Authentication() {
   arg->led->LaserLed(0);
   arg->led->LcdLed(0);
   arg->led->ErrorLed(0);
-  if (!arg->laser->GetStatus()) {
-    return -1;
-  }
   Utils::MSleep(2 * 1000);
   if (arg->sm->CheckKey() == -1) {
     //检测到无key插入
@@ -473,7 +468,9 @@ int StateMachine::CheckKey()
 {
   GlobalArg* arg = GlobalArg::GetInstance();
   int seed = arg->sm->GenerateRandomSeed();
+  std::cout << "rand seed : " << seed << std::endl;
   arg->lcd->ShowBySeed(seed);
+  std::cout << "show seed!!" << std::endl;
   arg->camera->GetOnePic();
   return arg->camera->CheckPic(100, 200);
 }
