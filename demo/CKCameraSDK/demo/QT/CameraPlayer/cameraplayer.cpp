@@ -3,6 +3,7 @@
 
 #include <QTime>
 #include <QMessageBox>
+#include <QDebug>
 
 CameraPlayer::CameraPlayer(QWidget *parent) :
     QDialog(parent),
@@ -39,7 +40,6 @@ void CameraPlayer::InitGui()
 {
     m_pGraphScene = new QGraphicsScene(this);
     ui->graphicsView->setScene(m_pGraphScene);
-
 
     connect(ui->pushButton_play, SIGNAL(clicked()), this, SLOT(CameraPlay()));
     connect(ui->pushButton_stop, SIGNAL(clicked()), this, SLOT(CameraStop()));
@@ -86,9 +86,8 @@ void CameraPlayer::CameraPlay()
     }
 
 
-    CameraSetIspOutFormat(m_hCamera, CAMERA_MEDIA_TYPE_RGB8);
-
-    ret = CameraSetResolution(m_hCamera, IMAGEOUT_MODE_1280X960);
+    ret = CameraSetIspOutFormat(m_hCamera, CAMERA_MEDIA_TYPE_MONO8);
+    ret = CameraSetResolution(m_hCamera, IMAGEOUT_MODE_1920X1080);
     CameraGetOutImageSize(m_hCamera, &m_dwWidth, &m_dwHeight);
 
 
@@ -225,12 +224,12 @@ void CVideoThread::run()
         }
         status = CameraGetOutImageBuffer(m_hCamera, &imageInfo, pbyBuffer, pRBGBuffer);
         CameraReleaseFrameHandle(m_hCamera, hBuf);
-        if (status == CAMERA_STATUS_SUCCESS)
-        {
+        if (status == CAMERA_STATUS_SUCCESS) {
             // 叠加十字线等
             CameraImageOverlay(m_hCamera, pRBGBuffer, &imageInfo);
 
             QImage img(pRBGBuffer, imageInfo.iWidth, imageInfo.iHeight, QImage::Format_RGB888);
+            qDebug() << time.elapsed() << " " << imageInfo.TotalBytes << " "  << endl;
             emit acquireFrame(img);
             disFrameCnt++;
         }
