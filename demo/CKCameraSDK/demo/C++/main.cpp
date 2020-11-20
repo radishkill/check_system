@@ -48,6 +48,24 @@ public:
         CameraSetFrameSpeed(m_hCamera, 2);
         CameraSetAeState(m_hCamera, FALSE);
         CameraSetExposureTime(m_hCamera, 10 * 1000);
+        DWORD w, h;
+        tSdkImageResolution image_res;
+        CameraGetOutImageSize(m_hCamera, &w, &h);
+        CameraSetResolution(m_hCamera, IMAGEOUT_MODE_800X600);
+        CameraGetResolutionForSnap(m_hCamera, &image_res);
+        image_res.iHeight = 600;
+        image_res.iWidth = 800;
+        CameraSetResolutionForSnap(m_hCamera, &image_res);
+
+        // CameraGetResolutionEx(m_hCamera,IMAGEOUT_MODE_800X600, &image_res);
+        // image_res.iHeight = 600;
+        // image_res.iWidth = 800;
+        // CameraSetResolutionEx(m_hCamera,IMAGEOUT_MODE_800X600, &image_res);
+        
+        CameraSetIspOutFormat(m_hCamera, CAMERA_MEDIA_TYPE_MONO8);
+        printf("%d, %d\n", w, h);
+        CameraGetOutImageSize(m_hCamera, &w, &h);
+        printf("%d, %d\n", w, h);
 
         m_isExit = false;
         m_pThread = new thread(&CameraTest::run, this);

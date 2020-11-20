@@ -38,15 +38,15 @@ int Lcd::Open(const char *device_file) {
     fd_ = -1;
     return -1;
   }
-  var_info_.xres = width_;
-  var_info_.yres = height_;
-  var_info_.bits_per_pixel = per_pixel_;
-  if (ioctl(fd_, FBIOPUT_VSCREENINFO, &var_info_) == -1) {
-    perror("Error reading variable information");
-    close(fd_);
-    fd_ = -1;
-    return -1;
-  }
+//  var_info_.xres = width_;
+//  var_info_.yres = height_;
+//  var_info_.bits_per_pixel = per_pixel_;
+//  if (ioctl(fd_, FBIOPUT_VSCREENINFO, &var_info_) == -1) {
+//    perror("Error reading variable information");
+//    close(fd_);
+//    fd_ = -1;
+//    return -1;
+//  }
   int mem_size = fix_info_.smem_len;
 //  frame_buffer_ = new char[800*600];
   frame_buffer_ =(char *) mmap (0, mem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0);
@@ -61,14 +61,15 @@ int Lcd::Open(const char *device_file) {
 //显示seed到LCD 800 * 600
 int Lcd::ShowBySeed(int seed) {
   int x, y;
-  char* dest = frame_buffer_;
+  char* dest = (char*)frame_buffer_ + (var_info_.yoffset) * var_info_.yres*4 + (var_info_.xoffset);
   std::srand(seed);
-  for (y = 0; y < height_; y++) {
-    for (x = 0; x < width_; x++) {
+  for (y = 0; y < var_info_.yres; y++) {
+    for (x = 0; x < var_info_.xres; x++) {
       *dest = std::rand()%0x100;
       *(dest+1) = std::rand()%0x100;
       *(dest+2) = std::rand()%0x100;
-      dest += 3;
+      *(dest+3) = 0xff;
+      dest += 4;
     }
   }
   return 0;

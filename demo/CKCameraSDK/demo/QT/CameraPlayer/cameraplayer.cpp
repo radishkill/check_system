@@ -85,8 +85,12 @@ void CameraPlayer::CameraPlay()
         return;
     }
 
+
+    CameraSetIspOutFormat(m_hCamera, CAMERA_MEDIA_TYPE_RGB8);
+
+    ret = CameraSetResolution(m_hCamera, IMAGEOUT_MODE_1280X960);
     CameraGetOutImageSize(m_hCamera, &m_dwWidth, &m_dwHeight);
-    CameraSetIspOutFormat(m_hCamera, CAMERA_MEDIA_TYPE_BGR8);
+
 
     m_pVideoThread = new CVideoThread(m_hCamera, this);
     connect(m_pVideoThread, SIGNAL(updateFrameRate(float,float)), this, SLOT(UpdateFrameRate(float,float)));
@@ -230,7 +234,6 @@ void CVideoThread::run()
             emit acquireFrame(img);
             disFrameCnt++;
         }
-
     }
     CameraPause(m_hCamera);
     if (pRBGBuffer)

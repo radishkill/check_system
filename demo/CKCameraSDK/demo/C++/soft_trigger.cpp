@@ -23,6 +23,29 @@ void test_softtrigger()
     status = CameraSetTriggerDelayTime(hCamera, 0);
     status = CameraSetTriggerFrameCount(hCamera, 1);
 
+
+      tSdkCameraCapbility cap;
+    CameraGetCapability(hCamera, &cap);
+
+    std::cout << cap.tDeviceCapbility.iImageSizeDesc << std::endl;
+    std::cout << cap.pImageSizeDesc->iIndex << std::endl;
+    std::cout << cap.pImageSizeDesc->iIndex << std::endl;
+    std::cout << cap.pImageSizeDesc->iIndex << std::endl;
+        
+
+    tSdkImageResolution image_res;
+    int mode;
+    status = CameraSetResolution(hCamera, 4);
+    if(status != CAMERA_STATUS_SUCCESS)
+    {
+      cerr << "camera start failed" << status <<  endl;
+    //	CameraUnInit(hCamera);
+      return;
+    }
+    CameraGetResolution(hCamera, &mode);
+    std::cout << image_res.iWidth << " " << image_res.iHeight << std::endl;
+    std::cout << mode << std::endl;
+
     status = CameraPlay(hCamera);
 	if(status != CAMERA_STATUS_SUCCESS)
 	{
@@ -55,6 +78,7 @@ void test_softtrigger()
             auto end_tick = chrono::steady_clock::now();
             cout << "soft trigger to get image duration " << chrono::duration_cast<chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << endl;
             cout << "get a frame no " << frameNo << endl;
+            std::cout << imgInfo.iWidth << " " << imgInfo.iHeight << std::endl;
             frameNo++;
 
             pImgData = CameraGetImageBufferEx(hCamera, &imgInfo, 1000);
