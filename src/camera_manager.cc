@@ -26,7 +26,7 @@ CameraManager::CameraManager()
   status = CameraSetTriggerMode(hCamera_, 1);  //soft trigger
   status = CameraSetFrameSpeed(hCamera_, 1);
   status = CameraSetAeState(hCamera_, FALSE);
-  status = CameraSetExposureTime(hCamera_, 30000);
+  status = CameraSetExposureTime(hCamera_, 3000);
 //  status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_RGB8);
   status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_MONO8);
   status = CameraSetTriggerDelayTime(hCamera_, 0);
@@ -84,11 +84,11 @@ int CameraManager::GetOnePic() {
   int ret = 0;
   auto begin_tick = std::chrono::steady_clock::now();
   //打开相机
-  Play();
+//  Play();
 
   ret = GetPic();
 
-  Pause();
+//  Pause();
   auto end_tick = std::chrono::steady_clock::now();
   std::cout << "soft trigger to get image duration " << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
   return ret;
@@ -97,46 +97,29 @@ int CameraManager::GetOnePic() {
 int CameraManager::GetPic()
 {
   CameraSdkStatus status;
-  HANDLE hBuf;
-  BYTE* pbyBuffer;
   stImageInfo imageInfo;
 
 
-
+  auto begin_tick = std::chrono::steady_clock::now();
   status = CameraSoftTrigger(hCamera_);
   if(status != CAMERA_STATUS_SUCCESS) {
     std::cout << "soft trigger failed" << std::endl;
     return -1;
   }
-  // 获取raw image data 1000ms超时时间
-  status = CameraGetRawImageBuffer(hCamera_, &hBuf, 1000);
-  if (status != CAMERA_STATUS_SUCCESS) {
-    std::cout << "CameraGetRawImageBuffer " << status << std::endl;
-    return -1;
-  }
-  // 获取图像帧信息
-  pbyBuffer = CameraGetImageInfo(hCamera_, hBuf, &imageInfo);
-  // 申请RGB image buffer内存
-  if (pRBGBuffer_ == NULL || imageInfo.iWidth * imageInfo.iHeight > dwRGBBufSize_) {
-      if (pRBGBuffer_)
-          delete []pRBGBuffer_;
-      dwRGBBufSize_ = imageInfo.iWidth * imageInfo.iHeight;
-      pRBGBuffer_ = new BYTE[dwRGBBufSize_];
-  }
 
-  //处理原始图像
-  status = CameraGetOutImageBuffer(hCamera_, &imageInfo, pbyBuffer, pRBGBuffer_);
-  CameraReleaseFrameHandle(hCamera_, hBuf);
-  if (status != CAMERA_STATUS_SUCCESS) {
-    std::cout << "handle picture fault " << status  << std::endl;
-    return -1;
+  stImageInfo imgInfo;
+  pRBGBuffer_ = CameraGetImageBufferEx(hCamera_, &imgInfo, 1000);
+  if (pRBGBuffer_ == NULL) {
+    std::cout << "can't get a frame" << std::endl;
   }
-
   if (imageInfo.iWidth != dwWidth_ && imageInfo.iHeight != dwHeight_) {
     std::cout << "picture resolution inequality" << std::endl;
   }
-
   std::cout << "get a pic " << imageInfo.iWidth << "x" << imageInfo.iHeight << " " << imageInfo.TotalBytes << std::endl;
+
+  auto end_tick = std::chrono::steady_clock::now();
+  std::cout << "soft trigger to get image duration " << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
+
   return 0;
 }
 
@@ -154,7 +137,7 @@ int CameraManager::CheckPic(int threshold_low, int threshold_high) {
     average_data += pRBGBuffer_[i];
     average_data /= 2;
   }
-
+  std::cout << "check pic average value : " << average_data << std::endl;
   if (average_data <= threshold_high && average_data >= threshold_low) {
     return 0;
   }
