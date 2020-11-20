@@ -12,10 +12,14 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/src/include
   ~/opencv/include
   ${PROJECT_SOURCE_DIR}/src/gabor_im
+  ~/boost-gcc-6.3/include
+  /usr/local/include
 	)
 link_directories(
     ~/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
     ~/opencv/lib
+    ~/boost-gcc-6.3/lib
+    /usr/local/lib
     )
 
 add_definitions(
@@ -30,12 +34,13 @@ add_executable(CheckSystem
     global_arg.cc
     key_file.cc
     lcd.cc
+    led.cc
     camera_manager.cc
     eventmanager.cc 
     laser.cc
     utils.cc
     state_machine.cc
-    epollrepertory.cc 
+    hostcontroller.cc
     gabor_im/bluesteinSetup.cpp 
     gabor_im/cosd.cpp 
     gabor_im/createNormalizedFrequencyVector.cpp 
@@ -67,6 +72,7 @@ target_link_libraries(CheckSystem
   opencv_imgcodecs
   opencv_calib3d
   opencv_xfeatures2d
+  opencv_highgui
   gomp
 	~/workspace/check_system/lib/armhf/libCKCameraSDK.a
 )

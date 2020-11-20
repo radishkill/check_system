@@ -2,13 +2,17 @@
 #define HOSTCONTROLLER_H
 
 #include "usart.h"
+#include "constant.h"
 
 namespace check_system {
+
+
 
 class HostController {
  public:
   HostController(const char* device_file);
-  bool IsOpen() const {return usart_.IsOpen();}
+  ~HostController();
+  bool IsOpen() const {return usart_.IsOpen()&&(fd_ctl_gpio_!=-1);}
   int GetFd() const {return usart_.GetFd();}
   void Open(const char* device_file);
   int RecvData();
@@ -22,6 +26,7 @@ class HostController {
   int RegisterSuccess();//注册
   int RegisterFail();
  private:
+  int fd_ctl_gpio_;
   Usart usart_;
   char data[1024];
 };

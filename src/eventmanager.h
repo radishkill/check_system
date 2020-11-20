@@ -27,6 +27,7 @@ class EventManager {
   void ListenFd(int fd, EventType type, function<void()> f);
   bool RemoveFd(int fd, EventType type);
   void EpollUpdate(int fd, int epoll_op);
+  int GetFd() {return epoll_fd_;}
  private:
   std::set<thread> thread_set_;
   int epoll_fd_;
