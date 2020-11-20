@@ -153,7 +153,6 @@ int KeyFile::SavePic(int id, int index) {
     return 0;
   }
   int i = 0;
-  int j = 0;
   for (i = 0; i < CAMERA_HEIGHT; i++) {
     ofs.write(pic_buffer_[i], CAMERA_WIDTH);
     ofs.flush();
@@ -176,8 +175,8 @@ int KeyFile::SaveSeed(int id, int index, int seed)
   return 0;
 }
 
-int KeyFile::SavePicAndSeed(int key_id, int index, int seed)
-{
+int KeyFile::SavePicAndSeed(int key_id, int index, int seed) {
+
   SavePic(key_id, index);
   SaveSeed(key_id, index, seed);
   return 0;

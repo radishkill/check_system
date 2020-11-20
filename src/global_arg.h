@@ -28,6 +28,7 @@ class GlobalArg {
 
   int interrupt_flag;
   int hsk_flag;//上位机握手控制
+  int is_fault;
  private:
   static GlobalArg* global_arg_;
 };

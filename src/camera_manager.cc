@@ -1,6 +1,7 @@
 #include "camera_manager.h"
 
 #include <iostream>
+#include <chrono>
 
 namespace check_system {
 
@@ -9,27 +10,29 @@ CameraManager::CameraManager()
   pRBGBuffer_ = nullptr;
   dwRGBBufSize_ = 0;
   camera_nums_ = 0;
-  CameraSdkStatus ret;
-  if((ret = CameraEnumerateDevice(&camera_nums_)) != CAMERA_STATUS_SUCCESS) {
+  CameraSdkStatus status;
+  if((status = CameraEnumerateDevice(&camera_nums_)) != CAMERA_STATUS_SUCCESS) {
     perror("none camera device");
     return;
   }
   std::cout << "enumerate camera num " << camera_nums_ << std::endl;
-  //  GetDeviceList();
-  //  if (device_list_.empty()) {
-  //    perror("none camera device");
-  //    return;
-  //  }
 
   //应该只有一个摄像头
-  ret = CameraInitEx(&hCamera_, camera_nums_-1, -1, -1);
-  if(ret != CAMERA_STATUS_SUCCESS) {
+  status = CameraInitEx(&hCamera_, camera_nums_-1, -1, -1);
+  if(status != CAMERA_STATUS_SUCCESS) {
     printf("Camera init failed\n");
     return;
   }
-
-  SetResolution(IMAGEOUT_MODE_320X240);
-  CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_MONO8);
+  status = CameraSetTriggerMode(hCamera_, 1);  //soft trigger
+  status = CameraSetFrameSpeed(hCamera_, 1);
+  status = CameraSetAeState(hCamera_, FALSE);
+  status = CameraSetExposureTime(hCamera_, 30000);
+//  status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_RGB8);
+  status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_MONO8);
+  status = CameraSetTriggerDelayTime(hCamera_, 0);
+  status = CameraSetTriggerFrameCount(hCamera_, 1);
+  //status = CameraSetResolution(hCamera_, IMAGEOUT_MODE_1280X720);
+  SetResolution(IMAGEOUT_MODE_1280X720);
 
   is_open_flag_ = 1;
 }
@@ -78,24 +81,33 @@ int CameraManager::Pause() {
 }
 
 int CameraManager::GetOnePic() {
-
+  int ret = 0;
+  auto begin_tick = std::chrono::steady_clock::now();
   //打开相机
   Play();
-  GetPic();
+
+  ret = GetPic();
+
   Pause();
-  return 0;
+  auto end_tick = std::chrono::steady_clock::now();
+  std::cout << "soft trigger to get image duration " << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
+  return ret;
 }
 
 int CameraManager::GetPic()
 {
-  //照片结果为320x240
   CameraSdkStatus status;
   HANDLE hBuf;
   BYTE* pbyBuffer;
   stImageInfo imageInfo;
 
-  // 获取统计信息来统计帧率
-//  CameraGetFrameStatistic(hCamera_, &lastFS);
+
+
+  status = CameraSoftTrigger(hCamera_);
+  if(status != CAMERA_STATUS_SUCCESS) {
+    std::cout << "soft trigger failed" << std::endl;
+    return -1;
+  }
   // 获取raw image data 1000ms超时时间
   status = CameraGetRawImageBuffer(hCamera_, &hBuf, 1000);
   if (status != CAMERA_STATUS_SUCCESS) {
@@ -104,7 +116,6 @@ int CameraManager::GetPic()
   }
   // 获取图像帧信息
   pbyBuffer = CameraGetImageInfo(hCamera_, hBuf, &imageInfo);
-  std::cout << imageInfo.iWidth << " " <<  imageInfo.iHeight << " " << imageInfo.TotalBytes << std::endl;
   // 申请RGB image buffer内存
   if (pRBGBuffer_ == NULL || imageInfo.iWidth * imageInfo.iHeight > dwRGBBufSize_) {
       if (pRBGBuffer_)
@@ -112,6 +123,7 @@ int CameraManager::GetPic()
       dwRGBBufSize_ = imageInfo.iWidth * imageInfo.iHeight;
       pRBGBuffer_ = new BYTE[dwRGBBufSize_];
   }
+
   //处理原始图像
   status = CameraGetOutImageBuffer(hCamera_, &imageInfo, pbyBuffer, pRBGBuffer_);
   CameraReleaseFrameHandle(hCamera_, hBuf);
@@ -123,7 +135,8 @@ int CameraManager::GetPic()
   if (imageInfo.iWidth != dwWidth_ && imageInfo.iHeight != dwHeight_) {
     std::cout << "picture resolution inequality" << std::endl;
   }
-  std::cout << "get a pic " << imageInfo.iWidth << "x" << imageInfo.iHeight << std::endl;
+
+  std::cout << "get a pic " << imageInfo.iWidth << "x" << imageInfo.iHeight << " " << imageInfo.TotalBytes << std::endl;
   return 0;
 }
 
@@ -141,6 +154,7 @@ int CameraManager::CheckPic(int threshold_low, int threshold_high) {
     average_data += pRBGBuffer_[i];
     average_data /= 2;
   }
+
   if (average_data <= threshold_high && average_data >= threshold_low) {
     return 0;
   }
