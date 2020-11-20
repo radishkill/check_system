@@ -19,6 +19,7 @@
 #include "eventmanager.h"
 #include "led.h"
 #include "hostcontroller.h"
+#include "constant.h"
 
 using check_system::GlobalArg;
 using check_system::Laser;
@@ -37,12 +38,13 @@ void InitSystem() {
   arg->led->RunBlink();
   arg->em = new check_system::EventManager();
 
-  arg->laser = new Laser("/dev/ttyS0");
+  arg->laser = new Laser(check_system::kLaserAddr);
   if(!arg->laser->IsOpen()) {
     arg->led->laser_blink_ = 100;
     arg->led->lcd_blink_ = 100;
     arg->led->cmos_blink_ = 100;
     arg->led->error_blink_ = 100;
+    std::cout << "laser connect error!!" <<std::endl;
     return ;
   } else {
     std::cout << "laser connect ok!!" <<std::endl;
@@ -50,33 +52,36 @@ void InitSystem() {
 
   arg->camera = new CameraManager();
   if(arg->camera->is_open_flag_ == 0) {
-//    arg->led->laser_blink_=100;
-//    arg->led->lcd_blink_=100;
-//    arg->led->cmos_blink_=100;
-//    arg->led->error_blink_=100;
-//    return ;
+    arg->led->laser_blink_=100;
+    arg->led->lcd_blink_=100;
+    arg->led->cmos_blink_=100;
+    arg->led->error_blink_=100;
+    std::cout << "camera connect error!!" << std::endl;
+    return ;
   } else {
     std::cout << "camera connect ok!!" << std::endl;
   }
 
   arg->lcd = new Lcd("/dev/fb0");
   if (!arg->lcd->IsOpen()) {
-//    arg->led->laser_blink_=100;
-//    arg->led->lcd_blink_=100;
-//    arg->led->cmos_blink_=100;
-//    arg->led->error_blink_=100;
-//    return;
+    arg->led->laser_blink_=100;
+    arg->led->lcd_blink_=100;
+    arg->led->cmos_blink_=100;
+    arg->led->error_blink_=100;
+    std::cout << "lcd buffer connect error!!" << std::endl;
+    return;
   } else {
     std::cout << "lcd buffer connect ok!!" << std::endl;
   }
 
-  arg->host = new HostController("/dev/ttyS1");
+  arg->host = new HostController(check_system::kHostAddr);
   if (!arg->host->IsOpen()) {
-//    arg->led->laser_blink_=100;
-//    arg->led->lcd_blink_=100;
-//    arg->led->cmos_blink_=100;
-//    arg->led->error_blink_=100;
-//    return;
+    arg->led->laser_blink_=100;
+    arg->led->lcd_blink_=100;
+    arg->led->cmos_blink_=100;
+    arg->led->error_blink_=100;
+    std::cout << "host tty connect error!!" << std::endl;
+    return;
   } else {
     std::cout << "host tty connect ok!!" << std::endl;
   }
@@ -106,7 +111,9 @@ void InitSystem() {
   std::stringstream ss;
   int fd;
   char key;
-  ss << "/sys/class/gpio/gpio107/value";
+  ss << "/sys/class/gpio/gpio"
+     << std::to_string(check_system::kRegisterButtonNumber)
+     << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
     perror("open gpio 107");
@@ -127,7 +134,9 @@ void InitSystem() {
   ss.str("");
 
   //认证
-  ss << "/sys/class/gpio/gpio171/value";
+  ss << "/sys/class/gpio/gpio"
+     << std::to_string(check_system::kAuthButtonNumber)
+     << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
     perror("open gpio 171");
@@ -148,7 +157,9 @@ void InitSystem() {
   ss.str("");
 
   //中断按钮
-  ss << "/sys/class/gpio/gpio98/value";
+  ss << "/sys/class/gpio/gpio"
+     << std::to_string(check_system::kInterruptButtonNumber)
+     << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
     perror("open gpio 98");
@@ -168,7 +179,9 @@ void InitSystem() {
   ss.str("");
 
   //自检
-  ss << "/sys/class/gpio/gpio165/value";
+  ss << "/sys/class/gpio/gpio"
+     << std::to_string(check_system::kCheckSelfButtonNumber)
+     << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
     perror("open gpio 165");
@@ -194,10 +207,10 @@ void InitSystem() {
     arg->host->RecvData();
   });
 
-//  std::thread th([&]() {
-//    arg->sm->RunMachine(StateMachine::kSelfTest);
-//  });
-//  th.detach();
+  std::thread th([&]() {
+    arg->sm->RunMachine(StateMachine::kSelfTest);
+  });
+  th.detach();
 }
 
 int main() {

@@ -13,6 +13,9 @@ class Laser {
   int SendOpenCmd();
   int SendCloseCmd();
   int SendCheckCmd();
+  int SetTemperature(int Temp);
+  int SetCurrent(int cur);
+  int SetMaxCurrent(int max_cur);
   int ReadBuffer(int timeout);
   int GetStatus() {return status_;}
   bool IsOpen() const {return usart_.IsOpen();}

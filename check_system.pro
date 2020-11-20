@@ -44,6 +44,7 @@ LIBS += -lopencv_core -lopencv_features2d -lopencv_imgproc -lopencv_imgcodecs -l
 LIBS += -lgomp -lopencv_xfeatures2d
 HEADERS += \
     src/camera_manager.h \
+    src/constant.h \
     src/eventmanager.h \
     src/global_arg.h \
     src/hostcontroller.h \

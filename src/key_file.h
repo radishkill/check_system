@@ -4,6 +4,8 @@
 #include <string>
 #include <list>
 
+#include "camera_manager.h"
+
 namespace check_system {
 /*
  * 此类用来操作Puf File数据文件夹
@@ -44,7 +46,7 @@ class KeyFile {
  private:
   //base_path应该指向PUFData文件夹的内部,地址最后不包括/
   std::string base_path_;
-  char pic_buffer_[1080][1920][4];
+  char pic_buffer_[CAMERA_WIDTH][CAMERA_HEIGHT];
   int error = 0 ;
 };
 }

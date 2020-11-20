@@ -110,37 +110,36 @@ int KeyFile::GetPic(int id, int index) {
   int i = 0;
   int j = 0;
   int ret = 0;
-  for (i = 0; i < 1080; i++) {
-    for (j = 0; j< 1920; j++) {
-      ret = ifs.readsome(pic_buffer_[i][j], 4);
-      if (ret != 4 && !ifs.eof()) {
+  for (i = 0; i < CAMERA_HEIGHT; i++) {
+    for (j = 0; j< CAMERA_WIDTH; j++) {
+      ret = ifs.readsome(&pic_buffer_[i][j], 1);
+      if (ret == 0 && !ifs.eof()) {
         ifs.sync();
-        ifs.readsome(pic_buffer_[i][j] + ret, 4-ret);
-        ret += ifs.gcount();
+        ret = ifs.readsome(&pic_buffer_[i][j], 1);
       }
-      if (ret  != 4 && ifs.eof()) {
+      if (ret == 0 && ifs.eof()) {
         std::cout << "read pic file " << "PUF" << Utils::DecToStr(id, 2) << " wrong!!!" << std::endl;
         break;
       }
     }
-    if (j != 1920) {
+    if (j != CAMERA_WIDTH) {
       break;
     }
   }
   ifs.close();
-  if (i != 1080) {
+  if (i != CAMERA_HEIGHT) {
     return -1;
   }
   return 0;
 }
 //得到照片的缓存路径
 char *KeyFile::GetPicBuffer() {
-  return **pic_buffer_;
+  return *pic_buffer_;
 }
 //复制图片到文件图片缓冲区
 int KeyFile::CopyPicToBuffer(char *pic, int width, int height) {
-  for (int i = 0; i < 1080; i++) {
-    std::memcpy(*pic_buffer_[i], pic + i*1920*4, 1920*4);
+  for (int i = 0; i < height; i++) {
+    std::memcpy(pic_buffer_[i], pic + i*width, width);
   }
   return 0;
 }
@@ -155,10 +154,8 @@ int KeyFile::SavePic(int id, int index) {
   }
   int i = 0;
   int j = 0;
-  for (i = 0; i < 1080; i++) {
-    for (j = 0; j< 1920; j++) {
-      ofs.write(pic_buffer_[i][j], 4);
-    }
+  for (i = 0; i < CAMERA_HEIGHT; i++) {
+    ofs.write(pic_buffer_[i], CAMERA_WIDTH);
     ofs.flush();
   }
   ofs.close();

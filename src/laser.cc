@@ -13,6 +13,7 @@ Laser::Laser(const char* device_name)
 }
 
 int Laser::SendOpenCmd() {
+  return 0;
   int i;
   int p = 0;
   data_frame_[p++] = 0x68;
@@ -32,7 +33,7 @@ int Laser::SendOpenCmd() {
   data_frame_[p++] = 0x16;
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
-  int ret = ReadBuffer(6);
+  int ret = ReadBuffer(5);
   if (ret <= 0) {
     std::cout << "open laser wrong!!!" << std::endl;
     return -1;
@@ -42,6 +43,7 @@ int Laser::SendOpenCmd() {
 }
 
 int Laser::SendCloseCmd() {
+  return 0;
   int i;
   int p = 0;
   int ret;
@@ -100,7 +102,7 @@ int Laser::SendCheckCmd() {
     perror("check laser fault!!");
     return -1;
   }
-  //如果数据格式不对
+  //如果数据格式不对temperature
   if (data_frame_[5] != 0x01 && data_frame_[7] != 0x12) {
     perror("bad data!!!");
     return -1;
@@ -112,6 +114,19 @@ int Laser::SendCheckCmd() {
   back_current_unit_ = data_frame_[12];
   is_back_current_empty_ = data_frame_[13];
   // and etc...
+  return 0;
+}
+
+int Laser::SetTemperature(int Temp) {
+
+  return 0;
+}
+
+int Laser::SetCurrent(int cur) {
+  return 0;
+}
+
+int Laser::SetMaxCurrent(int max_cur) {
   return 0;
 }
 
