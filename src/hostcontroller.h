@@ -2,10 +2,11 @@
 #define HOSTCONTROLLER_H
 
 #include "usart.h"
+#include "constant.h"
 
 namespace check_system {
 
-const static int kRs485CtlGpio = 164;
+
 
 class HostController {
  public:
