@@ -405,7 +405,8 @@ extern "C" {
 	*@param[out] puTimestamp	获得时间戳
 	*@return @link #__CK_ERRCODE__ 状态码@endlink
 	*@see CameraGetRawImageBuffer
-	*
+  *      // 叠加十字线等
+      CameraImageOverlay(hCamera_, pRBGBuffer_, &imageInfo);
 	*@~english
 	*@brief Gets the timestamp of the current frame in microseconds
 	*@param[in] hCamera The handle of the camera, obtained by the @link #CameraInit @endlink function
