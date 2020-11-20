@@ -9,7 +9,7 @@
 namespace check_system {
 
 #define CAMERA_WIDTH 1280
-#define CAMERA_HEIGHT 960
+#define CAMERA_HEIGHT 720
 
 class CameraManager {
  public:

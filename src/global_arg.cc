@@ -14,5 +14,6 @@ GlobalArg *GlobalArg::GetInstance() {
 GlobalArg::GlobalArg() {
   interrupt_flag = 0;
   hsk_flag = 0;
+  is_fault = 0;
 }
 }

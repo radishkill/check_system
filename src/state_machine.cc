@@ -55,6 +55,10 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kRegister: {
       std::cout << "Run Register" << std::endl;
+      if (arg->is_fault) {
+        std::cout << "system fault" << std::endl;
+        break;
+      }
       arg->laser->SendOpenCmd();
       //注册模块
       ret = Register();
@@ -68,6 +72,10 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kAuth: {
       std::cout << "Run Auth" << std::endl;
+      if (arg->is_fault) {
+        std::cout << "system fault" << std::endl;
+        break;
+      }
       arg->laser->SendOpenCmd();
       ret = Authentication();
       if (ret < 0 && arg->host->IsOpen()) {
@@ -111,19 +119,29 @@ int StateMachine::SelfTest() {
     std::cout << "camera not open" << std::endl;
     return -1;
   }
-
   if (!arg->lcd->IsOpen()) {
     std::cout << "lcd not open" << std::endl;
     return -1;
   }
-
   if (!arg->laser->IsOpen()) {
     std::cout << "laser not open" << std::endl;
     return -1;
   }
 
-  ret0 = arg->laser->SendCloseCmd();
+  ret1 = arg->laser->SendCloseCmd();
   Utils::MSleep(3000);
+
+  //设置温度
+  ret1 = arg->laser->SetTemperature(20);
+  Utils::MSleep(1000);
+
+  //电流
+  ret1 = arg->laser->SetCurrent(3000);
+  Utils::MSleep(1000);
+  //设置最大电流
+  ret1 = arg->laser->SetMaxCurrent(5000);
+  Utils::MSleep(1000);
+
   int n = 3;
   while (n--) {
     //这里面最长超时时间为5s
@@ -134,28 +152,39 @@ int StateMachine::SelfTest() {
     Utils::MSleep(1000);
   }
 
-  int seed = GenerateRandomSeed();
+  int random_seed = GenerateRandomSeed();
 
-  arg->lcd->ShowBySeed(seed);
+  arg->lcd->ShowBySeed(random_seed);
 
   ret2 = arg->camera->GetOnePic();
 
   ret3 = arg->camera->CheckPic(100, 200);
+  if (ret3 == -1) {
+    std::cout << "check pic : pic wrong" << std::endl;
+  }
 
+  ret1 = arg->laser->SendCloseCmd();
 
-  ret0 = arg->laser->SendCloseCmd();
+  auto begin_tick = std::chrono::steady_clock::now();
 
-//逻辑与,输出LED灯的状态
-//错误
-  if((ret0 != 0)||(ret1 != 0)||(ret2 != 0)||(ret3 != 0)){
+  arg->key_file->CopyPicToBuffer(arg->camera->GetRBGBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
+  arg->key_file->SavePicAndSeed(0, 0, random_seed);
+
+  auto end_tick = std::chrono::steady_clock::now();
+  std::cout << "save pic " << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
+
+  //逻辑与,输出LED灯的状态
+  //错误
+  if((ret0 != 0)||(ret1 != 0)||(ret2 != 0)||(ret3 != 0)) {
       arg->led->error_blink_=100;
-    if((ret0 != 0)||(ret1 != 0)){
+    if((ret0 != 0)||(ret1 != 0)) {
       arg->led->laser_blink_=100;
     }
     if((ret2 != 0)||(ret3 != 0)){
       arg->led->lcd_blink_ =100;
       arg->led->cmos_blink_ =100;
     }
+    arg->is_fault = 1;
   } else {
     //正确ok
     arg->led->ErrorLed(0);
@@ -172,6 +201,7 @@ int StateMachine::SelfTest() {
     arg->led->LaserLed(1);
     arg->led->CmosLed(1);
     arg->led->LcdLed(1);
+    arg->is_fault = 0;
   }
   return 0;
 }
@@ -197,6 +227,7 @@ int StateMachine::Register() {
   arg->led->LcdLed(0);
   arg->led->ErrorLed(0);
   Utils::MSleep(250);
+  std::cout << "led off ok" << std::endl;
 
   if (arg->sm->CheckKey() == -1) {
     //检测到无key插入
@@ -208,6 +239,7 @@ int StateMachine::Register() {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
+
   ret = arg->sm->CheckAdminKey();
   //非管理员key插入
   if(ret == 0) {
@@ -443,7 +475,7 @@ int StateMachine::CheckKey()
   int seed = arg->sm->GenerateRandomSeed();
   arg->lcd->ShowBySeed(seed);
   arg->camera->GetOnePic();
-  return arg->camera->CheckPic(0, 200);
+  return arg->camera->CheckPic(100, 200);
 }
 //管理员KEY检测算法
 int StateMachine::CheckAdminKey() {

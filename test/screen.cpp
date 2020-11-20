@@ -11,6 +11,8 @@
 #include <errno.h>
 #include <random>
 #include <ctime>
+#include <fstream>
+#include <iostream>
 struct fb_var_screeninfo vinfo;
 struct fb_fix_screeninfo finfo;
 char *frameBuffer = 0;
@@ -137,20 +139,38 @@ void drawRect_rgb16 (int x0, int y0, int width,int height, int color)
     }
 }
 int ShowBySeed(int seed) {
-   const int stride = finfo.line_length / 4;
-   int x, y;
-   std::srand(seed);
-   char* dest = (char*)frameBuffer + (vinfo.yoffset) * vinfo.yres*4 + (vinfo.xoffset);
-   for (y = 0; y < vinfo.yres; y++) {
-   	for (x = 0; x < vinfo.xres; x++ ) {
-   		*dest = std::rand()%0x100;
-   		*(dest+1) = std::rand()%0x100;
-   		*(dest+2) = std::rand()%0x100;
-   		*(dest+3) = 0x00;
-   		dest+=4;
-   	}
-   }
-	return 0;
+  char a, b, c, d;
+  int x, y;
+  char* dest = (char*)frameBuffer + (vinfo.yoffset) * vinfo.yres*4 + (vinfo.xoffset);
+  std::srand(seed);
+  std::cout << seed << std::endl;
+  std::cout << "offset : " << vinfo.xoffset << " " << vinfo.yoffset << std::endl;
+  std::cout << vinfo.xres << " " << vinfo.yres << std::endl;
+  std::ofstream osf, osf2;
+  osf.open(std::to_string(seed).c_str());
+  osf2.open(std::string(std::to_string(seed) + "_space"));
+  for (y = 0; y < vinfo.yres; y++) {
+    for (x = 0; x < vinfo.xres; x++) {
+//      *dest = std::rand()%0x100;
+//      *(dest+1) = std::rand()%0x100;
+//      *(dest+2) = std::rand()%0x100;
+      a = std::rand()%0x100;
+      b = std::rand()%0x100;
+      c = std::rand()%0x100;
+      d = 0xff;
+      *dest = a;
+      *(dest+1) = b;
+      *(dest+2) = c;
+      *(dest+3) = 0xff;
+      dest += 4;
+      osf << a << b << c << d;
+      osf2 << a << b << c << d << " ";
+    }
+    osf2 << std::endl;
+  }
+  osf.close();
+  osf2.close();
+  return 0;
 }
 int main (int argc, char **argv)
 {
@@ -181,14 +201,14 @@ int main (int argc, char **argv)
        perror ("Error reading variable information");
        exit (3);
     }
-     vinfo.xres = 800;
-     vinfo.yres = 600;
+    //  vinfo.xres = 800;
+    //  vinfo.yres = 600;
    //  vinfo.bits_per_pixel = 32;
-    if (ioctl (fbFd, FBIOPUT_VSCREENINFO, &vinfo) == -1)
-    {
-       perror ("Error reading variable information");
-       exit (3);
-    }
+    // if (ioctl (fbFd, FBIOPUT_VSCREENINFO, &vinfo) == -1)
+    // {
+    //    perror ("Error reading variable information");
+    //    exit (3);
+    // }
   //  printVariableInfo ();
 
    /* Figure out the size of the screen in bytes */
@@ -206,9 +226,9 @@ int main (int argc, char **argv)
 
        //drawline_rgb16(0,0,vinfo.xres,vinfo.yres,0xffff0000,0);
 
-       drawline_rgb16(260,10,0,280,0xff00ff00,1);//可以画出一个交叉的十字，坐标都是自己设的。
+       //drawline_rgb16(260,10,0,280,0xff00ff00,1);//可以画出一个交叉的十字，坐标都是自己设的。
        std::srand(std::time(nullptr));
-       //ShowBySeed(std::rand());
+       ShowBySeed(std::rand());
        sleep (2);
        printf (" Done.\n");
 
