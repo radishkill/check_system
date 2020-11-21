@@ -13,7 +13,7 @@ Laser::Laser(const char* device_name)
 }
 
 int Laser::SendOpenCmd() {
-  return 0;
+  std::cout << "open laser\n";
   int i;
   int p = 0;
   data_frame_[p++] = 0x68;
@@ -43,7 +43,7 @@ int Laser::SendOpenCmd() {
 }
 
 int Laser::SendCloseCmd() {
-  return 0;
+  std::cout << "close laser\n";
   int i;
   int p = 0;
   int ret;
@@ -76,7 +76,7 @@ int Laser::SendCloseCmd() {
 }
 
 int Laser::SendCheckCmd() {
-  return 0;
+  std::cout << "check laser\n";
   int i;
   int p = 0;
 
@@ -119,7 +119,7 @@ int Laser::SendCheckCmd() {
 }
 
 int Laser::SetTemperature(int Temp) {
-  return 0;
+  std::cout << "set laser temperature\n";
   int ret;
   if(Temp == 20) {
     int i;
@@ -142,7 +142,7 @@ int Laser::SetTemperature(int Temp) {
     p++;
     data_frame_[p++] = 0x16;
     data_frame_[p] = '\0';
-
+    usart_.SendData(data_frame_, p);
   } else {
     return -1;
   }
@@ -155,7 +155,7 @@ int Laser::SetTemperature(int Temp) {
 }
 
 int Laser::SetCurrent(int cur) {
-  return 0;
+  std::cout << "set laser current\n";
   int ret;
   if(cur==3000) {
     int i;
@@ -179,7 +179,7 @@ int Laser::SetCurrent(int cur) {
     p++;
     data_frame_[p++] = 0x16;
     data_frame_[p] = '\0';
-
+    usart_.SendData(data_frame_, p);
   } else {
     return -1;
   }
@@ -192,7 +192,7 @@ int Laser::SetCurrent(int cur) {
 }
 
 int Laser::SetMaxCurrent(int max_cur) {
-  return 0;
+  std::cout << "set laser max current\n";
   int ret;
   if (max_cur == 5000) {
       int i;
@@ -238,6 +238,7 @@ int Laser::SetMaxCurrent(int max_cur) {
       p++;
       data_frame_[p++] = 0x16;
       data_frame_[p] = '\0';
+      usart_.SendData(data_frame_, p);
   } else {
     return -1;
   }

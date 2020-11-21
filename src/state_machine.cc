@@ -127,20 +127,17 @@ int StateMachine::SelfTest() {
     std::cout << "laser not open" << std::endl;
     return -1;
   }
-
+  //先关闭摄像头 保证摄像头已经关闭了
   ret1 = arg->laser->SendCloseCmd();
-  Utils::MSleep(3000);
 
   //设置温度
   ret1 = arg->laser->SetTemperature(20);
-  Utils::MSleep(1000);
 
   //电流
   ret1 = arg->laser->SetCurrent(3000);
-  Utils::MSleep(1000);
+
   //设置最大电流
   ret1 = arg->laser->SetMaxCurrent(5000);
-  Utils::MSleep(1000);
 
   int n = 3;
   while (n--) {

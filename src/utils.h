@@ -7,6 +7,7 @@
 
 class Utils {
   public:
+  static void ShowRawString(char* buf, int n);
   static unsigned char CheckSum(unsigned char* p, int datalen);
   static int MSleep(unsigned int ms, bool force_sleep = true);
   static std::string DecToStr(int para,int w);
