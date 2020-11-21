@@ -34,6 +34,8 @@ CameraManager::CameraManager()
   //status = CameraSetResolution(hCamera_, IMAGEOUT_MODE_1280X720);
   SetResolution(IMAGEOUT_MODE_1280X720);
 
+  Play();
+
   is_open_flag_ = 1;
 }
 

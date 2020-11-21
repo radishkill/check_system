@@ -7,8 +7,16 @@
 #include <iomanip>
 
 
-using namespace std;
-//生成校验码
+
+void Utils::ShowRawString(char *buf, int n) {
+  std::cout << std::hex;
+  for (int i = 0; i < n; i++) {
+    std::cout << "\\x" << (static_cast<short>(buf[i])&0xff);
+  }
+}
+/*
+ *生成校验码
+ */
 unsigned char Utils::CheckSum(unsigned char *p, int datalen) {
   unsigned char cksum = 0;
   int i;
