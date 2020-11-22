@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <mutex>
+#include <opencv2/opencv.hpp>
 
 namespace check_system {
 
@@ -26,7 +27,7 @@ class StateMachine {
   int CheckPairStore(int id);      //库遍历算法
   int CheckAvailablePair(int id);  //检查可用激励对
 
-  int AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2);
+  int AuthPic(cv::Mat& speckle_database, char *pic2, int h2, int w2);
 
  private:
   std::vector<int> empty_pair_list_;

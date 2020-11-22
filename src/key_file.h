@@ -4,6 +4,8 @@
 #include <string>
 #include <list>
 
+#include <opencv2/opencv.hpp>
+
 #include "camera_manager.h"
 
 namespace check_system {
@@ -34,9 +36,12 @@ class KeyFile {
   int GetSeed(int id,int index);
   int IsSeedAvailable(int id, int index);
   int GetPic(int id,int index);
+  int ReadPicAsBmp(int id, int index);
   char* GetPicBuffer();
+  cv::Mat& GetMatImage() {return image_;};
   int CopyPicToBuffer(char* pic, int width, int height);
   int SavePic(int id, int index);
+  int SavePicAsBmp(int id, int index);
   int SaveSeed(int id,int index,int seed);
   int SavePicAndSeed(int key_id, int index, int seed);
   int DeletePic(int id,int index);
@@ -47,6 +52,7 @@ class KeyFile {
   //base_path应该指向PUFData文件夹的内部,地址最后不包括/
   std::string base_path_;
   char pic_buffer_[CAMERA_WIDTH][CAMERA_HEIGHT];
+  cv::Mat image_;
   int error = 0 ;
 };
 }

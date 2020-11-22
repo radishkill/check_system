@@ -34,7 +34,10 @@ CameraManager::CameraManager()
   status = CameraSetTriggerDelayTime(hCamera_, 0);
   status = CameraSetTriggerFrameCount(hCamera_, 1);
   //status = CameraSetResolution(hCamera_, IMAGEOUT_MODE_1280X720);
-  SetResolution(IMAGEOUT_MODE_1280X720);
+  if (CAMERA_WIDTH == 1280)
+    SetResolution(IMAGEOUT_MODE_1280X720);
+  else
+    SetResolution(IMAGEOUT_MODE_320X240);
 
   Play();
 

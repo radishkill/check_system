@@ -98,7 +98,7 @@ int Laser::SendCheckCmd() {
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
   i = 0;
-  int ret = ReadBuffer(10);
+  int ret = ReadBuffer(1);
   if (ret <= 0) {
     perror("check laser fault!!");
     return -1;
