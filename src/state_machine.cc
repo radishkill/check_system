@@ -309,9 +309,9 @@ int StateMachine::Register() {
   }
   //管理员key插入
   //闪烁 并给用户插入新卡的时间 10s
-  std::cout << "wait 10s\n";
+  std::cout << "wait 2s\n";
   arg->led->ErrorLed(0);
-  for(int i = 0 ; i < 20 ; i++ ) {
+  for(int i = 0 ; i < 2 ; i++ ) {
     arg->led->CmosLed(0);
     arg->led->LaserLed(0);
     arg->led->LcdLed(0);
@@ -390,6 +390,7 @@ int StateMachine::Register() {
   }
   end_tick = std::chrono::steady_clock::now();
   std::cout << "elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
+  std::cout << "register sucess !!!!" << std::endl;
   return 0;
 status_fault:
   return -1;
@@ -445,19 +446,23 @@ int StateMachine::Authentication() {
     return -1;
   }
   int n = 10;
+  int available_num = available_pair_list_.size();
+  int result;
   while (n--) {
     int index = std::rand()%available_pair_list_.size();
-    int seed_index = empty_pair_list_[index];
+    int seed_index = available_pair_list_[index];
     int seed = arg->key_file->GetSeed(key_id, seed_index);
     arg->lcd->ShowBySeed(seed);
     arg->camera->GetOnePic();
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    int result = AuthPic(arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT, arg->key_file->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
+    result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
 
     //删除本次循环使用的Seed文件及其对应的Pic文件
     arg->key_file->DeleteSeed(key_id,seed_index);
     arg->key_file->DeletePic(key_id,seed_index);
+    available_pair_list_[seed_index] = -1;
+
 
     //值越小说明两张图片越相似
     if (result < 5) {
@@ -467,9 +472,14 @@ int StateMachine::Authentication() {
       arg->led->CmosLed(1);
       break;
     }
+    available_num--;
+    //用完了库里面所有的钥匙
+    if (available_num == 0) {
+      break;
+    }
   }
   //认证失败
-  if (n < 0) {
+  if (n < 0 || available_num == 0) {
     //红灯 ON
     arg->led->ErrorLed(1);
     //中断返回复位状态
@@ -477,6 +487,8 @@ int StateMachine::Authentication() {
       arg->interrupt_flag=0;
       return -1;
       }
+  } else {
+    std::cout << "auth success!!!" << std::endl;
   }
   return 0;
 }
@@ -509,13 +521,11 @@ int StateMachine::FindKey() {
     int seed_index = std::rand()%available_pair_list_.size();
     int seed = arg->key_file->GetSeed(i, seed_index);
     arg->lcd->ShowBySeed(seed);
-    arg->key_file->GetPic(i, seed_index);
+    arg->key_file->ReadPicAsBmp(i, seed_index);
     arg->camera->GetOnePic();
-    temp_pic = arg->camera->GetPicBuffer();
-    pic = arg->key_file->GetPicBuffer();
     auto begin_tick = std::chrono::steady_clock::now();
     //运算temp_pic 与 pic 得到结果
-    int result = AuthPic(pic, CAMERA_WIDTH, CAMERA_HEIGHT, temp_pic, CAMERA_WIDTH, CAMERA_HEIGHT);
+    int result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
     if (result <= 5) {
@@ -560,12 +570,12 @@ int StateMachine::CheckAdminKey() {
   while (n--) {
     int seed_index = std::rand()%available_pair_list_.size();
     int seed = arg->key_file->GetSeed(0, seed_index);
-    arg->key_file->GetPic(0, seed_index);
+    arg->key_file->ReadPicAsBmp(0, seed_index);
     arg->lcd->ShowBySeed(seed);
     arg->camera->GetOnePic();
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    double result = AuthPic(arg->key_file->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT, arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
+    double result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
     if (result < 0.5) {
       //结果匹配
       //.....
@@ -600,7 +610,6 @@ int StateMachine::CheckPairStore(int id) {
       empty_pair_list_.push_back(i);
     }
   }
-
   return 0;
 }
 //检查可用激励对
@@ -707,13 +716,11 @@ static emxArray_uint8_T *c_argInit_UnboundedxUnbounded_u()
 double hamming(Mat input1, Mat input2)
 {
   double diff = 0;
-  int count = 0;
-  for (int i = 0; i < input2.rows; i++)
+  for (int i = 0; i < input2.rows && i < input1.rows; i++)
   {
     uchar* data1 = input1.ptr<uchar>(i);
     uchar* data2 = input2.ptr<uchar>(i);
-    for (int j = 0; j < input2.cols; j++)
-    {
+    for (int j = 0; j < input2.cols && j < input1.cols; j++) {
       if (data1[j] != data2[j])
       {
         diff++;
@@ -726,7 +733,7 @@ double hamming(Mat input1, Mat input2)
   return diff;
 }
 
-int StateMachine::AuthPic(char *database_pic, int h1, int w1, char *auth_pic, int h2, int w2) {
+int StateMachine::AuthPic(cv::Mat& speckle_database, char *auth_pic, int h2, int w2) {
   std::cout << "auth pic\n";
   // Initialize the application.
   gabor_im_initialize();
@@ -759,9 +766,9 @@ int StateMachine::AuthPic(char *database_pic, int h1, int w1, char *auth_pic, in
 //  Mat speckle_database = imread("./13.bmp",CV_8U);
 //  Mat speckle_auth = imread("./14.bmp", CV_8U);
 
-  Mat speckle_database(h1, w1, CV_8UC1);
+//  Mat speckle_database(h1, w1, CV_8UC1);
   Mat speckle_auth(h2, w2, CV_8UC1);
-  std::memcpy(speckle_database.data, database_pic, h1 * w1);
+//  std::memcpy(speckle_database.data, database_pic, h1 * w1);
   std::memcpy(speckle_auth.data, auth_pic, h2 * w2);
 
   Mat ROI = speckle_database;//= speckle_database(Rect(50,50, speckle_database.cols-50, speckle_database.rows-50));
@@ -811,24 +818,27 @@ int StateMachine::AuthPic(char *database_pic, int h1, int w1, char *auth_pic, in
 
   double FHD = hamming(bw_im, bw_im2);
 
-
 //  namedWindow("Display bw_im", WINDOW_AUTOSIZE); // Create a window for display.
 //  imshow("Display bw_im", bw_im);
 //  namedWindow("Display bw_im2", WINDOW_AUTOSIZE); // Create a window for display.
 //  imshow("Display bw_im2", bw_im2);
 
 //  double FHD2 = 0;
+  begin_tick = std::chrono::steady_clock::now();
   if (FHD >= 0.1 && FHD <= 0.25) {
+//  if (FHD >= 0.01 && FHD <= 0.5) {
     TransformPic(speckle_database, speckle_auth, speckle_auth);
     image3 = Mat2Emx_U8(speckle_auth);
     gabor_im(image3, 8, 45, Gimage_im3, BW_im3, K3);
     Gim_mat3 = Emx2Mat_U8(Gimage_im3);
     threshold(Gim_mat3, bw_im3, 0, 255, THRESH_BINARY_INV);
-//    imshow("bw_im3", bw_im3);
     bw_im3.convertTo(bw_im3, CV_8U, 1, 0);
-    FHD = hamming(bw_im, bw_im3);
-//    cout << "FHD=" << FHD2 << endl;
+    int FHD2 = hamming(bw_im, bw_im3);
+    cout << "FHD2=" << FHD2 << endl;
   }
+  end_tick = std::chrono::steady_clock::now();
+  std::cout << "hanming FHD2 : "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
 //  waitKey(0);
   emxDestroyArray_boolean_T(K);
   emxDestroyArray_boolean_T(BW_im);

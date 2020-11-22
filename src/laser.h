@@ -24,12 +24,7 @@ class Laser {
   char data_frame_[310];
   Usart usart_;
   int status_;
-  int target_exist_;
-  int target_temperature_status;
-  int target_move_;
-  int env_temperature_status_;
-  int back_current_unit_;
-  int is_back_current_empty_;
+  int current_;
   int max_current_;
   int temperature_;
 };

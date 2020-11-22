@@ -8,6 +8,8 @@
 #include<fcntl.h>
 #include "utils.h"
 
+
+
 namespace check_system {
 /*
  * 这里面的步骤应该是
@@ -15,7 +17,8 @@ namespace check_system {
  * 2. 检查PUF00 是否存在  不存在就报错返回
  * 3. 检查PUF00中是否包含1000个激励相应对 没有就报错返回 （可以跳过）
  */
-KeyFile::KeyFile(const char* base_path) {
+KeyFile::KeyFile(const char* base_path)
+    : image_() {
   base_path_ = base_path;
   if(access(base_path,0) != 0){
     error = 1;
@@ -132,15 +135,27 @@ int KeyFile::GetPic(int id, int index) {
   }
   return 0;
 }
+
+int KeyFile::ReadPicAsBmp(int id, int index) {
+  std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
+  image_ = cv::imread(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp");
+  if (!image_.data) {
+    std::cout << "read pic file " << "PUF" << Utils::DecToStr(id, 2) << " wrong!!!" << std::endl;
+    return -1;
+  }
+  return 0;
+}
 //得到照片的缓存路径
 char *KeyFile::GetPicBuffer() {
   return *pic_buffer_;
 }
 //复制图片到文件图片缓冲区
 int KeyFile::CopyPicToBuffer(char *pic, int width, int height) {
-  for (int i = 0; i < height; i++) {
-    std::memcpy(pic_buffer_[i], pic + i*width, width);
-  }
+//  for (int i = 0; i < height; i++) {
+//    std::memcpy(pic_buffer_[i], pic + i*width, width);
+//  }
+  image_ = cv::Mat(height, width, CV_8UC1);
+  std::memcpy(image_.data, pic, width*height);
   return 0;
 }
 //从缓存区保存照片
@@ -160,6 +175,12 @@ int KeyFile::SavePic(int id, int index) {
   ofs.close();
   return 0;
 }
+
+int KeyFile::SavePicAsBmp(int id, int index) {
+  std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
+  cv::imwrite(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp", image_);
+  return 0;
+}
 //保存seed
 int KeyFile::SaveSeed(int id, int index, int seed)
 {
@@ -177,7 +198,7 @@ int KeyFile::SaveSeed(int id, int index, int seed)
 
 int KeyFile::SavePicAndSeed(int key_id, int index, int seed) {
 
-  SavePic(key_id, index);
+  SavePicAsBmp(key_id, index);
   SaveSeed(key_id, index, seed);
   return 0;
 }

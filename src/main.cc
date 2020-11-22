@@ -64,10 +64,10 @@ void InitSystem() {
 
   arg->lcd = new Lcd("/dev/fb0");
   if (!arg->lcd->IsOpen()) {
-    arg->led->laser_blink_=100;
-    arg->led->lcd_blink_=100;
-    arg->led->cmos_blink_=100;
-    arg->led->error_blink_=100;
+    arg->led->laser_blink_=200;
+    arg->led->lcd_blink_=200;
+    arg->led->cmos_blink_=200;
+    arg->led->error_blink_=200;
     std::cout << "lcd buffer connect error!!" << std::endl;
     return;
   } else {
@@ -76,10 +76,10 @@ void InitSystem() {
 
   arg->host = new HostController(check_system::kHostAddr);
   if (!arg->host->IsOpen()) {
-    arg->led->laser_blink_=100;
-    arg->led->lcd_blink_=100;
-    arg->led->cmos_blink_=100;
-    arg->led->error_blink_=100;
+    arg->led->laser_blink_ = 200;
+    arg->led->lcd_blink_ = 200;
+    arg->led->cmos_blink_ = 200;
+    arg->led->error_blink_ = 200;
     std::cout << "host tty connect error!!" << std::endl;
     return;
   } else {
@@ -98,11 +98,11 @@ void InitSystem() {
     arg->led->CmosLed(0);
     arg->led->LaserLed(0);
     arg->led->LcdLed(0);
-    Utils::MSleep(250);
+    Utils::MSleep(500);
     arg->led->CmosLed(1);
     arg->led->LaserLed(1);
     arg->led->LcdLed(1);
-    Utils::MSleep(250);
+    Utils::MSleep(500);
   }
 
   //下面部分是用来打开button的
