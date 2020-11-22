@@ -13,6 +13,7 @@ void Utils::ShowRawString(char *buf, int n) {
   for (int i = 0; i < n; i++) {
     std::cout << "\\x" << (static_cast<short>(buf[i])&0xff);
   }
+  std::cout << std::dec;
 }
 /*
  *生成校验码

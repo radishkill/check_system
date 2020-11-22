@@ -33,7 +33,7 @@ int Laser::SendOpenCmd() {
   data_frame_[p++] = 0x16;
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
-  int ret = ReadBuffer(5);
+  int ret = ReadBuffer(2);
   if (ret <= 0) {
     std::cout << "open laser wrong!!!" << std::endl;
     return -1;
@@ -66,7 +66,7 @@ int Laser::SendCloseCmd() {
   data_frame_[p] = '\0';
   usart_.SendData(data_frame_, p);
   i = 0;
-  ret = ReadBuffer(5);
+  ret = ReadBuffer(2);
   if (ret <= 0) {
     std::cout << "close laser wrong!!!" << std::endl;
     return -1;
@@ -146,7 +146,7 @@ int Laser::SetTemperature(int Temp) {
   } else {
     return -1;
   }
-  ret = ReadBuffer(5);
+  ret = ReadBuffer(2);
   if (ret <= 0) {
     std::cout << "SetTemperature laser wrong!!!" << std::endl;
     return -1;
@@ -183,7 +183,7 @@ int Laser::SetCurrent(int cur) {
   } else {
     return -1;
   }
-  ret = ReadBuffer(5);
+  ret = ReadBuffer(2);
   if (ret <= 0) {
     std::cout << "SetCurrent laser wrong!!!" << std::endl;
     return -1;
@@ -216,6 +216,7 @@ int Laser::SetMaxCurrent(int max_cur) {
       p++;
       data_frame_[p++] = 0x16;
       data_frame_[p] = '\0';
+      usart_.SendData(data_frame_, p);
   } else if (max_cur == 7000) {
       int i;
       int p = 0;
@@ -242,7 +243,7 @@ int Laser::SetMaxCurrent(int max_cur) {
   } else {
     return -1;
   }
-  ret = ReadBuffer(5);
+  ret = ReadBuffer(2);
   if (ret <= 0) {
     std::cout << "SetMaxCurrent laser wrong!!!" << std::endl;
     return -1;
@@ -266,11 +267,7 @@ int Laser::ReadBuffer(int timeout) {
     std::cout << "timeout or empty data" << std::endl;
     return 0;
   } else {
-    int res_len = read(usart_.GetFd(), data_frame_, 1024);
-    for (int i = 0; i < res_len; i++){
-      std::cout << std::hex << (int)data_frame_[i] << " ";
-    }
-    std::cout << std::endl;
+    int res_len = usart_.ReadData(data_frame_, 1024);
     return res_len;
   }
 }

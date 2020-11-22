@@ -21,16 +21,17 @@ class CameraManager {
   int Pause();
   int GetOnePic();
   int GetPic();
-  char* GetRBGBuffer();
+  char* GetPicBuffer();
   int CheckPic(int threshold_low, int threshold_high);
   bool IsOpen() {return is_open_flag_ == 1;};
   int is_open_flag_;
  private:
   std::vector<std::string> device_list_;
+  stImageInfo image_info_;
   HANDLE hCamera_;
   DWORD dwWidth_;
   DWORD dwHeight_;
-  BYTE* pRBGBuffer_;
+  BYTE* pBuffer_;
   DWORD dwRGBBufSize_;
   int camera_nums_;
 };

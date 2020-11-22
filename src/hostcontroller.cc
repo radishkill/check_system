@@ -38,10 +38,7 @@ int HostController::RecvData() {
     std::cout << "bad data" << std::endl;
     return -1;
   }
-  std::cout << std::hex;
-  for (int i = 0; i < 3; i++) {
-    std::cout << static_cast<int>(recved_data[i]) << " ";
-  }
+  Utils::ShowRawString(recved_data, 3);
   std::cout << std::endl;
 
   switch (recved_data[2]) {

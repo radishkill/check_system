@@ -207,10 +207,11 @@ void InitSystem() {
     arg->host->RecvData();
   });
 
-  std::thread th([&]() {
-    arg->sm->RunMachine(StateMachine::kSelfTest);
-  });
-  th.detach();
+
+//  std::thread th([&]() {
+//    arg->sm->RunMachine(StateMachine::kSelfTest);
+//  });
+//  th.detach();
 }
 
 int main() {

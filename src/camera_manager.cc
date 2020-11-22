@@ -3,11 +3,13 @@
 #include <iostream>
 #include <chrono>
 
+#include "utils.h"
+
 namespace check_system {
 
 CameraManager::CameraManager()
     : is_open_flag_(0) {
-  pRBGBuffer_ = nullptr;
+  pBuffer_ = nullptr;
   dwRGBBufSize_ = 0;
   camera_nums_ = 0;
   CameraSdkStatus status;
@@ -26,7 +28,7 @@ CameraManager::CameraManager()
   status = CameraSetTriggerMode(hCamera_, 1);  //soft trigger
   status = CameraSetFrameSpeed(hCamera_, 1);
   status = CameraSetAeState(hCamera_, FALSE);
-  status = CameraSetExposureTime(hCamera_, 3000);
+  status = CameraSetExposureTime(hCamera_, 2000);
 //  status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_RGB8);
   status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_MONO8);
   status = CameraSetTriggerDelayTime(hCamera_, 0);
@@ -84,23 +86,18 @@ int CameraManager::Pause() {
 
 int CameraManager::GetOnePic() {
   int ret = 0;
-  auto begin_tick = std::chrono::steady_clock::now();
   //打开相机
 //  Play();
 
   ret = GetPic();
 
 //  Pause();
-  auto end_tick = std::chrono::steady_clock::now();
-  std::cout << "soft trigger to get image duration " << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
   return ret;
 }
 
 int CameraManager::GetPic()
 {
   CameraSdkStatus status;
-  stImageInfo imageInfo;
-
 
   auto begin_tick = std::chrono::steady_clock::now();
   status = CameraSoftTrigger(hCamera_);
@@ -109,34 +106,33 @@ int CameraManager::GetPic()
     return -1;
   }
 
-  stImageInfo imgInfo;
-  pRBGBuffer_ = CameraGetImageBufferEx(hCamera_, &imgInfo, 1000);
-  if (pRBGBuffer_ == NULL) {
+  pBuffer_ = CameraGetImageBufferEx(hCamera_, &image_info_, 1000);
+  if (pBuffer_ == NULL) {
     std::cout << "can't get a frame" << std::endl;
   }
-  if (imageInfo.iWidth != dwWidth_ && imageInfo.iHeight != dwHeight_) {
-    std::cout << "picture resolution inequality" << std::endl;
-  }
-  std::cout << "get a pic " << imageInfo.iWidth << "x" << imageInfo.iHeight << " " << imageInfo.TotalBytes << std::endl;
+
+  std::cout << "get a pic " << image_info_.iWidth << "x" << image_info_.iHeight << " " << image_info_.TotalBytes << std::endl;
 
   auto end_tick = std::chrono::steady_clock::now();
-  std::cout << "soft trigger to get image duration " << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
+  std::cout << "soft trigger to get image duration 1" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
 
   return 0;
 }
 
-char *CameraManager::GetRBGBuffer() {
-  return (char*)pRBGBuffer_;
+char *CameraManager::GetPicBuffer() {
+  return (char*)pBuffer_;
 }
 
 int CameraManager::CheckPic(int threshold_low, int threshold_high) {
   int average_data = 0;
-  if (pRBGBuffer_ == nullptr)
+  if (pBuffer_ == nullptr)
     return -1;
-  average_data = pRBGBuffer_[0];
+  average_data = pBuffer_[0];
+  Utils::ShowRawString((char*)pBuffer_, 100);
+  std::cout << std::endl;
 
   for (unsigned int i = 1; i < dwWidth_*dwHeight_; i++) {
-    average_data += pRBGBuffer_[i];
+    average_data += pBuffer_[i];
     average_data /= 2;
   }
   std::cout << "check pic average value : " << average_data << std::endl;
