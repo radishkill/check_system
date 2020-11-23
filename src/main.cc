@@ -35,6 +35,48 @@ std::thread timer_thread_;
 
 
 void SimpleTimer() {
+  GlobalArg* arg = GlobalArg::GetInstance();
+  int i = 0;
+  while (1) {
+    if (arg->led->laser_blink_ && ((i*100)%arg->led->laser_blink_ == 0)) {
+      if (arg->led->laser_status_) {
+        arg->led->LaserLed(0);
+      } else {
+        arg->led->LaserLed(1);
+      }
+    }
+    if (arg->led->lcd_blink_ && ((i*100)%arg->led->lcd_blink_ == 0)) {
+      if (arg->led->lcd_status_) {
+        arg->led->LcdLed(0);
+      } else {
+        arg->led->LcdLed(1);
+      }
+    }
+    if (arg->led->cmos_blink_ && ((i*100)%arg->led->cmos_blink_ == 0)) {
+      if (arg->led->cmos_status_) {
+        arg->led->CmosLed(0);
+      } else {
+        arg->led->CmosLed(1);
+      }
+    }
+    if (arg->led->error_blink_ && ((i*100)%arg->led->error_blink_ == 0)) {
+      if (arg->led->error_status_) {
+        arg->led->ErrorLed(0);
+      } else {
+        arg->led->ErrorLed(1);
+      }
+    }
+    if (arg->laser->ttl >= 0) {
+      arg->laser->ttl--;
+    }
+    if (arg->laser->ttl == 0 && arg->laser->GetStatus()) {
+      arg->laser->SendCloseCmd();
+    }
+    Utils::MSleep(100);
+    i++;
+    if (i == 1000000)
+      i = 0;
+  }
 
 }
 
@@ -42,7 +84,7 @@ void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
   //启动LED闪烁线程
-  //arg->led->RunBlink();
+//  arg->led->RunBlink();
 
   arg->em = new check_system::EventManager();
 
