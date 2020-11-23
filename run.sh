@@ -1,12 +1,13 @@
 #!/bin/bash
 cd `dirname $0`
 
-
+echo "open vga"
 echo off > /sys/class/drm/card0/card0-HDMI-A-1/status
 sleep 1
 echo on > /sys/class/drm/card0/card0-HDMI-A-1/status
 sleep 1
 echo off > /sys/class/drm/card0/card0-HDMI-A-1/status
+echo "open vga success"
 
 
 if [ ! -d "/sys/class/gpio/gpio223" ];then

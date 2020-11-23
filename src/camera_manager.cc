@@ -105,7 +105,7 @@ int CameraManager::GetPic() {
   status = CameraSoftTrigger(hCamera_);
   std::cout << "soft trigger" << std::endl;
   if(status != CAMERA_STATUS_SUCCESS) {
-    std::cout << "soft trigger failed" << std::endl;
+    std::cout << "soft trigger failed : " << status << std::endl;
     return -1;
   }
 

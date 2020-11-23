@@ -44,7 +44,10 @@ int HostController::RecvData() {
   switch (recved_data[2]) {
     case 0x01: {
       //状态查询
-      CheckStatus();
+      std::thread th([&]() {
+        arg->sm->RunMachine(StateMachine::kSelfTest);
+      });
+      th.detach();
       break;
     }
     case 0x02: {
@@ -58,11 +61,6 @@ int HostController::RecvData() {
       break;
     }
     case 0x04: {
-      //全灯OFF
-      arg->led->CmosLed(0);
-      arg->led->LaserLed(0);
-      arg->led->LcdLed(0);
-      arg->led->ErrorLed(0);
       //认证
       if (!arg->hsk_flag)
         break;

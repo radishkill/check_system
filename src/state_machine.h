@@ -26,7 +26,6 @@ class StateMachine {
   int CheckKey(int key_id);
   int CheckAdminKey();             //管理员KEY检测算法
   int CheckPairStore(int id);      //库遍历算法
-  int CheckAvailablePair(int id);  //检查可用激励对
 
   int AuthPic(cv::Mat& speckle_database, char *pic2, int h2, int w2);
 

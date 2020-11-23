@@ -33,8 +33,10 @@ class KeyFile {
   KeyFile(const char* base_path);
   //向PufData文件夹追加一个新的文件
   int AppendPufFile();
+  int FindEmptyKeyDir();
   int GetSeed(int id,int index);
   int IsSeedAvailable(int id, int index);
+  int CheckKeyDirAvailable(int id);
   int GetPic(int id,int index);
   int ReadPicAsBmp(int id, int index);
   char* GetPicBuffer();
