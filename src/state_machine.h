@@ -22,7 +22,8 @@ class StateMachine {
   int GenerateRandomSeed();        //随机生成seed
   int FindKey();                   //库定位算法
 
-  int CheckKey();                  //插入检测算法
+  int CheckKeyInsert();                  //插入检测算法
+  int CheckKey(int key_id);
   int CheckAdminKey();             //管理员KEY检测算法
   int CheckPairStore(int id);      //库遍历算法
   int CheckAvailablePair(int id);  //检查可用激励对

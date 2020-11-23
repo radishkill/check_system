@@ -302,7 +302,7 @@ int StateMachine::Register() {
   arg->led->LcdLed(0);
   arg->led->ErrorLed(0);
 
-  if (arg->sm->CheckKey() == -1) {
+  if (arg->sm->CheckKeyInsert() == -1) {
     //检测到无key插入
     //设置灯显示 并返回到起始点
     arg->led->CmosLed(0);
@@ -364,7 +364,7 @@ int StateMachine::Register() {
     Utils::MSleep(2000);
   }
 
-  if (arg->sm->CheckKey() == -1) {
+  if (arg->sm->CheckKeyInsert() == -1) {
     //检测到无key插入
     //设置灯显示 并返回到起始点
     arg->led->CmosLed(0);
@@ -450,7 +450,7 @@ int StateMachine::Authentication() {
   arg->led->LcdLed(0);
   arg->led->ErrorLed(0);
   Utils::MSleep(2 * 1000);
-  if (arg->sm->CheckKey() == -1) {
+  if (arg->sm->CheckKeyInsert() == -1) {
     //检测到无key插入
     //设置灯显示 并返回到起始点
     arg->led->CmosLed(0);
@@ -483,7 +483,7 @@ int StateMachine::Authentication() {
   }
   int n = 10;
   int available_num = available_pair_list_.size();
-  int result;
+  double result;
   while (n--) {
     int index = std::rand()%available_pair_list_.size();
     int seed_index = available_pair_list_[index];
@@ -564,6 +564,7 @@ int StateMachine::FindKey() {
 
   std::srand(std::time(nullptr));
   int i = 0;
+  double result;
   while (i < 100) {
     if (arg->interrupt_flag) {
       return -1;
@@ -578,7 +579,7 @@ int StateMachine::FindKey() {
     arg->camera->GetOnePic();
     auto begin_tick = std::chrono::steady_clock::now();
     //运算temp_pic 与 pic 得到结果
-    int result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
     if (result <= kAuthThreshold) {
@@ -598,7 +599,7 @@ int StateMachine::FindKey() {
   return i;
 }
 //插入检测算法
-int StateMachine::CheckKey()
+int StateMachine::CheckKeyInsert()
 {
   GlobalArg* arg = GlobalArg::GetInstance();
   int seed = arg->sm->GenerateRandomSeed();
@@ -607,6 +608,75 @@ int StateMachine::CheckKey()
   std::cout << "show seed!!" << std::endl;
   arg->camera->GetOnePic();
   return arg->camera->CheckPic(100, 200);
+}
+
+int StateMachine::CheckKey(int key_id) {
+  GlobalArg* arg = GlobalArg::GetInstance();
+  CheckPairStore(key_id);
+  if (available_pair_list_.empty()) {
+    std::cout << "available pair is empty keyid = " << key_id << endl;
+    //没有激励对了,直接跳转至“认证失败”处理模块
+    if (arg->interrupt_flag == 1) {
+        arg->interrupt_flag = 0;
+    }
+    return -1;
+  }
+  int n = 10;
+  int available_num = available_pair_list_.size();
+  double result;
+  while (n--) {
+    int index = std::rand()%available_pair_list_.size();
+    int seed_index = available_pair_list_[index];
+    //如果随机到的是已经被删除了的
+    if (seed_index == -1) {
+      int i = index;
+      while (i++) {
+
+        if (i == available_pair_list_.size())
+          i = 0;
+        //找到了一个没有被删除的钥匙
+        if (available_pair_list_[i] != -1) {
+          index = i;
+          seed_index = available_pair_list_[index];
+          break;
+        }
+        //钥匙已经被删完了
+        if (i == index) {
+          std::cout << "available pair is empty keyid = " << key_id << endl;
+          return 0;
+        }
+      }
+    }
+    int seed = arg->key_file->GetSeed(key_id, seed_index);
+    if (seed == -1) {
+      std::cout << "fatal error seed = -1" << std::endl;
+      return -1;
+    }
+
+    arg->key_file->ReadPicAsBmp(key_id, seed_index);
+    arg->lcd->ShowBySeed(seed);
+    arg->camera->GetOnePic();
+
+    //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
+    result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+
+    //删除本次循环使用的Seed文件及其对应的Pic文件
+    arg->key_file->DeleteSeed(key_id,seed_index);
+    arg->key_file->DeletePic(key_id,seed_index);
+    available_pair_list_[seed_index] = -1;
+
+    //值越小说明两张图片越相似
+    if (result < kAuthThreshold) {
+      return 1;
+    }
+
+    available_num--;
+    //用完了库里面所有的钥匙
+    if (available_num == 0) {
+      break;
+    }
+  }
+  return 0;
 }
 //管理员KEY检测算法
 int StateMachine::CheckAdminKey() {
@@ -620,23 +690,46 @@ int StateMachine::CheckAdminKey() {
     return -1;
   }
   std::srand(std::time(nullptr));
+  double result;
+  int available_num = available_pair_list_.size();
   while (n--) {
-    int seed_index = std::rand()%available_pair_list_.size();
+    int index = std::rand()%available_pair_list_.size();
+    int seed_index = available_pair_list_[index];
+
+    //如果随机到的是已经被删除了的
+    if (seed_index == -1) {
+      int i = index;
+      while (i++) {
+
+        if (i == available_pair_list_.size())
+          i = 0;
+        //找到了一个没有被删除的钥匙
+        if (available_pair_list_[i] != -1) {
+          index = i;
+          seed_index = available_pair_list_[index];
+          break;
+        }
+        if (i == index)
+          goto auth_fault;
+      }
+    }
+
     int seed = arg->key_file->GetSeed(0, seed_index);
-    arg->key_file->ReadPicAsBmp(0, seed_index);
+    arg->key_file->ReadPicAsBmp(0, index);
     arg->lcd->ShowBySeed(seed);
     arg->camera->GetOnePic();
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    double result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
     if (result < kAuthThreshold) {
       //结果匹配
       //.....
       return 1;
     }
 
-    arg->key_file->DeletePic(0, seed_index);
-    arg->key_file->DeleteSeed(0, seed_index);
+    arg->key_file->DeletePic(0, index);
+    arg->key_file->DeleteSeed(0, index);
+    available_pair_list_[index] = -1;
 
     int rand_seed = arg->sm->GenerateRandomSeed();
     arg->lcd->ShowBySeed(rand_seed);
@@ -644,10 +737,12 @@ int StateMachine::CheckAdminKey() {
     arg->camera->GetOnePic();
 
     arg->key_file->CopyPicToBuffer(arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
-    arg->key_file->SavePicAndSeed(0, seed_index, rand_seed);
+    arg->key_file->SavePicAndSeed(0, index, rand_seed);
   }
   //非管理员key插入
   return 0;
+  auth_fault:
+  return -1;
 }
 //库遍历算法
 int StateMachine::CheckPairStore(int id) {
