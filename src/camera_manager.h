@@ -35,7 +35,7 @@ class CameraManager {
   HANDLE hCamera_;
   DWORD dwWidth_;
   DWORD dwHeight_;
-  BYTE* pBuffer_;
+  BYTE* pbuffer_;
   DWORD dwRGBBufSize_;
   int camera_nums_;
 };

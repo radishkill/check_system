@@ -31,19 +31,27 @@ using check_system::StateMachine;
 using check_system::LedController;
 using check_system::HostController;
 
+std::thread timer_thread_;
+
+
+void SimpleTimer() {
+
+}
+
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
   //启动LED闪烁线程
-  arg->led->RunBlink();
+  //arg->led->RunBlink();
+
   arg->em = new check_system::EventManager();
 
   arg->laser = new Laser(check_system::kLaserAddr);
   if(!arg->laser->IsOpen()) {
-    arg->led->laser_blink_ = 100;
-    arg->led->lcd_blink_ = 100;
-    arg->led->cmos_blink_ = 100;
-    arg->led->error_blink_ = 100;
+    arg->led->laser_blink_ = 200;
+    arg->led->lcd_blink_ = 200;
+    arg->led->cmos_blink_ = 200;
+    arg->led->error_blink_ = 200;
     std::cout << "laser connect error!!" <<std::endl;
     return ;
   } else {
@@ -52,10 +60,10 @@ void InitSystem() {
 
   arg->camera = new CameraManager();
   if(arg->camera->is_open_flag_ == 0) {
-    arg->led->laser_blink_=100;
-    arg->led->lcd_blink_=100;
-    arg->led->cmos_blink_=100;
-    arg->led->error_blink_=100;
+    arg->led->laser_blink_=200;
+    arg->led->lcd_blink_=200;
+    arg->led->cmos_blink_=200;
+    arg->led->error_blink_=200;
     std::cout << "camera connect error!!" << std::endl;
     return ;
   } else {
@@ -201,6 +209,9 @@ void InitSystem() {
   });
   ss.str("");
 
+  timer_thread_ = std::thread(SimpleTimer);
+
+
   arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
     GlobalArg* arg = GlobalArg::GetInstance();
     std::cout << "recv data " << std::endl;
@@ -208,10 +219,10 @@ void InitSystem() {
   });
 
 
-//  std::thread th([&]() {
-//    arg->sm->RunMachine(StateMachine::kSelfTest);
-//  });
-//  th.detach();
+  std::thread th([&]() {
+    arg->sm->RunMachine(StateMachine::kSelfTest);
+  });
+  th.detach();
 }
 
 int main() {

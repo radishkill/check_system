@@ -169,4 +169,28 @@ int LedController::RunBlink() {
   return 0;
 }
 
+int LedController::CloseBlink() {
+  int f = 0;
+  if (laser_blink_ != 0) {
+    laser_blink_ = 0;
+    f = 1;
+  }
+  if (lcd_blink_ != 0) {
+    lcd_blink_ = 0;
+    f = 1;
+  }
+  if (cmos_blink_ != 0) {
+    cmos_blink_ = 0;
+    f = 1;
+  }
+  if (error_blink_ != 0) {
+    error_blink_ = 0;
+    f = 1;
+  }
+  if (f == 1) {
+    Utils::MSleep(100);
+  }
+  return 0;
+}
+
 }
