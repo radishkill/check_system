@@ -61,6 +61,9 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
         std::cout << "system fault" << std::endl;
         //break;
       }
+
+      auto begin_tick = std::chrono::steady_clock::now();
+
       n = 10;
       while (n--) {
         ret = arg->laser->SendOpenCmd();
@@ -68,7 +71,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
           break;
         Utils::MSleep(2000);
       }
-      auto begin_tick = std::chrono::steady_clock::now();
+
       //注册模块
       ret = Register();
       if (ret < 0 && arg->host->IsOpen()) {
@@ -77,14 +80,15 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
         arg->host->RegisterSuccess();
       }
       auto end_tick = std::chrono::steady_clock::now();
-      std::cout << "elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
-      n = 10;
-      while (n--) {
-        ret = arg->laser->SendCloseCmd();
-        if (ret == 0)
-          break;
-        Utils::MSleep(2000);
-      }
+      std::cout << "Register total elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
+
+//      n = 10;
+//      while (n--) {
+//        ret = arg->laser->SendCloseCmd();
+//        if (ret == 0)
+//          break;
+//        Utils::MSleep(2000);
+//      }
       break;
     }
     case kAuth: {
@@ -121,13 +125,13 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       auto end_tick = std::chrono::steady_clock::now();
       std::cout << "elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
 
-      n = 10;
-      while (n--) {
-        ret = arg->laser->SendCloseCmd();
-        if (ret == 0)
-          break;
-        Utils::MSleep(2000);
-      }
+//      n = 10;
+//      while (n--) {
+//        ret = arg->laser->SendCloseCmd();
+//        if (ret == 0)
+//          break;
+//        Utils::MSleep(2000);
+//      }
       break;
     }
     default: {
@@ -141,7 +145,10 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
  *
  */
 int StateMachine::SelfTest() {
-  int ret0,ret1,ret2,ret3;
+  int laser_flag;
+  int camera_flag;
+  int lcd_flag;
+
   GlobalArg* arg = GlobalArg::GetInstance();
   assert(arg->led != nullptr);
   assert(arg->lcd != nullptr);
@@ -160,35 +167,36 @@ int StateMachine::SelfTest() {
     std::cout << "laser not open" << std::endl;
     return -1;
   }
-  int n = 20;
+  int n = 0;
+  n = 12;
   while (n--) {
-    //先关闭摄像头 保证摄像头已经关闭了
-    ret1 = arg->laser->SendCloseCmd();
-    if (ret1 == 0)
+    laser_flag = arg->laser->SendCheckCmd();
+    if (laser_flag == 0)
       break;
-    Utils::MSleep(2000);
+    Utils::MSleep(1000);
   }
+
   n = 10;
   while (n--) {
     //设置温度
-    ret1 = arg->laser->SetTemperature(20);
-    if (ret1 == 0)
+    laser_flag = arg->laser->SetTemperature(20);
+    if (laser_flag == 0)
       break;
     Utils::MSleep(2000);
   }
   n = 5;
   while (n--) {
     //电流
-    ret1 = arg->laser->SetCurrent(3000);
-    if (ret1 == 0)
+    laser_flag = arg->laser->SetCurrent(3000);
+    if (laser_flag == 0)
       break;
     Utils::MSleep(2000);
   }
   n = 5;
   while (n--) {
     //设置最大电流
-    ret1 = arg->laser->SetMaxCurrent(5000);
-    if (ret1 == 0)
+    laser_flag = arg->laser->SetMaxCurrent(5000);
+    if (laser_flag == 0)
       break;
     Utils::MSleep(2000);
   }
@@ -196,63 +204,77 @@ int StateMachine::SelfTest() {
   n = 20;
   while (n--) {
     //这里面最长超时时间为5s
-    ret1 = arg->laser->SendOpenCmd();
+    laser_flag = arg->laser->SendOpenCmd();
     //启动成功
-    if (ret1 == 0)
+    if (laser_flag == 0)
       break;
     Utils::MSleep(2000);
   }
 
   int random_seed = GenerateRandomSeed();
 
-  arg->lcd->ShowBySeed(random_seed);
+  if (arg->lcd->IsOpen()) {
+    arg->lcd->ShowBySeed(random_seed);
+  } else {
+    lcd_flag = -1;
+  }
 
-  ret2 = arg->camera->GetOnePic();
+  camera_flag = arg->camera->GetOnePic();
 
-  ret3 = arg->camera->CheckPic(100, 200);
-  if (ret3 == -1) {
+  camera_flag = arg->camera->CheckPic(100, 200);
+  if (camera_flag == -1) {
     std::cout << "check pic : pic wrong" << std::endl;
   }
 
-  n = 20;
-  while (n--) {
-    ret1 = arg->laser->SendCloseCmd();
-    if (ret1 == 0)
-      break;
-    Utils::MSleep(2000);
-  }
-
+  //  n = 20;
+  //  while (n--) {
+  //    ret1 = arg->laser->SendCloseCmd();
+  //    if (ret1 == 0)
+  //      break;
+  //    Utils::MSleep(2000);
+  //  }
 
   //逻辑与,输出LED灯的状态
   //错误
-  if((ret0 != 0)||(ret1 != 0)||(ret2 != 0)||(ret3 != 0)) {
-      arg->led->error_blink_=200;
-    if((ret0 != 0)||(ret1 != 0)) {
-      arg->led->laser_blink_=200;
+  if ((laser_flag != 0) || (camera_flag != 0) || (camera_flag != 0)) {
+
+    if (laser_flag != 0) {
+      arg->led->laser_blink_ = 200;
     }
-    if((ret2 != 0)||(ret3 != 0)){
-      arg->led->lcd_blink_ =200;
-      arg->led->cmos_blink_ =200;
+    if (lcd_flag != 0) {
+      arg->led->lcd_blink_ = 200;
     }
+    if (camera_flag != 0) {
+      arg->led->cmos_blink_ = 200;
+    }
+    arg->led->error_blink_ = 200;
+
     arg->is_fault = 1;
-  } else {
-    //正确ok
-    arg->led->ErrorLed(0);
-    for(int i = 0 ; i < 3; i++ ){
-      arg->led->LaserLed(0);
-      arg->led->CmosLed(0);
-      arg->led->LcdLed(0);
-      Utils::MSleep(500);
-      arg->led->LaserLed(1);
-      arg->led->CmosLed(1);
-      arg->led->LcdLed(1);
-      Utils::MSleep(500);
-    }
+    std::cout << "test check fault:"
+              << " laser : " << laser_flag
+              << " lcd : " << lcd_flag
+              << " cmos : " << camera_flag
+              << " error : " << arg->is_fault;
+    return -1;
+  }
+
+  arg->led->CloseBlink();
+  //正确ok
+  for (int i = 0 ; i < 3; i++ ) {
+    arg->led->LaserLed(0);
+    arg->led->CmosLed(0);
+    arg->led->LcdLed(0);
+    Utils::MSleep(500);
     arg->led->LaserLed(1);
     arg->led->CmosLed(1);
     arg->led->LcdLed(1);
-    arg->is_fault = 0;
+    Utils::MSleep(500);
   }
+  arg->led->LaserLed(1);
+  arg->led->CmosLed(1);
+  arg->led->LcdLed(1);
+  arg->led->ErrorLed(0);
+  arg->is_fault = 0;
   return 0;
 }
 
@@ -271,12 +293,14 @@ int StateMachine::Register() {
     return -1;
   }
 
+  //如果灯正在闪烁 就掉并等待100ms
+  arg->led->CloseBlink();
+
   //全灯OFF
   arg->led->CmosLed(0);
   arg->led->LaserLed(0);
   arg->led->LcdLed(0);
   arg->led->ErrorLed(0);
-  std::cout << "led off ok" << std::endl;
 
   if (arg->sm->CheckKey() == -1) {
     //检测到无key插入
@@ -288,25 +312,27 @@ int StateMachine::Register() {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
-  std::cout << "key insert\n";
+  std::cout << "key insert" << std::endl;
 
   ret = arg->sm->CheckAdminKey();
   if(ret == 0) {
+    std::cout << "is not admin key insert" << std::endl;
     //非管理员key插入
     arg->led->CmosLed(0);
     arg->led->LaserLed(0);
     arg->led->LcdLed(0);
     for(int i = 0 ; i < 20 ; i++ ){
       arg->led->ErrorLed(0);
-      Utils::MSleep(100);
+      Utils::MSleep(200);
       arg->led->ErrorLed(1);
-      Utils::MSleep(100);
+      Utils::MSleep(200);
     }
     return -1;
   } else if (ret == -1) {
     //无admin key 错误
     return -1;
   }
+
   //管理员key插入
   //闪烁 并给用户插入新卡的时间 10s
   std::cout << "wait 2s\n";
@@ -328,6 +354,16 @@ int StateMachine::Register() {
       return -1;
     }
   }
+
+  //确认激光器是打开状态
+  int n = 10;
+  while (n--) {
+    ret = arg->laser->SendOpenCmd();
+    if (ret == 0)
+      break;
+    Utils::MSleep(2000);
+  }
+
   if (arg->sm->CheckKey() == -1) {
     //检测到无key插入
     //设置灯显示 并返回到起始点
@@ -370,7 +406,7 @@ int StateMachine::Register() {
   }
   begin_tick = std::chrono::steady_clock::now();
   //连续拍100张照片
-  int n = 10;
+  n = 10;
   for (unsigned int i = 0; i < empty_pair_list_.size() && i < n; i++) {
     GlobalArg* arg = GlobalArg::GetInstance();
     int seed = arg->sm->GenerateRandomSeed();
@@ -451,6 +487,24 @@ int StateMachine::Authentication() {
   while (n--) {
     int index = std::rand()%available_pair_list_.size();
     int seed_index = available_pair_list_[index];
+    //如果随机到的是已经被删除了的
+    if (seed_index == -1) {
+      int i = index;
+      while (i++) {
+
+        if (i == available_pair_list_.size())
+          i = 0;
+        //找到了一个没有被删除的钥匙
+        if (available_pair_list_[i] != -1) {
+          index = i;
+          seed_index = available_pair_list_[index];
+          break;
+        }
+
+        if (i == index)
+          goto auth_fault;
+      }
+    }
     int seed = arg->key_file->GetSeed(key_id, seed_index);
     arg->lcd->ShowBySeed(seed);
     arg->camera->GetOnePic();
@@ -463,21 +517,22 @@ int StateMachine::Authentication() {
     arg->key_file->DeletePic(key_id,seed_index);
     available_pair_list_[seed_index] = -1;
 
-
     //值越小说明两张图片越相似
-    if (result < 5) {
+    if (result < kAuthThreshold) {
       //认证成功了,绿灯1 2 3 ON
       arg->led->LaserLed(1);
       arg->led->LcdLed(1);
       arg->led->CmosLed(1);
       break;
     }
+
     available_num--;
     //用完了库里面所有的钥匙
     if (available_num == 0) {
       break;
     }
   }
+  auth_fault:
   //认证失败
   if (n < 0 || available_num == 0) {
     //红灯 ON
@@ -486,7 +541,7 @@ int StateMachine::Authentication() {
     if (arg->interrupt_flag == 1) {
       arg->interrupt_flag=0;
       return -1;
-      }
+    }
   } else {
     std::cout << "auth success!!!" << std::endl;
   }
@@ -506,8 +561,6 @@ int StateMachine::FindKey() {
   assert(arg->camera != nullptr);
   assert(arg->key_file != nullptr);
   assert(arg->lcd != nullptr);
-  char* temp_pic;
-  char* pic;
 
   std::srand(std::time(nullptr));
   int i = 0;
@@ -528,7 +581,7 @@ int StateMachine::FindKey() {
     int result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
-    if (result <= 5) {
+    if (result <= kAuthThreshold) {
       //找到相应的库
       break;
     }
@@ -576,7 +629,7 @@ int StateMachine::CheckAdminKey() {
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
     double result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
-    if (result < 0.5) {
+    if (result < kAuthThreshold) {
       //结果匹配
       //.....
       return 1;

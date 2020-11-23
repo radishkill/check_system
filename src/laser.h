@@ -20,13 +20,14 @@ class Laser {
   int GetStatus() {return status_;}
   bool IsOpen() const {return usart_.IsOpen();}
   Usart& GetUsart() {return usart_;};
+  int ttl;
  private:
   char data_frame_[310];
   Usart usart_;
   int status_;
   int current_;
   int max_current_;
-  int temperature_;
+  char temperature_[4];
 };
 }
 

@@ -9,7 +9,7 @@ namespace check_system {
 
 CameraManager::CameraManager()
     : is_open_flag_(0) {
-  pBuffer_ = nullptr;
+  pbuffer_ = nullptr;
   dwRGBBufSize_ = 0;
   camera_nums_ = 0;
   CameraSdkStatus status;
@@ -98,47 +98,52 @@ int CameraManager::GetOnePic() {
   return ret;
 }
 
-int CameraManager::GetPic()
-{
+int CameraManager::GetPic() {
   CameraSdkStatus status;
 
   auto begin_tick = std::chrono::steady_clock::now();
   status = CameraSoftTrigger(hCamera_);
+  std::cout << "soft trigger" << std::endl;
   if(status != CAMERA_STATUS_SUCCESS) {
     std::cout << "soft trigger failed" << std::endl;
     return -1;
   }
 
-  pBuffer_ = CameraGetImageBufferEx(hCamera_, &image_info_, 1000);
-  if (pBuffer_ == NULL) {
+  pbuffer_ = CameraGetImageBufferEx(hCamera_, &image_info_, 1000);
+  if (pbuffer_ == NULL) {
     std::cout << "can't get a frame" << std::endl;
   }
 
-  std::cout << "get a pic " << image_info_.iWidth << "x" << image_info_.iHeight << " " << image_info_.TotalBytes << std::endl;
+  std::cout << "pic WxH : " << image_info_.iWidth << "x" << image_info_.iHeight << " total bytes:" << image_info_.TotalBytes << std::endl;
 
   auto end_tick = std::chrono::steady_clock::now();
-  std::cout << "soft trigger to get image duration 1" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
+  std::cout << "get pic time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
 
   return 0;
 }
 
 char *CameraManager::GetPicBuffer() {
-  return (char*)pBuffer_;
+  return (char*)pbuffer_;
 }
 
 int CameraManager::CheckPic(int threshold_low, int threshold_high) {
   int average_data = 0;
-  if (pBuffer_ == nullptr)
+  auto begin_tick = std::chrono::steady_clock::now();
+  if (pbuffer_ == nullptr) {
+    std::cout << "pic buffer == nullptr" << std::endl;
     return -1;
-  average_data = pBuffer_[0];
-  Utils::ShowRawString((char*)pBuffer_, 100);
+  }
+  average_data = pbuffer_[0];
+  Utils::ShowRawString((char*)pbuffer_, 100);
   std::cout << std::endl;
 
   for (unsigned int i = 1; i < dwWidth_*dwHeight_; i++) {
-    average_data += pBuffer_[i];
+    average_data += pbuffer_[i];
     average_data /= 2;
   }
-  std::cout << "check pic average value : " << average_data << std::endl;
+  std::cout << "pic average value : " << average_data << std::endl;
+  auto end_tick = std::chrono::steady_clock::now();
+  std::cout << "check pic time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
   if (average_data <= threshold_high && average_data >= threshold_low) {
     return 0;
   }

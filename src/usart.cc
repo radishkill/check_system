@@ -132,10 +132,10 @@ int Usart::SendData(char* buf, int len) {
 }
 
 int Usart::ReadData(char* buf, int len) {
-//  std::cout << "recv:";
+  std::cout << "recv:";
   int ret = read(fd_, buf, len);
-//  Utils::ShowRawString(buf, ret);
-//  std::cout << std::endl;
+  Utils::ShowRawString(buf, ret);
+  std::cout << std::endl;
   return ret;
 }
 
