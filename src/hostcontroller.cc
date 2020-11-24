@@ -44,9 +44,7 @@ int HostController::RecvData() {
   switch (recved_data[2]) {
     case 0x01: {
       //状态查询
-      std::thread th([&]() {
-        arg->sm->RunMachine(StateMachine::kSelfTest);
-      });
+      std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kSelfTest));
       th.detach();
       break;
     }

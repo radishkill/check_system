@@ -47,3 +47,7 @@ target_link_libraries(TestImage_x64
   gomp
 	~/workspace/check_system/lib/x64/libCKCameraSDK.a
 )
+
+add_executable(ScreenTest_x64
+  ../screen.cpp
+  )

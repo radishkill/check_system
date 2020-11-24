@@ -24,10 +24,9 @@ class StateMachine {
 
   int CheckKeyInsert();                  //插入检测算法
   int CheckKey(int key_id);
-  int CheckAdminKey();             //管理员KEY检测算法
   int CheckPairStore(int id);      //库遍历算法
 
-  int AuthPic(cv::Mat& speckle_database, char *pic2, int h2, int w2);
+  double AuthPic(cv::Mat& speckle_database, char *pic2, int h2, int w2);
 
  private:
   std::vector<int> empty_pair_list_;

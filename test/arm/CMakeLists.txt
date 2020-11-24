@@ -55,3 +55,15 @@ target_link_libraries(TestImage_arm
   gomp
 	~/workspace/check_system/lib/x64/libCKCameraSDK.a
 )
+
+add_executable(ScreenTest_arm
+  ../screen.cpp
+  )
+
+add_executable(LaserTest_arm
+  ../laser_test.cpp
+  ${PROJECT_SOURCE_DIR}/src/utils.cc
+  ${PROJECT_SOURCE_DIR}/src/laser.cc
+  ${PROJECT_SOURCE_DIR}/src/usart.cc
+  
+)
