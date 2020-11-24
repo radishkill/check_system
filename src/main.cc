@@ -223,6 +223,7 @@ void InitSystem() {
     read(fd, &key, 1);
     std::cout << "button " << check_system::kInterruptButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
+      std::cout << "set interrupt flag" << std::endl;
       arg->interrupt_flag = 1;
     }
   });
