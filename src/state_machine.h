@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <mutex>
+#include <opencv2/opencv.hpp>
 
 namespace check_system {
 
@@ -21,15 +22,15 @@ class StateMachine {
   int GenerateRandomSeed();        //随机生成seed
   int FindKey();                   //库定位算法
 
-  int CheckKey();                  //插入检测算法
-  int CheckAdminKey();             //管理员KEY检测算法
-  int CheckEmptyPair(int id);      //库遍历算法
-  int CheckAvailablePair(int id);  //检查可用激励对
+  int CheckKeyInsert();                  //插入检测算法
+  int CheckKey(int key_id);
+  int CheckPairStore(int id);      //库遍历算法
 
-  int AuthPic(char *pic1, int h1, int w1, char *pic2, int h2, int w2);
+  double AuthPic(cv::Mat& speckle_database, char *pic2, int h2, int w2);
 
  private:
-  std::vector<int> pair_list_;
+  std::vector<int> empty_pair_list_;
+  std::vector<int> available_pair_list_;
   bool is_running_;
   std::mutex mutex_;
 };

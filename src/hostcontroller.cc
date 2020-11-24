@@ -38,22 +38,21 @@ int HostController::RecvData() {
     std::cout << "bad data" << std::endl;
     return -1;
   }
-  std::cout << std::hex;
-  for (int i = 0; i < 3; i++) {
-    std::cout << static_cast<int>(recved_data[i]) << " ";
-  }
+  Utils::ShowRawString(recved_data, 3);
   std::cout << std::endl;
 
   switch (recved_data[2]) {
     case 0x01: {
       //状态查询
-      CheckStatus();
+      std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kSelfTest));
+      th.detach();
       break;
     }
     case 0x02: {
       //握手确认
       HandConfirm();
       arg->hsk_flag = true;
+      std::cout << "set hsk flag" << std::endl;
       break;
     }
     case 0x03: {
@@ -61,14 +60,11 @@ int HostController::RecvData() {
       break;
     }
     case 0x04: {
-      //全灯OFF
-      arg->led->CmosLed(0);
-      arg->led->LaserLed(0);
-      arg->led->LcdLed(0);
-      arg->led->ErrorLed(0);
       //认证
-      if (!arg->hsk_flag)
+      if (!arg->hsk_flag) {
+        std::cout << "not set hsk flag" << std::endl;
         break;
+      }
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kAuth));
       th.detach();
       break;
@@ -77,24 +73,28 @@ int HostController::RecvData() {
       //握手取消
       HandCancel();
       arg->hsk_flag = false;
+      std::cout << "reset hsk flag" << std::endl;
       break;
     }
     case 0x06: {
       //复位
       arg->interrupt_flag = 1;
       ResetSuccess();
+      std::cout << "set interrupt flag" << std::endl;
       break;
     }
     case 0x07: {
       //注册
-      if (!arg->hsk_flag)
+      if (!arg->hsk_flag) {
+        std::cout << "not set hsk flag" << std::endl;
         break;
+      }
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kRegister));
       th.detach();
       break;
     }
     default: {
-      perror("bad data");
+      std::cout << "bad data" << std::endl;
       return -1;
     }
   }

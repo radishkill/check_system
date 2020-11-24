@@ -8,12 +8,17 @@
 
 namespace check_system {
 
-#define CAMERA_WIDTH 1280
-#define CAMERA_HEIGHT 720
+#define CAMERA_WIDTH 320
+#define CAMERA_HEIGHT 240
+
+//#define CAMERA_WIDTH 1280
+//#define CAMERA_HEIGHT 720
+
 
 class CameraManager {
  public:
   CameraManager();
+  int InitCamera();
 
   const std::vector<std::string>& GetDeviceList();
   int SetResolution(INT iResolutionIndex);
@@ -21,16 +26,18 @@ class CameraManager {
   int Pause();
   int GetOnePic();
   int GetPic();
-  char* GetRBGBuffer();
+  char* GetPicBuffer();
+  int Reboot();
   int CheckPic(int threshold_low, int threshold_high);
   bool IsOpen() {return is_open_flag_ == 1;};
   int is_open_flag_;
  private:
   std::vector<std::string> device_list_;
+  stImageInfo image_info_;
   HANDLE hCamera_;
   DWORD dwWidth_;
   DWORD dwHeight_;
-  BYTE* pRBGBuffer_;
+  BYTE* pbuffer_;
   DWORD dwRGBBufSize_;
   int camera_nums_;
 };

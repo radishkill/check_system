@@ -13,6 +13,7 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <chrono>
 struct fb_var_screeninfo vinfo;
 struct fb_fix_screeninfo finfo;
 char *frameBuffer = 0;
@@ -139,37 +140,32 @@ void drawRect_rgb16 (int x0, int y0, int width,int height, int color)
     }
 }
 int ShowBySeed(int seed) {
-  char a, b, c, d;
+   int x0 = 0;
+   int y0 = 0;
+   const int bytesPerPixel = 2;
+   int color = 0xff00ff00;
+   const int stride = finfo.line_length / bytesPerPixel;
   int x, y;
-  char* dest = (char*)frameBuffer + (vinfo.yoffset) * vinfo.yres*4 + (vinfo.xoffset);
+  short *dest = (short *) (frameBuffer)+ (y0 + vinfo.yoffset) * stride + (x0 +vinfo.xoffset);
   std::srand(seed);
-  std::cout << seed << std::endl;
-  std::cout << "offset : " << vinfo.xoffset << " " << vinfo.yoffset << std::endl;
-  std::cout << vinfo.xres << " " << vinfo.yres << std::endl;
-  std::ofstream osf, osf2;
-  osf.open(std::to_string(seed).c_str());
-  osf2.open(std::string(std::to_string(seed) + "_space"));
-  for (y = 0; y < vinfo.yres; y++) {
-    for (x = 0; x < vinfo.xres; x++) {
-//      *dest = std::rand()%0x100;
-//      *(dest+1) = std::rand()%0x100;
-//      *(dest+2) = std::rand()%0x100;
-      a = std::rand()%0x100;
-      b = std::rand()%0x100;
-      c = std::rand()%0x100;
-      d = 0xff;
-      *dest = a;
-      *(dest+1) = b;
-      *(dest+2) = c;
-      *(dest+3) = 0xff;
-      dest += 4;
-      osf << a << b << c << d;
-      osf2 << a << b << c << d << " ";
-    }
-    osf2 << std::endl;
+  char s;
+  for (y = 0; y < vinfo.yres; y += 10) { 
+      for (x = 0; x < vinfo.xres; x++) {
+           if (x%100 == 0) {
+              s = std::rand()%0x100;
+           }
+           for (int w = 0; w < 10; w++) {
+              if (y+w > vinfo.yres) {
+                 break;
+              }
+            *(dest + (y+w)*stride + x*4) = s;
+            *(dest+ (y+w)*stride + x*4 + 1) = s;
+            *(dest+ (y+w)*stride + x*4 + 2) = s;
+
+            *(dest+ (y+w)*stride + x*4 + 3) = 0;
+            }
+     }
   }
-  osf.close();
-  osf2.close();
   return 0;
 }
 int main (int argc, char **argv)
@@ -194,8 +190,8 @@ int main (int argc, char **argv)
        perror ("Error reading fixed information");
        exit (2);
     }
-  //  printFixedInfo ();
-   //获取vinfo信息并显示
+    printFixedInfo ();
+   //获取vinfo信息并显示drawRect_rgb16
    if (ioctl (fbFd, FBIOGET_VSCREENINFO, &vinfo) == -1)
     {
        perror ("Error reading variable information");
@@ -209,7 +205,7 @@ int main (int argc, char **argv)
     //    perror ("Error reading variable information");
     //    exit (3);
     // }
-  //  printVariableInfo ();
+    printVariableInfo ();
 
    /* Figure out the size of the screen in bytes */
    screensize = finfo.smem_len;//fb的缓存长度
@@ -222,14 +218,16 @@ int main (int argc, char **argv)
            exit (4);
        }
 
-       //drawRect_rgb16 (vinfo.xres *3 / 8, vinfo.yres * 3 / 8,vinfo.xres / 4, vinfo.yres / 4,0xff00ff00);//实现画矩形
+      //drawRect_rgb16 (vinfo.xres *3 / 8, vinfo.yres * 3 / 8,vinfo.xres / 4, vinfo.yres / 4,0xff00ff00);//实现画矩形
 
        //drawline_rgb16(0,0,vinfo.xres,vinfo.yres,0xffff0000,0);
 
-       //drawline_rgb16(260,10,0,280,0xff00ff00,1);//可以画出一个交叉的十字，坐标都是自己设的。
+       //drawline_rgb16(260,10,100,280,0xff00ff00,1);//可以画出一个交叉的十字，坐标都是自己设的。
+       auto begin_tick = std::chrono::steady_clock::now();
        std::srand(std::time(nullptr));
        ShowBySeed(std::rand());
-       sleep (2);
+        auto end_tick = std::chrono::steady_clock::now();
+        std::cout << "elapsed time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
        printf (" Done.\n");
 
        munmap (frameBuffer, screensize);   //解除内存映射，与mmap对应

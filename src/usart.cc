@@ -1,5 +1,7 @@
 #include "usart.h"
 
+#include "utils.h"
+
 Usart::Usart()
     : fd_(-1), device_name_("") {
 }
@@ -123,11 +125,18 @@ int Usart::SetParity(int baud_rate, int databits, int stopbits, char parity, int
 }
 
 int Usart::SendData(char* buf, int len) {
+  std::cout << "send:";
+  Utils::ShowRawString(buf, len);
+  std::cout << std::endl;
   return write(fd_, buf, len);
 }
 
 int Usart::ReadData(char* buf, int len) {
-  return read(fd_, buf, len);
+  std::cout << "recv:";
+  int ret = read(fd_, buf, len);
+  Utils::ShowRawString(buf, ret);
+  std::cout << std::endl;
+  return ret;
 }
 
 bool Usart::IsOpen() const  {

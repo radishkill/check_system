@@ -31,19 +31,69 @@ using check_system::StateMachine;
 using check_system::LedController;
 using check_system::HostController;
 
+std::thread timer_thread_;
+
+
+void SimpleTimer() {
+  GlobalArg* arg = GlobalArg::GetInstance();
+  int i = 0;
+  while (1) {
+    if (arg->led->laser_blink_ && ((i*100)%arg->led->laser_blink_ == 0)) {
+      if (arg->led->laser_status_) {
+        arg->led->LaserLed(0);
+      } else {
+        arg->led->LaserLed(1);
+      }
+    }
+    if (arg->led->lcd_blink_ && ((i*100)%arg->led->lcd_blink_ == 0)) {
+      if (arg->led->lcd_status_) {
+        arg->led->LcdLed(0);
+      } else {
+        arg->led->LcdLed(1);
+      }
+    }
+    if (arg->led->cmos_blink_ && ((i*100)%arg->led->cmos_blink_ == 0)) {
+      if (arg->led->cmos_status_) {
+        arg->led->CmosLed(0);
+      } else {
+        arg->led->CmosLed(1);
+      }
+    }
+    if (arg->led->error_blink_ && ((i*100)%arg->led->error_blink_ == 0)) {
+      if (arg->led->error_status_) {
+        arg->led->ErrorLed(0);
+      } else {
+        arg->led->ErrorLed(1);
+      }
+    }
+    if (arg->laser->ttl >= 0) {
+      arg->laser->ttl--;
+    }
+    if (arg->laser->ttl == 0 && arg->laser->GetStatus()) {
+      arg->laser->SendCloseCmd();
+    }
+    Utils::MSleep(100);
+    i++;
+    if (i == 1000000)
+      i = 0;
+  }
+
+}
+
 void InitSystem() {
   GlobalArg* arg = GlobalArg::GetInstance();
   arg->led = new LedController();
   //启动LED闪烁线程
-  arg->led->RunBlink();
+//  arg->led->RunBlink();
+
   arg->em = new check_system::EventManager();
 
   arg->laser = new Laser(check_system::kLaserAddr);
   if(!arg->laser->IsOpen()) {
-    arg->led->laser_blink_ = 100;
-    arg->led->lcd_blink_ = 100;
-    arg->led->cmos_blink_ = 100;
-    arg->led->error_blink_ = 100;
+    arg->led->laser_blink_ = 200;
+    arg->led->lcd_blink_ = 200;
+    arg->led->cmos_blink_ = 200;
+    arg->led->error_blink_ = 200;
     std::cout << "laser connect error!!" <<std::endl;
     return ;
   } else {
@@ -52,10 +102,10 @@ void InitSystem() {
 
   arg->camera = new CameraManager();
   if(arg->camera->is_open_flag_ == 0) {
-    arg->led->laser_blink_=100;
-    arg->led->lcd_blink_=100;
-    arg->led->cmos_blink_=100;
-    arg->led->error_blink_=100;
+    arg->led->laser_blink_=200;
+    arg->led->lcd_blink_=200;
+    arg->led->cmos_blink_=200;
+    arg->led->error_blink_=200;
     std::cout << "camera connect error!!" << std::endl;
     return ;
   } else {
@@ -64,10 +114,10 @@ void InitSystem() {
 
   arg->lcd = new Lcd("/dev/fb0");
   if (!arg->lcd->IsOpen()) {
-    arg->led->laser_blink_=100;
-    arg->led->lcd_blink_=100;
-    arg->led->cmos_blink_=100;
-    arg->led->error_blink_=100;
+    arg->led->laser_blink_=200;
+    arg->led->lcd_blink_=200;
+    arg->led->cmos_blink_=200;
+    arg->led->error_blink_=200;
     std::cout << "lcd buffer connect error!!" << std::endl;
     return;
   } else {
@@ -76,10 +126,10 @@ void InitSystem() {
 
   arg->host = new HostController(check_system::kHostAddr);
   if (!arg->host->IsOpen()) {
-    arg->led->laser_blink_=100;
-    arg->led->lcd_blink_=100;
-    arg->led->cmos_blink_=100;
-    arg->led->error_blink_=100;
+    arg->led->laser_blink_ = 200;
+    arg->led->lcd_blink_ = 200;
+    arg->led->cmos_blink_ = 200;
+    arg->led->error_blink_ = 200;
     std::cout << "host tty connect error!!" << std::endl;
     return;
   } else {
@@ -93,16 +143,16 @@ void InitSystem() {
     std::cout << "key file ok" << std::endl;
   }
 
-  //led闪烁提示
+  //led闪烁提示结果匹配
   for(int i = 0; i < 3; i++) {
     arg->led->CmosLed(0);
     arg->led->LaserLed(0);
     arg->led->LcdLed(0);
-    Utils::MSleep(250);
+    Utils::MSleep(500);
     arg->led->CmosLed(1);
     arg->led->LaserLed(1);
     arg->led->LcdLed(1);
-    Utils::MSleep(250);
+    Utils::MSleep(500);
   }
 
   //下面部分是用来打开button的
@@ -116,7 +166,7 @@ void InitSystem() {
      << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    perror("open gpio 107");
+    std::cout << "can not open :" << check_system::kRegisterButtonNumber << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -125,7 +175,7 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button 107 " << key << std::endl;
+    std::cout << "button " << check_system::kAuthButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kRegister));
       th.detach();
@@ -139,7 +189,7 @@ void InitSystem() {
      << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    perror("open gpio 171");
+    std::cout << "can not open :" << check_system::kAuthButtonNumber << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -148,7 +198,7 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button 171 " << key << std::endl;
+    std::cout << "button " << check_system::kAuthButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kAuth));
       th.detach();
@@ -162,7 +212,7 @@ void InitSystem() {
      << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    perror("open gpio 98");
+    std::cout << "can not open :" << check_system::kInterruptButtonNumber << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -171,8 +221,9 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button 98 " << key << std::endl;
+    std::cout << "button " << check_system::kInterruptButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
+      std::cout << "set interrupt flag" << std::endl;
       arg->interrupt_flag = 1;
     }
   });
@@ -184,7 +235,7 @@ void InitSystem() {
      << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    perror("open gpio 165");
+    std::cout << "can not open :" << check_system::kCheckSelfButtonNumber << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -193,7 +244,7 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button 165 " << key << std::endl;
+    std::cout << "button " << check_system::kCheckSelfButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kSelfTest));
       th.detach();
@@ -201,15 +252,17 @@ void InitSystem() {
   });
   ss.str("");
 
+  timer_thread_ = std::thread(SimpleTimer);
+
+
   arg->em->ListenFd(arg->host->GetFd(), EventManager::kEventRead, []() {
     GlobalArg* arg = GlobalArg::GetInstance();
     std::cout << "recv data " << std::endl;
     arg->host->RecvData();
   });
 
-  std::thread th([&]() {
-    arg->sm->RunMachine(StateMachine::kSelfTest);
-  });
+
+  std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kSelfTest));
   th.detach();
 }
 

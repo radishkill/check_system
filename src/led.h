@@ -19,12 +19,13 @@ class LedController {
   int ErrorLed(int s);
 
   int RunBlink();
+  int CloseBlink();
 
   int laser_blink_;
   int lcd_blink_;
   int cmos_blink_;
   int error_blink_;
- private:
+
   int laser_status_;
   int lcd_status_;
   int cmos_status_;
@@ -34,6 +35,7 @@ class LedController {
   int lcd_fd_;
   int cmos_fd_;
   int error_fd_;
+   private:
   std::thread blink_thread_;
 };
 }
