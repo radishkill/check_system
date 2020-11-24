@@ -69,9 +69,15 @@ int LedController::LaserLed(int s) {
   //重置读写位置到文件开头
   lseek(laser_fd_, 0, SEEK_SET);
   if (s == 0) {
-    write(laser_fd_, "0", 1);
+    if (kLaserGpioReverse)
+      write(laser_fd_, "1", 1);
+    else
+      write(laser_fd_, "0", 1);
   } else if (s == 1) {
-    write(laser_fd_, "1", 1);
+    if (kLaserGpioReverse)
+      write(laser_fd_, "0", 1);
+    else
+      write(laser_fd_, "1", 1);
   } else {
     std::cout << "bad status" << std::endl;
     return -1;
@@ -101,9 +107,15 @@ int LedController::CmosLed(int s) {
   //重置读写位置到文件开头
   lseek(cmos_fd_, 0, SEEK_SET);
   if (s == 0) {
-    write(cmos_fd_, "0", 1);
+    if (kCmosGpioReverse)
+      write(cmos_fd_, "1", 1);
+    else
+      write(cmos_fd_, "0", 1);
   } else if (s == 1) {
-    write(cmos_fd_, "1", 1);
+    if (kCmosGpioReverse)
+      write(cmos_fd_, "0", 1);
+    else
+      write(cmos_fd_, "1", 1);
   } else {
     std::cout << "bad status" << std::endl;
     return -1;
@@ -166,6 +178,30 @@ int LedController::RunBlink() {
         i = 0;
     }
   });
+  return 0;
+}
+
+int LedController::CloseBlink() {
+  int f = 0;
+  if (laser_blink_ != 0) {
+    laser_blink_ = 0;
+    f = 1;
+  }
+  if (lcd_blink_ != 0) {
+    lcd_blink_ = 0;
+    f = 1;
+  }
+  if (cmos_blink_ != 0) {
+    cmos_blink_ = 0;
+    f = 1;
+  }
+  if (error_blink_ != 0) {
+    error_blink_ = 0;
+    f = 1;
+  }
+  if (f == 1) {
+    Utils::MSleep(100);
+  }
   return 0;
 }
 

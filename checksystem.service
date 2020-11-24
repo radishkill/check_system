@@ -1,0 +1,8 @@
+[Unit]
+Description=Check System Daemon
+
+[Service]
+ExecStart=/root/checksystem/run.sh
+
+[Install]
+WantedBy=multi-user.target

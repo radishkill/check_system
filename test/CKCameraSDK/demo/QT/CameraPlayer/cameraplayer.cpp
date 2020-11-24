@@ -86,9 +86,10 @@ void CameraPlayer::CameraPlay()
     }
 
 
-    CameraSetIspOutFormat(m_hCamera, CAMERA_MEDIA_TYPE_RGB8);
+    CameraSetIspOutFormat(m_hCamera, CAMERA_MEDIA_TYPE_MONO);
 
-    ret = CameraSetResolution(m_hCamera, IMAGEOUT_MODE_1280X960);
+//    ret = CameraSetResolution(m_hCamera, IMAGEOUT_MODE_320X240);
+    ret = CameraSetResolution(m_hCamera, IMAGEOUT_MODE_1920X1080);
     CameraGetOutImageSize(m_hCamera, &m_dwWidth, &m_dwHeight);
 
 
@@ -230,7 +231,7 @@ void CVideoThread::run()
             // 叠加十字线等
             CameraImageOverlay(m_hCamera, pRBGBuffer, &imageInfo);
 
-            QImage img(pRBGBuffer, imageInfo.iWidth, imageInfo.iHeight, QImage::Format_RGB888);
+            QImage img(pRBGBuffer, imageInfo.iWidth, imageInfo.iHeight, QImage::Format_Mono);
             emit acquireFrame(img);
             disFrameCnt++;
         }
