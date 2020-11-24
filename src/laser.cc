@@ -8,12 +8,13 @@ Laser::Laser(const char* device_name)
 }
 
 int Laser::SendOpenCmd() {
-  std::cout << "open laser\n";
+
   int i;
   int p = 0;
-  ttl = 300;
+  ttl = 600;
   if (status_)
     return 0;
+  std::cout << "open laser\n";
   data_frame_[p++] = 0x68;
   for (i = 0; i < 4; i++) {
     data_frame_[i+p] = 0;
@@ -101,7 +102,7 @@ int Laser::SendCheckCmd() {
   i = 0;
   int ret = ReadBuffer(1);
   if (ret <= 0) {
-    perror("check laser fault!!");
+    std::cout << "check laser fault!!" << std::endl;
     return -1;
   }
   //如果数据格式不对temperature
@@ -264,7 +265,6 @@ int Laser::ReadBuffer(int timeout) {
     perror("select");
     return -1;
   } else if (ret == 0) {
-    std::cout << "timeout or empty data" << std::endl;
     return 0;
   } else {
     int res_len = usart_.ReadData(data_frame_, 1024);

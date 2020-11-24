@@ -125,9 +125,9 @@ int Usart::SetParity(int baud_rate, int databits, int stopbits, char parity, int
 }
 
 int Usart::SendData(char* buf, int len) {
-//  std::cout << "send:";
-//  Utils::ShowRawString(buf, len);
-//  std::cout << std::endl;
+  std::cout << "send:";
+  Utils::ShowRawString(buf, len);
+  std::cout << std::endl;
   return write(fd_, buf, len);
 }
 

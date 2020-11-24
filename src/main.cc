@@ -143,7 +143,7 @@ void InitSystem() {
     std::cout << "key file ok" << std::endl;
   }
 
-  //led闪烁提示
+  //led闪烁提示结果匹配
   for(int i = 0; i < 3; i++) {
     arg->led->CmosLed(0);
     arg->led->LaserLed(0);
@@ -166,7 +166,7 @@ void InitSystem() {
      << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    perror("open gpio 107");
+    std::cout << "can not open :" << check_system::kRegisterButtonNumber << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -175,7 +175,7 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button 107 " << key << std::endl;
+    std::cout << "button " << check_system::kAuthButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kRegister));
       th.detach();
@@ -189,7 +189,7 @@ void InitSystem() {
      << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    perror("open gpio 171");
+    std::cout << "can not open :" << check_system::kAuthButtonNumber << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -198,7 +198,7 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button 171 " << key << std::endl;
+    std::cout << "button " << check_system::kAuthButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kAuth));
       th.detach();
@@ -212,7 +212,7 @@ void InitSystem() {
      << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    perror("open gpio 98");
+    std::cout << "can not open :" << check_system::kInterruptButtonNumber << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -221,7 +221,7 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button 98 " << key << std::endl;
+    std::cout << "button " << check_system::kInterruptButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
       arg->interrupt_flag = 1;
     }
@@ -234,7 +234,7 @@ void InitSystem() {
      << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    perror("open gpio 165");
+    std::cout << "can not open :" << check_system::kCheckSelfButtonNumber << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -243,7 +243,7 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button 165 " << key << std::endl;
+    std::cout << "button " << check_system::kCheckSelfButtonNumber << " " << key << std::endl;
     if (key == 0x31) {
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kSelfTest));
       th.detach();
@@ -261,9 +261,7 @@ void InitSystem() {
   });
 
 
-  std::thread th([&]() {
-    arg->sm->RunMachine(StateMachine::kSelfTest);
-  });
+  std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kSelfTest));
   th.detach();
 }
 

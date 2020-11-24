@@ -69,9 +69,15 @@ int LedController::LaserLed(int s) {
   //重置读写位置到文件开头
   lseek(laser_fd_, 0, SEEK_SET);
   if (s == 0) {
-    write(laser_fd_, "0", 1);
+    if (kLaserGpioReverse)
+      write(laser_fd_, "1", 1);
+    else
+      write(laser_fd_, "0", 1);
   } else if (s == 1) {
-    write(laser_fd_, "1", 1);
+    if (kLaserGpioReverse)
+      write(laser_fd_, "0", 1);
+    else
+      write(laser_fd_, "1", 1);
   } else {
     std::cout << "bad status" << std::endl;
     return -1;
@@ -101,9 +107,15 @@ int LedController::CmosLed(int s) {
   //重置读写位置到文件开头
   lseek(cmos_fd_, 0, SEEK_SET);
   if (s == 0) {
-    write(cmos_fd_, "0", 1);
+    if (kCmosGpioReverse)
+      write(cmos_fd_, "1", 1);
+    else
+      write(cmos_fd_, "0", 1);
   } else if (s == 1) {
-    write(cmos_fd_, "1", 1);
+    if (kCmosGpioReverse)
+      write(cmos_fd_, "0", 1);
+    else
+      write(cmos_fd_, "1", 1);
   } else {
     std::cout << "bad status" << std::endl;
     return -1;

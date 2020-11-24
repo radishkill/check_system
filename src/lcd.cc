@@ -10,7 +10,9 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
+
 #include <iostream>
+#include <chrono>
 
 namespace check_system {
 Lcd::Lcd(const char *device_file)
@@ -58,9 +60,9 @@ int Lcd::Open(const char *device_file) {
   }
   return 0;
 }
-//显示seed到LCD 800 * 600
 int Lcd::ShowBySeed(int seed) {
   int x, y;
+  auto begin_tick = std::chrono::steady_clock::now();
   char* dest = (char*)frame_buffer_ + (var_info_.yoffset) * var_info_.yres*4 + (var_info_.xoffset);
   std::srand(seed);
   for (y = 0; y < var_info_.yres; y++) {
@@ -72,6 +74,10 @@ int Lcd::ShowBySeed(int seed) {
       dest += 4;
     }
   }
+
+  auto end_tick = std::chrono::steady_clock::now();
+  std::cout << "ShowBySeed  : "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
   return 0;
 }
 

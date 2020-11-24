@@ -43,3 +43,70 @@ int CameraManager::GetPic()
   std::cout << "get a pic " << imageInfo.iWidth << "x" << imageInfo.iHeight << " " << imageInfo.TotalBytes << std::endl;
   return 0;
 }
+
+
+int StateMachine::CheckAdminKey() {
+  int n = 10;
+
+  GlobalArg* arg = GlobalArg::GetInstance();
+  CheckPairStore(0);
+  //如果库钥匙为空
+  if (available_pair_list_.empty()) {
+    std::cout << "admin key store is empty!!!" << std::endl;
+    return -1;
+  }
+  std::srand(std::time(nullptr));
+  double result;
+  int available_num = available_pair_list_.size();
+  while (n--) {
+    int index = std::rand()%available_pair_list_.size();
+    int seed_index = available_pair_list_[index];
+
+    //如果随机到的是已经被删除了的
+    if (seed_index == -1) {
+      int i = index;
+      while (i++) {
+
+        if (i == available_pair_list_.size())
+          i = 0;
+        //找到了一个没有被删除的钥匙
+        if (available_pair_list_[i] != -1) {
+          index = i;
+          seed_index = available_pair_list_[index];
+          break;
+        }
+        if (i == index)
+          goto auth_fault;
+      }
+    }
+
+    int seed = arg->key_file->GetSeed(0, seed_index);
+    arg->lcd->ShowBySeed(seed);
+    arg->key_file->ReadPicAsBmp(0, index);
+    arg->camera->GetOnePic();
+
+    //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
+    result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    if (result <= kAuthThreshold) {
+      //结果匹配
+      //.....
+      return 1;
+    }
+
+    arg->key_file->DeletePic(0, index);
+    arg->key_file->DeleteSeed(0, index);
+    available_pair_list_[index] = -1;
+
+    int rand_seed = arg->sm->GenerateRandomSeed();
+    arg->lcd->ShowBySeed(rand_seed);
+
+    arg->camera->GetOnePic();
+
+    arg->key_file->CopyPicToBuffer(arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
+    arg->key_file->SavePicAndSeed(0, index, rand_seed);
+  }
+  //非管理员key插入
+  return 0;
+  auth_fault:
+  return -1;
+}

@@ -18,6 +18,7 @@ namespace check_system {
 class CameraManager {
  public:
   CameraManager();
+  int InitCamera();
 
   const std::vector<std::string>& GetDeviceList();
   int SetResolution(INT iResolutionIndex);
@@ -26,6 +27,7 @@ class CameraManager {
   int GetOnePic();
   int GetPic();
   char* GetPicBuffer();
+  int Reboot();
   int CheckPic(int threshold_low, int threshold_high);
   bool IsOpen() {return is_open_flag_ == 1;};
   int is_open_flag_;
