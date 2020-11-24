@@ -140,20 +140,31 @@ void drawRect_rgb16 (int x0, int y0, int width,int height, int color)
     }
 }
 int ShowBySeed(int seed) {
-  char a, b, c, d;
+   int x0 = 0;
+   int y0 = 0;
+   const int bytesPerPixel = 2;
+   int color = 0xff00ff00;
+   const int stride = finfo.line_length / bytesPerPixel;
   int x, y;
-  char* dest = (char*)frameBuffer + (vinfo.yoffset) * vinfo.yres*4 + (vinfo.xoffset);
+  short *dest = (short *) (frameBuffer)+ (y0 + vinfo.yoffset) * stride + (x0 +vinfo.xoffset);
   std::srand(seed);
-  std::cout << seed << std::endl;
-  for (y = 0; y < vinfo.yres/2; y++) {
-    for (x = 0; x < vinfo.xres; x++) {
-      *dest = std::rand()%0x100;
-      *(dest+1) = std::rand()%0x100;
-      *(dest+2) = std::rand()%0x100;
+  char s;
+  for (y = 0; y < vinfo.yres; y += 10) { 
+      for (x = 0; x < vinfo.xres; x++) {
+           if (x%100 == 0) {
+              s = std::rand()%0x100;
+           }
+           for (int w = 0; w < 10; w++) {
+              if (y+w > vinfo.yres) {
+                 break;
+              }
+            *(dest + (y+w)*stride + x*4) = s;
+            *(dest+ (y+w)*stride + x*4 + 1) = s;
+            *(dest+ (y+w)*stride + x*4 + 2) = s;
 
-      *(dest+3) = 0xff;
-      dest += 4;
-    }
+            *(dest+ (y+w)*stride + x*4 + 3) = 0;
+            }
+     }
   }
   return 0;
 }
@@ -180,7 +191,7 @@ int main (int argc, char **argv)
        exit (2);
     }
     printFixedInfo ();
-   //获取vinfo信息并显示
+   //获取vinfo信息并显示drawRect_rgb16
    if (ioctl (fbFd, FBIOGET_VSCREENINFO, &vinfo) == -1)
     {
        perror ("Error reading variable information");
@@ -207,17 +218,16 @@ int main (int argc, char **argv)
            exit (4);
        }
 
-       //drawRect_rgb16 (vinfo.xres *3 / 8, vinfo.yres * 3 / 8,vinfo.xres / 4, vinfo.yres / 4,0xff00ff00);//实现画矩形
+      //drawRect_rgb16 (vinfo.xres *3 / 8, vinfo.yres * 3 / 8,vinfo.xres / 4, vinfo.yres / 4,0xff00ff00);//实现画矩形
 
        //drawline_rgb16(0,0,vinfo.xres,vinfo.yres,0xffff0000,0);
 
-       //drawline_rgb16(260,10,0,280,0xff00ff00,1);//可以画出一个交叉的十字，坐标都是自己设的。
+       //drawline_rgb16(260,10,100,280,0xff00ff00,1);//可以画出一个交叉的十字，坐标都是自己设的。
        auto begin_tick = std::chrono::steady_clock::now();
        std::srand(std::time(nullptr));
        ShowBySeed(std::rand());
         auto end_tick = std::chrono::steady_clock::now();
         std::cout << "elapsed time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
-       sleep (2);
        printf (" Done.\n");
 
        munmap (frameBuffer, screensize);   //解除内存映射，与mmap对应

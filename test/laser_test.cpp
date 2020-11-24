@@ -27,5 +27,11 @@ int main() {
       break;
     Utils::MSleep(1000);
   }
+  n = 20;
+  while (n--) {
+    if (0 == laser.SendOpenCmd())
+      break;
+    Utils::MSleep(1000);
+  }
   return 0;
 }
