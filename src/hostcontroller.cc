@@ -52,6 +52,7 @@ int HostController::RecvData() {
       //握手确认
       HandConfirm();
       arg->hsk_flag = true;
+      std::cout << "set hsk flag" << std::endl;
       break;
     }
     case 0x03: {
@@ -60,8 +61,10 @@ int HostController::RecvData() {
     }
     case 0x04: {
       //认证
-      if (!arg->hsk_flag)
+      if (!arg->hsk_flag) {
+        std::cout << "not set hsk flag" << std::endl;
         break;
+      }
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kAuth));
       th.detach();
       break;
@@ -70,24 +73,28 @@ int HostController::RecvData() {
       //握手取消
       HandCancel();
       arg->hsk_flag = false;
+      std::cout << "reset hsk flag" << std::endl;
       break;
     }
     case 0x06: {
       //复位
       arg->interrupt_flag = 1;
       ResetSuccess();
+      std::cout << "set interrupt flag" << std::endl;
       break;
     }
     case 0x07: {
       //注册
-      if (!arg->hsk_flag)
+      if (!arg->hsk_flag) {
+        std::cout << "not set hsk flag" << std::endl;
         break;
+      }
       std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kRegister));
       th.detach();
       break;
     }
     default: {
-      perror("bad data");
+      std::cout << "bad data" << std::endl;
       return -1;
     }
   }
