@@ -9,8 +9,8 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/src
 )
 
-add_executable(TestImage_x64
-    ../src/main.cpp
+add_executable(CalcTwoPic_x64
+    ../src/calc_two_pic.cpp
     ${PROJECT_SOURCE_DIR}/src/utils.cc
     ${PROJECT_SOURCE_DIR}/src/gabor_im/bluesteinSetup.cpp 
     ${PROJECT_SOURCE_DIR}/src/gabor_im/cosd.cpp 
@@ -34,7 +34,7 @@ add_executable(TestImage_x64
     ${PROJECT_SOURCE_DIR}/src/gabor_im/sind.cpp
     )
 
-target_link_libraries(TestImage_x64
+target_link_libraries(CalcTwoPic_x64
 	pthread
   #  opencv_highgui
   opencv_core
@@ -45,9 +45,16 @@ target_link_libraries(TestImage_x64
   opencv_xfeatures2d
   opencv_highgui
   gomp
-	~/workspace/check_system/lib/x64/libCKCameraSDK.a
+	${PROJECT_SOURCE_DIR}/lib/x64/libCKCameraSDK.a
 )
 
 add_executable(ScreenTest_x64
-  ../screen.cpp
+  ../src/screen.cpp
   )
+
+add_executable(LaserTest_x64
+  ../src/laser_test.cpp
+  ${PROJECT_SOURCE_DIR}/src/utils.cc
+  ${PROJECT_SOURCE_DIR}/src/laser.cc
+  ${PROJECT_SOURCE_DIR}/src/usart.cc
+)
