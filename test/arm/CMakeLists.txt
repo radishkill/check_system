@@ -1,24 +1,26 @@
-set(CROSS_COMPILE $ENV{HOME}/gcc-6.3.1/bin/arm-linux-gnueabihf-)
-
 set (CMAKE_CXX_COMPILER ${CROSS_COMPILE}g++)
 
 set(CMAKE_BUILD_TYPE "Debug")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/arm)
 
+
+add_compile_options("-std=c++14")
+add_definitions(
+        -o3 -g -w -Wall
+        )
+
 include_directories(
   ${PROJECT_SOURCE_DIR}/src/gabor_im
   ./include
   ${PROJECT_SOURCE_DIR}/src
-  $ENV{HOME}/boost-gcc-6.3/include
-  $ENV{HOME}/opencv/include
+  /opt/arm/include
 )
 link_directories (
-  $ENV{HOME}/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
-  $ENV{HOME}/opencv/lib
+  /opt/arm/lib
 )
 
-add_executable(TestImage_arm
-    ../src/main.cpp
+add_executable(CalcTwoPic_arm
+    ../src/calc_two_pic.cpp
     ${PROJECT_SOURCE_DIR}/src/utils.cc
     ${PROJECT_SOURCE_DIR}/src/gabor_im/bluesteinSetup.cpp 
     ${PROJECT_SOURCE_DIR}/src/gabor_im/cosd.cpp 
@@ -42,7 +44,7 @@ add_executable(TestImage_arm
     ${PROJECT_SOURCE_DIR}/src/gabor_im/sind.cpp
     )
 
-target_link_libraries(TestImage_arm
+target_link_libraries(CalcTwoPic_arm
 	pthread
   #  opencv_highgui
   opencv_core
@@ -57,13 +59,18 @@ target_link_libraries(TestImage_arm
 )
 
 add_executable(ScreenTest_arm
-  ../screen.cpp
+  ../src/screen.cpp
   )
 
 add_executable(LaserTest_arm
-  ../laser_test.cpp
+  ../src/laser_test.cpp
   ${PROJECT_SOURCE_DIR}/src/utils.cc
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
-  
+)
+add_executable(BaseTest_arm
+  ../src/main.cpp
+)
+target_link_libraries(BaseTest_arm
+  pthread
 )

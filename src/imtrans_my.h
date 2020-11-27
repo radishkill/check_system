@@ -23,8 +23,7 @@ using std::endl;
 int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
     Mat rI1;
    
-    if (img1.empty() || img2.empty())
-    {
+    if (img1.empty() || img2.empty()) {
         cout << "Could not open or find the image!\n" << endl;
 
         return -1;

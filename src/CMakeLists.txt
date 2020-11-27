@@ -1,4 +1,4 @@
-set(CROSS_COMPILE $ENV{HOME}/gcc-6.3.1/bin/arm-linux-gnueabihf-)
+#set(CROSS_COMPILE $ENV{HOME}/gcc-6.3.1/bin/arm-linux-gnueabihf-)
 
 #set (CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 #set (CMAKE_CXX_COMPILER "g++")
@@ -10,16 +10,12 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/)
 add_compile_options("-std=c++14")
 include_directories(
 	${PROJECT_SOURCE_DIR}/src/include
-  ~/opencv/include
   ${PROJECT_SOURCE_DIR}/src/gabor_im
-  ~/boost-gcc-6.3/include
-  /usr/local/include
+  /opt/arm/include
 	)
 link_directories(
-    ~/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
-    ~/opencv/lib
-    ~/boost-gcc-6.3/lib
-    /usr/local/lib
+    /opt/arm/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
+    /opt/arm/lib
     )
 
 add_definitions(

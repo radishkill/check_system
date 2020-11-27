@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 set(APP_NAME check_system)
 project(${APP_NAME})
+set(CROSS_COMPILE /opt/arm/gcc-6.3.1/bin/arm-linux-gnueabihf-)
 add_subdirectory(src)
 add_subdirectory(test)
