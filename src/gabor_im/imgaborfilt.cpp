@@ -439,13 +439,7 @@ void applyGaborFilterFFT(const emxArray_real_T *A, double params_wavelength,
 
   emxInit_creal_T(&x, 2);
   //这里面花费一半的时间
-  begin_tick = std::chrono::steady_clock::now();
   fft2(Apadded, x);
-  std::cout << x->size[0] << " " << x->size[1] << std::endl;
-  end_tick = std::chrono::steady_clock::now();
-  std::cout << "fft2 : "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
-  
   i1 = x->size[0] * x->size[1];
   vlend2 = x->size[0] * x->size[1];
   emxEnsureCapacity_creal_T(x, vlend2);

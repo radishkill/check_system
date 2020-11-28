@@ -24,7 +24,6 @@ class Lcd {
   void PrintVariableInfo();
   const int width_;
   const int height_;
-  const int per_pixel_;
   int fd_;
   struct fb_var_screeninfo var_info_;
   struct fb_fix_screeninfo fix_info_;

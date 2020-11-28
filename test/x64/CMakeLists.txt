@@ -1,6 +1,6 @@
 set (CMAKE_CXX_COMPILER "g++")
 
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/x64)
 
 include_directories(
@@ -8,12 +8,12 @@ include_directories(
   ./include
   ${PROJECT_SOURCE_DIR}/src
 )
-FIND_PACKAGE( OpenMP REQUIRED)
+FIND_PACKAGE(OpenMP REQUIRED)
 if(OPENMP_FOUND)
-message("OPENMP FOUND")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+  message("OPENMP FOUND")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
 
@@ -24,6 +24,7 @@ add_definitions(
 
 add_executable(CalcTwoPic_x64
     ../src/calc_two_pic.cpp
+    ${PROJECT_SOURCE_DIR}/src/authpic.cc
     ${PROJECT_SOURCE_DIR}/src/utils.cc
     ${PROJECT_SOURCE_DIR}/src/gabor_im/bluesteinSetup.cpp 
     ${PROJECT_SOURCE_DIR}/src/gabor_im/cosd.cpp 
@@ -63,7 +64,7 @@ target_link_libraries(CalcTwoPic_x64
 )
 
 add_executable(ScreenTest_x64
-  ../src/screen.cpp
+  ../src/screen_test.cpp
   )
 
 add_executable(LaserTest_x64

@@ -1,6 +1,6 @@
 set (CMAKE_CXX_COMPILER ${CROSS_COMPILE}g++)
 
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/arm)
 
 
@@ -29,6 +29,7 @@ link_directories (
 
 add_executable(CalcTwoPic_arm
     ../src/calc_two_pic.cpp
+    ${PROJECT_SOURCE_DIR}/src/authpic.cc
     ${PROJECT_SOURCE_DIR}/src/utils.cc
     ${PROJECT_SOURCE_DIR}/src/gabor_im/bluesteinSetup.cpp 
     ${PROJECT_SOURCE_DIR}/src/gabor_im/cosd.cpp 
@@ -67,7 +68,7 @@ target_link_libraries(CalcTwoPic_arm
 )
 
 add_executable(ScreenTest_arm
-  ../src/screen.cpp
+  ../src/screen_test.cpp
   )
 
 add_executable(LaserTest_arm

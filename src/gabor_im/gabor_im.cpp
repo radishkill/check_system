@@ -4,8 +4,6 @@
 // MATLAB Coder version            : 4.1
 // C/C++ source code generated on  : 15-Oct-2020 16:25:25
 //
-#include <chrono>
-#include <cstring>
 
 // Include Files
 #include "rt_nonfinite.h"
@@ -42,7 +40,6 @@ void gabor_im(const emxArray_uint8_T *image, double wavelength, double angle,
   for (i0 = 0; i0 < loop_ub; i0++) {
     b_image->data[i0] = image->data[i0];
   }
-  // std::memcpy(b_image->data, image->data, loop_ub);
 
   emxInit_real_T(&M, 2);
   applyGaborFilterFFT(b_image, wavelength, angle, wavelength *
@@ -50,7 +47,7 @@ void gabor_im(const emxArray_uint8_T *image, double wavelength, double angle,
                       / 0.5 * 0.58870501125773733 / 3.1415926535897931 * 3.0, M,
                       Gimage_im);
 
-  //BW_im=im2bw(Gimage_im,0);       %瀵筊GB澶勭悊
+  //      BW_im=im2bw(Gimage_im,0);       %对RGB处理
   i0 = BW_im->size[0] * BW_im->size[1];
   BW_im->size[0] = Gimage_im->size[0];
   BW_im->size[1] = Gimage_im->size[1];
@@ -62,7 +59,7 @@ void gabor_im(const emxArray_uint8_T *image, double wavelength, double angle,
     BW_im->data[i0] = (Gimage_im->data[i0] > 0.0);
   }
 
-  // 鍏ㄥ眬闃堝�煎鍥惧儚I杩涜浜屽�煎寲
+  // 全局阈值对图像I进行二值化
   loop_ub = BW_im->size[0] * BW_im->size[1];
   i0 = K->size[0] * K->size[1];
   K->size[0] = 1;
