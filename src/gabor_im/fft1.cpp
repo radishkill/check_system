@@ -6,7 +6,6 @@
 //
 
 // Include Files
-#include <iostream>
 #include <cmath>
 #include "rt_nonfinite.h"
 #include "gabor_im.h"
@@ -992,7 +991,7 @@ void dobluesteinfft(const emxArray_real_T *x, int N2, int n1, const
     }
   }
 
-sz_idx_1 = (int)sx_idx_1 - 1;
+  sz_idx_1 = (int)sx_idx_1 - 1;
 
 #pragma omp parallel \
  num_threads(omp_get_max_threads()) \

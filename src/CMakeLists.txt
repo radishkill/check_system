@@ -37,6 +37,7 @@ add_executable(CheckSystem
     utils.cc
     state_machine.cc
     hostcontroller.cc
+    authpic.cc
     gabor_im/bluesteinSetup.cpp 
     gabor_im/cosd.cpp 
     gabor_im/createNormalizedFrequencyVector.cpp 

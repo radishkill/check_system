@@ -11,7 +11,7 @@
 #include <iterator>
 #include <algorithm> //输出vector所有值
 
-#include<numeric>//计算方差和均值
+#include <numeric>//计算方差和均值
 
 #include <opencv2/calib3d.hpp>
 using namespace cv;

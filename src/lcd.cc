@@ -16,8 +16,7 @@
 
 namespace check_system {
 Lcd::Lcd(const char *device_file)
-  : device_name_(device_file), width_(800), height_(600)
-    , per_pixel_(24) {
+  : device_name_(device_file), width_(800), height_(600) {
   fd_ = -1;
   Open(device_file);
 }
@@ -60,25 +59,44 @@ int Lcd::Open(const char *device_file) {
   }
   return 0;
 }
-int Lcd::ShowBySeed(int seed) {
-  int x, y;
-  auto begin_tick = std::chrono::steady_clock::now();
-  char* dest = (char*)frame_buffer_ + (var_info_.yoffset) * var_info_.yres*4 + (var_info_.xoffset);
-  std::srand(seed);
-  for (y = 0; y < var_info_.yres; y++) {
-    for (x = 0; x < var_info_.xres; x++) {
-      *dest = std::rand()%0x100;
-      *(dest+1) = std::rand()%0x100;
-      *(dest+2) = std::rand()%0x100;
-      *(dest+3) = 0xff;
-      dest += 4;
-    }
-  }
+int Lcd::ShowBySeed(int seed)
+{
+   const int width = var_info_.xres;
+   const int height = var_info_.yres;
+   int x0 = 0;
+   int y0 = 0;
+   const int bytes_per_pixel = 4;
+   const int stride = fix_info_.line_length;
+   int x, y;
+   char *dest = (char *)(frame_buffer_) + (y0 + var_info_.yoffset) * stride + (x0 + var_info_.xoffset);
+   std::srand(seed);
+   char c1,c2,c3;
+   int rect_width = 50, rect_height = 50;
+   for (y = 0; y < height; y += rect_height)
+   {
+      for (x = 0; x < width; x++)
+      {
+         if (x % rect_width == 0) {
+            c1 = std::rand() % 0x100;
+            c2 = std::rand() % 0x100;
+            c3 = std::rand() % 0x100;
+         }
+         // std::cout << x << " " << y << " " << std::endl;
+         for (int w = 0; w < rect_height; w++)
+         {
+            if (y + w > height)
+            {
+               break;
+            }
+            *(dest + (y + w) * stride + x * bytes_per_pixel) = c1;
+            *(dest + (y + w) * stride + x * bytes_per_pixel + 1) = c2;
+            *(dest + (y + w) * stride + x * bytes_per_pixel + 2) = c3;
 
-  auto end_tick = std::chrono::steady_clock::now();
-  std::cout << "ShowBySeed  : "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
-  return 0;
+            *(dest + (y + w) * stride + x * bytes_per_pixel + 3) = 0xff;
+         }
+      }
+   }
+   return 0;
 }
 
 bool Lcd::IsOpen() const {

@@ -3,7 +3,8 @@
 
 #include <vector>
 #include <mutex>
-#include <opencv2/opencv.hpp>
+
+#include "authpic.h"
 
 namespace check_system {
 
@@ -25,8 +26,6 @@ class StateMachine {
   int CheckKeyInsert();                  //插入检测算法
   int CheckKey(int key_id);
   int CheckPairStore(int id);      //库遍历算法
-
-  double AuthPic(cv::Mat& speckle_database, char *pic2, int h2, int w2);
 
  private:
   std::vector<int> empty_pair_list_;
