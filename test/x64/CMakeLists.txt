@@ -8,6 +8,19 @@ include_directories(
   ./include
   ${PROJECT_SOURCE_DIR}/src
 )
+FIND_PACKAGE( OpenMP REQUIRED)
+if(OPENMP_FOUND)
+message("OPENMP FOUND")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
+
+add_definitions(
+        -o3 -g -w -Wall 
+        )
+        
 
 add_executable(CalcTwoPic_x64
     ../src/calc_two_pic.cpp
@@ -35,7 +48,8 @@ add_executable(CalcTwoPic_x64
     )
 
 target_link_libraries(CalcTwoPic_x64
-	pthread
+  pthread
+  tbb
   #  opencv_highgui
   opencv_core
   opencv_imgproc

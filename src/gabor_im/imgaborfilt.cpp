@@ -7,6 +7,8 @@
 
 // Include Files
 #include <cmath>
+#include <chrono>
+#include <iostream>
 #include "rt_nonfinite.h"
 #include <math.h>
 #include "rt_defines.h"
@@ -134,6 +136,8 @@ void applyGaborFilterFFT(const emxArray_real_T *A, double params_wavelength,
   double params_orientation, double params_sigma_x, double params_sigma_y,
   emxArray_real_T *M, emxArray_real_T *P)
 {
+  auto begin_tick = std::chrono::steady_clock::now();
+  auto end_tick = std::chrono::steady_clock::now();
   emxArray_real_T *Apadded;
   double padSize[2];
   double sizeAPadded_idx_0;
@@ -434,16 +438,25 @@ void applyGaborFilterFFT(const emxArray_real_T *A, double params_wavelength,
   }
 
   emxInit_creal_T(&x, 2);
+  //这里面花费一半的时间
+  begin_tick = std::chrono::steady_clock::now();
   fft2(Apadded, x);
+  std::cout << x->size[0] << " " << x->size[1] << std::endl;
+  end_tick = std::chrono::steady_clock::now();
+  std::cout << "fft2 : "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << std::endl;
+  
   i1 = x->size[0] * x->size[1];
   vlend2 = x->size[0] * x->size[1];
   emxEnsureCapacity_creal_T(x, vlend2);
   vspread = i1 - 1;
   emxFree_real_T(&Apadded);
+  
   for (i1 = 0; i1 <= vspread; i1++) {
     x->data[i1].re *= H->data[i1];
     x->data[i1].im *= H->data[i1];
   }
+
 
   emxFree_real_T(&H);
   emxInit_creal_T(&y, 2);
@@ -489,6 +502,7 @@ void applyGaborFilterFFT(const emxArray_real_T *A, double params_wavelength,
       c_dobluesteinfft(y, vlend2, x->size[1], u, v, sintabinv, b_y1);
     }
   }
+
 
   ipermute(b_y1, y);
   if ((y->size[0] == 0) || (y->size[1] == 0)) {
@@ -553,6 +567,7 @@ void applyGaborFilterFFT(const emxArray_real_T *A, double params_wavelength,
   for (k = 0; k < nx; k++) {
     M->data[k] = rt_hypotd_snf(x->data[k].re, x->data[k].im);
   }
+  
 
   if (padSize[0] > sizeAPadded_idx_0) {
     i1 = 0;
@@ -569,6 +584,7 @@ void applyGaborFilterFFT(const emxArray_real_T *A, double params_wavelength,
     vstride = (int)padSize[1] - 1;
     ny = (int)sizeAPadded_idx_1;
   }
+  
 
   nx = x->size[0] * x->size[1];
   vspread = vlend2 - i1;
