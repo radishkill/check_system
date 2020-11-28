@@ -31,6 +31,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
 
     //-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
     int minHessian = 400;
+    // int minHessian = 5;
     Ptr<SURF> detector = SURF::create(minHessian);
     std::vector<KeyPoint> keypoints1, keypoints2;
     Mat descriptors1, descriptors2;
