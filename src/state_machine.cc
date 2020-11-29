@@ -83,7 +83,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       n = 10;
       while (n--) {
-        ret = arg->laser->SendOpenCmd();
+        ret = arg->laser->OpenLaser();
         if (ret == 0)
           break;
         Utils::MSleep(2000);
@@ -129,7 +129,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       n = 10;
       while (n--) {
-        ret = arg->laser->SendOpenCmd();
+        ret = arg->laser->OpenLaser();
         if (ret == 0)
           break;
         Utils::MSleep(2000);
@@ -211,7 +211,7 @@ int StateMachine::SelfTest() {
   int n = 0;
   n = 12;
   while (n--) {
-    laser_flag = arg->laser->SendCheckCmd();
+    laser_flag = arg->laser->CheckStatus();
     if (laser_flag == 0)
       break;
     Utils::MSleep(1000);
@@ -245,7 +245,7 @@ int StateMachine::SelfTest() {
   n = 20;
   while (n--) {
     //这里面最长超时时间为1s
-    laser_flag = arg->laser->SendOpenCmd();
+    laser_flag = arg->laser->OpenLaser();
     //启动成功
     if (laser_flag == 0)
       break;
@@ -385,7 +385,7 @@ int StateMachine::Register() {
   //确认激光器是打开状态
   int n = 10;
   while (n--) {
-    ret = arg->laser->SendOpenCmd();
+    ret = arg->laser->OpenLaser();
     if (ret == 0)
       break;
     Utils::MSleep(2000);
@@ -450,7 +450,7 @@ int StateMachine::Register() {
     //确认激光器是打开状态 多次拍照可能会超过30s
     int n = 10;
     while (n--) {
-      ret = arg->laser->SendOpenCmd();
+      ret = arg->laser->OpenLaser();
       if (ret == 0)
         break;
       Utils::MSleep(2000);

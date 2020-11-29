@@ -33,7 +33,7 @@ int main(int argc, char **argv)
   int laser_flag;
   while (n--)
   {
-    laser_flag = laser.SendCheckCmd();
+    laser_flag = laser.CheckStatus();
     if (laser_flag == 0)
       break;
     Utils::MSleep(1000);
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     n = 20;
     while (n--)
     {
-      if (0 == laser.SendCloseCmd())
+      if (0 == laser.CloseLaser())
         break;
       Utils::MSleep(1000);
     }
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     n = 20;
     while (n--)
     {
-      if (0 == laser.SendOpenCmd())
+      if (0 == laser.OpenLaser())
         break;
       Utils::MSleep(1000);
     }

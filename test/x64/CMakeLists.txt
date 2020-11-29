@@ -1,5 +1,4 @@
 set (CMAKE_CXX_COMPILER "g++")
-
 set(CMAKE_BUILD_TYPE "Debug")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/x64)
 
@@ -120,4 +119,12 @@ add_executable(LaserTest_x64
   ${PROJECT_SOURCE_DIR}/src/utils.cc
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
+)
+
+add_executable(MainTest_x64
+  ../src/main.cpp
+  ${PROJECT_SOURCE_DIR}/src/eventmanager.cc
+)
+target_link_libraries(MainTest_x64
+  ev
 )
