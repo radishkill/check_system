@@ -10,6 +10,10 @@ namespace check_system {
 class Laser {
  public:
   Laser(const char* device_name);
+  int ForceOpen();
+  int ForceClose();
+  int ForceCheck();
+
   int SendOpenCmd();
   int SendCloseCmd();
   int SendCheckCmd();

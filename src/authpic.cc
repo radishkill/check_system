@@ -1,6 +1,5 @@
 #include "authpic.h"
 
-
 #include "rtwtypes.h"
 #include "gabor_im_types.h"
 #include "rt_nonfinite.h"
@@ -10,51 +9,46 @@
 #include "gabor_im_initialize.h"
 #include "imtrans_my.h"
 
-
-emxArray_uint8_T* Mat2Emx_U8(Mat& srcImage)
+emxArray_uint8_T *Mat2Emx_U8(Mat &srcImage)
 {
   int idx0;
   int idx1;
-  emxArray_uint8_T* dstImage;
+  emxArray_uint8_T *dstImage;
   // Set the size of the array.
   // Change this size to the value that the application requires.
-  dstImage = emxCreate_uint8_T(srcImage.cols, srcImage.rows);  //ÕâÀïµÄÐÐÁÐÊÇ·´ÏòµÄ
+  dstImage = emxCreate_uint8_T(srcImage.cols, srcImage.rows); //ÕâÀïµÄÐÐÁÐÊÇ·´ÏòµÄ
   //memcpy(result, Io.data, result->allocatedSize * sizeof(uchar));
 
   // Loop over the array to initialize each element.
-  for (idx0 = 0; idx0 < dstImage->size[0U]; idx0++) {
-    for (idx1 = 0; idx1 < dstImage->size[1U]; idx1++) {
+  for (idx0 = 0; idx0 < dstImage->size[0U]; idx0++)
+  {
+    for (idx1 = 0; idx1 < dstImage->size[1U]; idx1++)
+    {
       // Set the value of the array element.
       // Change this value to the value that the application requires.
       dstImage->data[idx0 + dstImage->size[0] * idx1] = srcImage.data[idx0 + dstImage->size[0] * idx1];
     }
-
   }
   return dstImage;
 }
-Mat Emx2Mat_U8c(const emxArray_uint8_T* srcImage)
+Mat Emx2Mat_U8c(const emxArray_uint8_T *srcImage)
 {
 
   Mat dstImage = cv::Mat((int)srcImage->size[1], (int)srcImage->size[0], CV_8U, srcImage->data);
   return dstImage;
-
 }
-Mat Emx2Mat_U8(const emxArray_real_T* srcImage)
+Mat Emx2Mat_U8(const emxArray_real_T *srcImage)
 {
 
   Mat dstImage = cv::Mat((int)srcImage->size[1], (int)srcImage->size[0], CV_64F, srcImage->data);
   return dstImage;
-
 }
-Mat Emx2Mat_bool(const emxArray_boolean_T* srcImage)
+Mat Emx2Mat_bool(const emxArray_boolean_T *srcImage)
 {
 
   Mat dstImage = cv::Mat((int)srcImage->size[1], (int)srcImage->size[0], CV_8U, srcImage->data);
   return dstImage;
-
 }
-
-
 
 static double argInit_real_T()
 {
@@ -85,8 +79,10 @@ static emxArray_uint8_T *c_argInit_UnboundedxUnbounded_u()
   result = emxCreate_uint8_T(2, 2);
 
   // Loop over the array to initialize each element.
-  for (idx0 = 0; idx0 < result->size[0U]; idx0++) {
-    for (idx1 = 0; idx1 < result->size[1U]; idx1++) {
+  for (idx0 = 0; idx0 < result->size[0U]; idx0++)
+  {
+    for (idx1 = 0; idx1 < result->size[1U]; idx1++)
+    {
       // Set the value of the array element.
       // Change this value to the value that the application requires.
       result->data[idx0 + result->size[0] * idx1] = argInit_uint8_T();
@@ -96,17 +92,16 @@ static emxArray_uint8_T *c_argInit_UnboundedxUnbounded_u()
   return result;
 }
 
-
-
 //hamming
 double hamming(Mat input1, Mat input2)
 {
   double diff = 0;
   for (int i = 0; i < input2.rows && i < input1.rows; i++)
   {
-    uchar* data1 = input1.ptr<uchar>(i);
-    uchar* data2 = input2.ptr<uchar>(i);
-    for (int j = 0; j < input2.cols && j < input1.cols; j++) {
+    uchar *data1 = input1.ptr<uchar>(i);
+    uchar *data2 = input2.ptr<uchar>(i);
+    for (int j = 0; j < input2.cols && j < input1.cols; j++)
+    {
       if (data1[j] != data2[j])
       {
         diff++;
@@ -139,7 +134,6 @@ public:
       gabor_im(image_[colIdx], 8, 45, Gimage_im_[colIdx], BW_im_[colIdx], K_[colIdx]);
 
       Gim_mat_[colIdx] = Emx2Mat_U8(Gimage_im_[colIdx]);
-
       //阈值
       threshold(Gim_mat_[colIdx], bw_im_[colIdx], 0, 255, THRESH_BINARY_INV); //INV_THRESH_BINARY
 
@@ -156,21 +150,23 @@ private:
   Mat *bw_im_;
 };
 
-double AuthPic(cv::Mat& speckle_database, char *auth_pic, int h2, int w2) {
+double AuthPic(cv::Mat &speckle_database, char *auth_pic, int h2, int w2)
+{
   Mat speckle_auth(h2, w2, CV_8UC1);
   std::memcpy(speckle_auth.data, auth_pic, h2 * w2);
-  int FHD = AuthPic(speckle_database, speckle_database);
+  double FHD = AuthPic(speckle_database, speckle_auth);
   return FHD;
 }
 
-double AuthPic(cv::Mat &speckle_database, cv::Mat &speckle_auth) {
+double AuthPic(cv::Mat &speckle_database, cv::Mat &speckle_auth)
+{
   // Initialize the application.
   gabor_im_initialize();
 
   emxArray_real_T *Gimage_im[3];
   emxArray_boolean_T *BW_im[3];
   emxArray_boolean_T *K[3];
-  emxArray_uint8_T *image[3];
+  emxArray_uint8_T *image[3] = {nullptr, nullptr, nullptr};
   Mat bw_im[3];
   Mat Gim_mat[3];
 
@@ -221,6 +217,7 @@ double AuthPic(cv::Mat &speckle_database, cv::Mat &speckle_auth) {
     emxDestroyArray_boolean_T(K[i]);
     emxDestroyArray_boolean_T(BW_im[i]);
     emxDestroyArray_real_T(Gimage_im[i]);
+    if (image[i])
     emxDestroyArray_uint8_T(image[i]);
   }
 

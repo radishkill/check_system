@@ -19,13 +19,60 @@ add_definitions(
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/src/gabor_im
-  ./include
   ${PROJECT_SOURCE_DIR}/src
   /opt/arm/include
 )
 link_directories (
   /opt/arm/lib
 )
+
+add_executable(OnlyAuth_arm
+    ../src/onlyauth.cpp
+    ${PROJECT_SOURCE_DIR}/src/authpic.cc
+    ${PROJECT_SOURCE_DIR}/src/utils.cc
+    ${PROJECT_SOURCE_DIR}/src/lcd.cc
+    ${PROJECT_SOURCE_DIR}/src/led.cc
+    ${PROJECT_SOURCE_DIR}/src/laser.cc
+    ${PROJECT_SOURCE_DIR}/src/usart.cc
+    ${PROJECT_SOURCE_DIR}/src/eventmanager.cc
+    ${PROJECT_SOURCE_DIR}/src/camera_manager.cc
+    ${PROJECT_SOURCE_DIR}/src/key_file.cc
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/bluesteinSetup.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/cosd.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/createNormalizedFrequencyVector.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/fft1.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/fft2.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/gabor_im.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/gabor_im_data.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/gabor_im_emxAPI.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/gabor_im_emxutil.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/gabor_im_initialize.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/gabor_im_rtwutil.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/gabor_im_terminate.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/imgaborfilt.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/ipermute.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/padarray.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/power.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/rtGetInf.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/rtGetNaN.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/rt_nonfinite.cpp 
+    ${PROJECT_SOURCE_DIR}/src/gabor_im/sind.cpp
+)
+target_link_libraries(OnlyAuth_arm
+  boost_program_options
+  pthread
+  tbb
+  opencv_core
+  opencv_imgproc
+  opencv_features2d
+  opencv_imgcodecs
+  opencv_calib3d
+  opencv_xfeatures2d
+  opencv_highgui
+  gomp
+	${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
+)
+
 
 add_executable(CalcTwoPic_arm
     ../src/calc_two_pic.cpp
@@ -64,7 +111,7 @@ target_link_libraries(CalcTwoPic_arm
   opencv_xfeatures2d
   opencv_highgui
   gomp
-	~/workspace/check_system/lib/x64/libCKCameraSDK.a
+	${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
 )
 
 add_executable(ScreenTest_arm
@@ -76,10 +123,4 @@ add_executable(LaserTest_arm
   ${PROJECT_SOURCE_DIR}/src/utils.cc
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
-)
-add_executable(BaseTest_arm
-  ../src/main.cpp
-)
-target_link_libraries(BaseTest_arm
-  pthread
 )

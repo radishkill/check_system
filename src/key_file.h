@@ -40,7 +40,7 @@ class KeyFile {
   int GetPic(int id,int index);
   int ReadPicAsBmp(int id, int index);
   char* GetPicBuffer();
-  cv::Mat& GetMatImage() {return image_;};
+  cv::Mat GetMatImage() {return image_;};
   int CopyPicToBuffer(char* pic, int width, int height);
   int SavePic(int id, int index);
   int SavePicAsBmp(int id, int index);

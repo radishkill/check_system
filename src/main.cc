@@ -100,7 +100,7 @@ void InitSystem() {
     std::cout << "laser connect ok!!" <<std::endl;
   }
 
-  arg->camera = new CameraManager();
+  arg->camera = new CameraManager(3000);
   if(arg->camera->is_open_flag_ == 0) {
     arg->led->laser_blink_=200;
     arg->led->lcd_blink_=200;

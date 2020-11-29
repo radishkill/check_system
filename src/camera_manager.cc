@@ -7,12 +7,13 @@
 
 namespace check_system {
 
-CameraManager::CameraManager()
+CameraManager::CameraManager(int exposure_time)
     : is_open_flag_(0) {
-  InitCamera();
+  this->exposure_time_ = exposure_time;
+  InitCamera(exposure_time);
 }
 
-int CameraManager::InitCamera() {
+int CameraManager::InitCamera(int exposure_time) {
   pbuffer_ = nullptr;
   dwRGBBufSize_ = 0;
   camera_nums_ = 0;
@@ -32,7 +33,7 @@ int CameraManager::InitCamera() {
   status = CameraSetTriggerMode(hCamera_, 1);  //soft trigger
   status = CameraSetFrameSpeed(hCamera_, 1);
   status = CameraSetAeState(hCamera_, FALSE);
-  status = CameraSetExposureTime(hCamera_, 3000);
+  status = CameraSetExposureTime(hCamera_, exposure_time);
 //  status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_RGB8);
   status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_MONO8);
   status = CameraSetTriggerDelayTime(hCamera_, 0);
@@ -139,7 +140,7 @@ int CameraManager::Reboot() {
     std::cout << "CameraUnInit fault status = " << status << std::endl;
   }
   Utils::MSleep(2000);
-  InitCamera();
+  InitCamera(exposure_time_);
   return 0;
 }
 
