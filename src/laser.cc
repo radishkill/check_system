@@ -14,7 +14,7 @@ namespace check_system
     int n = 20;
     while (n--)
     {
-      int ret = SendOpenCmd();
+      int ret = OpenLaser();
       if (ret == 0)
         break;
       Utils::MSleep(1000);
@@ -30,7 +30,7 @@ namespace check_system
     int n = 20;
     while (n--)
     {
-      int ret = SendCloseCmd();
+      int ret = CloseLaser();
       if (ret == 0)
         break;
       Utils::MSleep(1000);
@@ -46,7 +46,7 @@ namespace check_system
     int n = 20;
     while (n--)
     {
-      int ret = SendCheckCmd();
+      int ret = CheckStatus();
       if (ret == 0)
         break;
       Utils::MSleep(1000);
@@ -58,7 +58,7 @@ namespace check_system
     return 0;
   }
 
-  int Laser::SendOpenCmd()
+  int Laser::OpenLaser()
   {
     int i;
     int p = 0;
@@ -95,7 +95,7 @@ namespace check_system
     return 0;
   }
 
-  int Laser::SendCloseCmd()
+  int Laser::CloseLaser()
   {
     std::cout << "close laser\n";
     int i;
@@ -135,7 +135,7 @@ namespace check_system
     return 0;
   }
 
-  int Laser::SendCheckCmd()
+  int Laser::CheckStatus()
   {
     std::cout << "check laser\n";
     int i;
@@ -179,44 +179,37 @@ namespace check_system
     return 0;
   }
 
-  int Laser::SetTemperature(int Temp)
+  int Laser::SetTemperature(double temp)
   {
     std::cout << "set laser temperature\n";
     int ret;
-    if (Temp == 20)
+    if (temperature_[0] == 0x41 && temperature_[1] == (char)0xa0 && temperature_[2] == 00 && temperature_[3] == 00)
     {
-      if (temperature_[0] == 0x41 && temperature_[1] == (char)0xa0 && temperature_[2] == 00 && temperature_[3] == 00)
-      {
-        return 0;
-      }
-      int i;
-      int p = 0;
-      data_frame_[p++] = 0x68;
-      for (i = 0; i < 4; i++)
-      {
-        data_frame_[i + p] = 0;
-      }
-      p += i;
-      data_frame_[p++] = 0x04;
-      data_frame_[p++] = 0;
-      data_frame_[p++] = 0x04;
-      data_frame_[p++] = 0x41;
-      data_frame_[p++] = 0xA0;
-      for (i = 0; i < 2; i++)
-      {
-        data_frame_[i + p] = 0;
-      }
-      p += i;
-      data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_ + 1, p - 1);
-      p++;
-      data_frame_[p++] = 0x16;
-      data_frame_[p] = '\0';
-      usart_.SendData(data_frame_, p);
+      return 0;
     }
-    else
+    int i;
+    int p = 0;
+    data_frame_[p++] = 0x68;
+    for (i = 0; i < 4; i++)
     {
-      return -1;
+      data_frame_[i + p] = 0;
     }
+    p += i;
+    data_frame_[p++] = 0x04;
+    data_frame_[p++] = 0;
+    data_frame_[p++] = 0x04;
+    //下面是温度部分
+
+    data_frame_[p++] = 0x41;
+    data_frame_[p++] = 0xA0;
+    data_frame_[p++] = 0x00;
+    data_frame_[p++] = 0x00;
+
+    data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_ + 1, p - 1);
+    p++;
+    data_frame_[p++] = 0x16;
+    data_frame_[p] = '\0';
+    usart_.SendData(data_frame_, p);
     ret = ReadBuffer(2);
     if (ret <= 0)
     {
@@ -228,116 +221,92 @@ namespace check_system
 
   int Laser::SetCurrent(int cur)
   {
+    char data[2];
+    data[0] = ((cur / 0x100) & 0xff);
+    data[1] = cur % 0x100;
     std::cout << "set laser current\n";
     int ret;
-    if (cur == 3000)
+    if (data[0] == current_[0] && data[1] == current_[1])
     {
-      int i;
-      int p = 0;
-      data_frame_[p++] = 0x68;
-      for (i = 0; i < 4; i++)
-      {
-        data_frame_[i + p] = 0;
-      }
-      p += i;
-      data_frame_[p++] = 0x02;
-      data_frame_[p++] = 0;
-      data_frame_[p++] = 0x04;
-      data_frame_[p++] = 0x45;
-      data_frame_[p++] = 0x3B;
-      data_frame_[p++] = 0x80;
-      for (i = 0; i < 1; i++)
-      {
-        data_frame_[i + p] = 0;
-      }
-      p += i;
-      data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_ + 1, p - 1);
-      p++;
-      data_frame_[p++] = 0x16;
-      data_frame_[p] = '\0';
-      usart_.SendData(data_frame_, p);
+      return 0;
     }
-    else
+    int i;
+    int p = 0;
+    data_frame_[p++] = 0x68;
+    for (i = 0; i < 4; i++)
     {
-      return -1;
+      data_frame_[i + p] = 0;
     }
+    p += i;
+    data_frame_[p++] = 0x02;
+    data_frame_[p++] = 0;
+    data_frame_[p++] = 0x04;
+    //电流值
+    data_frame_[p++] = data[0];
+    data_frame_[p++] = data[1];
+    data_frame_[p++] = 0x00;
+    data_frame_[p++] = 0x00;
+
+    data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_ + 1, p - 1);
+    p++;
+    data_frame_[p++] = 0x16;
+    data_frame_[p] = '\0';
+    usart_.SendData(data_frame_, p);
     ret = ReadBuffer(2);
     if (ret <= 0)
     {
       std::cout << "SetCurrent laser wrong!!!" << std::endl;
       return -1;
     }
+    current_[0] = data[0];
+    current_[1] = data[1];
     return 0;
   }
 
   int Laser::SetMaxCurrent(int max_cur)
   {
+    char data[2];
+    data[0] = ((max_cur / 0x100) & 0xff);
+    data[1] = max_cur % 0x100;
     std::cout << "set laser max current\n";
     int ret;
-    if (max_cur == 5000)
+
+    if (data[0] == current_[0] && data[1] == current_[1])
     {
-      int i;
-      int p = 0;
-      data_frame_[p++] = 0x68;
-      for (i = 0; i < 4; i++)
-      {
-        data_frame_[i + p] = 0;
-      }
-      p += i;
-      data_frame_[p++] = 0x02;
-      data_frame_[p++] = 0;
-      data_frame_[p++] = 0x04;
-      data_frame_[p++] = 0x45;
-      data_frame_[p++] = 0x9C;
-      data_frame_[p++] = 0x40;
-      for (i = 0; i < 1; i++)
-      {
-        data_frame_[i + p] = 0;
-      }
-      p += i;
-      data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_ + 1, p - 1);
-      p++;
-      data_frame_[p++] = 0x16;
-      data_frame_[p] = '\0';
-      usart_.SendData(data_frame_, p);
+      return 0;
     }
-    else if (max_cur == 7000)
+    int i;
+    int p = 0;
+    data_frame_[p++] = 0x68;
+    for (i = 0; i < 4; i++)
     {
-      int i;
-      int p = 0;
-      data_frame_[p++] = 0x68;
-      for (i = 0; i < 4; i++)
-      {
-        data_frame_[i + p] = 0;
-      }
-      p += i;
-      data_frame_[p++] = 0x02;
-      data_frame_[p++] = 0;
-      data_frame_[p++] = 0x04;
-      data_frame_[p++] = 0x45;
-      data_frame_[p++] = 0xEA;
-      data_frame_[p++] = 0x60;
-      for (i = 0; i < 1; i++)
-      {
-        data_frame_[i + p] = 0;
-      }
-      p += i;
-      data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_ + 1, p - 1);
-      p++;
-      data_frame_[p++] = 0x16;
-      data_frame_[p] = '\0';
-      usart_.SendData(data_frame_, p);
+      data_frame_[i + p] = 0;
     }
-    else
-    {
-      return -1;
-    }
+    p += i;
+    data_frame_[p++] = 0x02;
+    data_frame_[p++] = 0;
+    data_frame_[p++] = 0x04;
+
+    //最大电流
+    data_frame_[p++] = data[0];
+    data_frame_[p++] = data[1];
+    data_frame_[p++] = 0x00;
+    data_frame_[p++] = 0x00;
+
+    data_frame_[p] = Utils::CheckSum((unsigned char *)data_frame_ + 1, p - 1);
+    p++;
+    data_frame_[p++] = 0x16;
+    data_frame_[p] = '\0';
+    usart_.SendData(data_frame_, p);
+
     ret = ReadBuffer(2);
     if (ret <= 0)
     {
       std::cout << "SetMaxCurrent laser wrong!!!" << std::endl;
       return -1;
     }
+    max_current_[0] = data[0];
+    max_current_[1] = data[1];
     return 0;
   }
 

@@ -14,10 +14,10 @@ class Laser {
   int ForceClose();
   int ForceCheck();
 
-  int SendOpenCmd();
-  int SendCloseCmd();
-  int SendCheckCmd();
-  int SetTemperature(int Temp);
+  int OpenLaser();
+  int CloseLaser();
+  int CheckStatus();
+  int SetTemperature(double Temp);
   int SetCurrent(int cur);
   int SetMaxCurrent(int max_cur);
   int ReadBuffer(int timeout);
@@ -29,9 +29,9 @@ class Laser {
   char data_frame_[310];
   Usart usart_;
   int status_;
-  int current_;
-  int max_current_;
   char temperature_[4];
+  char current_[2];
+  char max_current_[2];
 };
 }
 

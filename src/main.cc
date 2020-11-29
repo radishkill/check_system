@@ -70,7 +70,7 @@ void SimpleTimer() {
       arg->laser->ttl--;
     }
     if (arg->laser->ttl == 0 && arg->laser->GetStatus()) {
-      arg->laser->SendCloseCmd();
+      arg->laser->CloseLaser();
     }
     Utils::MSleep(100);
     i++;
