@@ -51,10 +51,10 @@ KeyFile::KeyFile(const char* base_path)
       std::string key_seed_path = key_dir_path + std::string("/PUF" + Utils::DecToStr(i, 2)) + "_Seed";
       std::string key_pic_path = key_dir_path + std::string("/PUF" + Utils::DecToStr(i, 2)) + "_Pic";
 
-      mkdir(key_dir_path.c_str(), 777);
+      mkdir(key_dir_path.c_str(), S_IRWXU|S_IRGRP|S_IROTH);
        //创建PUF_Pic和PUF_Seed
-      mkdir(key_seed_path.c_str(), 777);
-      mkdir(key_pic_path.c_str(), 777);
+      mkdir(key_seed_path.c_str(), S_IRWXU|S_IRGRP|S_IROTH);
+      mkdir(key_pic_path.c_str(), S_IRWXU|S_IRGRP|S_IROTH);
       std::cout << "make key dir " << i << std::endl;
     }
   }
@@ -68,10 +68,10 @@ int KeyFile::AppendPufFile() {
       std::string addpufseed_path = base_path_ + addpuf_path + addpuf_path+"_Seed";
       std::string addpufpic_path = base_path_ + addpuf_path + addpuf_path+"_Pic";
 
-      mkdir((base_path_+addpuf_path).c_str(), 777);
+      mkdir((base_path_+addpuf_path).c_str(), S_IRWXU|S_IRGRP|S_IROTH);
        //创建PUF_Pic和PUF_Seed
-      mkdir(addpufseed_path.c_str(), 777);
-      mkdir(addpufpic_path.c_str(), 777);
+      mkdir(addpufseed_path.c_str(), S_IRWXU|S_IRGRP|S_IROTH);
+      mkdir(addpufpic_path.c_str(), S_IRWXU|S_IRGRP|S_IROTH);
       std::cout << addpuf_path.c_str() <<  "mkdir seccess"<< std::endl;
       break;
     }

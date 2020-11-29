@@ -4,8 +4,6 @@
 #include <vector>
 #include <mutex>
 
-#include "authpic.h"
-
 namespace check_system {
 
 class StateMachine {

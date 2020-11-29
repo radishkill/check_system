@@ -17,8 +17,8 @@ namespace check_system {
 
 class CameraManager {
  public:
-  CameraManager();
-  int InitCamera();
+  CameraManager(int exposure_time = 3000);
+  int InitCamera(int exposure_time);
 
   const std::vector<std::string>& GetDeviceList();
   int SetResolution(INT iResolutionIndex);
@@ -39,6 +39,7 @@ class CameraManager {
   DWORD dwHeight_;
   BYTE* pbuffer_;
   DWORD dwRGBBufSize_;
+  int exposure_time_;
   int camera_nums_;
 };
 }

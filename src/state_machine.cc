@@ -19,6 +19,7 @@
 #include "key_file.h"
 #include "led.h"
 #include "hostcontroller.h"
+#include "authpic.h"
 
 namespace check_system {
 
@@ -550,9 +551,9 @@ int StateMachine::FindKey() {
     int ret = arg->camera->GetOnePic();
     if (ret == -1)
       continue;
-
+    cv::Mat pic1 = arg->key_file->GetMatImage();
     //验证两张图片
-    result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    result = AuthPic(pic1, arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "auth pic elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
     if (result <= kAuthThreshold) {
@@ -625,8 +626,10 @@ int StateMachine::CheckKey(int key_id) {
     arg->key_file->ReadPicAsBmp(key_id, seed_index);
     arg->camera->GetOnePic();
 
+    cv::Mat pic1 = arg->key_file->GetMatImage();
+
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    result = AuthPic(arg->key_file->GetMatImage(), arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    result = AuthPic(pic1, arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
 
     //删除本次循环使用的Seed文件及其对应的Pic文件
     std::cout << "delete old pair index = " << seed_index << std::endl;
