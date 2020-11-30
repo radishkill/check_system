@@ -438,7 +438,8 @@ int StateMachine::Register() {
       continue;
 
     //复制
-    arg->key_file->CopyPicToBuffer(arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
+    arg->key_file->SetMatImage(arg->camera->GetPicMat());
+    // arg->key_file->CopyPicToBuffer(arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
 
     //保存激励对
     arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i], seed);
@@ -552,8 +553,10 @@ int StateMachine::FindKey() {
     if (ret == -1)
       continue;
     cv::Mat pic1 = arg->key_file->GetMatImage();
+    cv::Mat pic2 = arg->camera->GetPicMat();
     //验证两张图片
-    result = AuthPic(pic1, arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    result = AuthPic(pic1, pic2);
+    // result = AuthPic(pic1, arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "auth pic elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
     if (result <= kAuthThreshold) {
@@ -627,9 +630,10 @@ int StateMachine::CheckKey(int key_id) {
     arg->camera->GetOnePic();
 
     cv::Mat pic1 = arg->key_file->GetMatImage();
+    cv::Mat pic2 = arg->camera->GetPicMat();
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    result = AuthPic(pic1, arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    result = AuthPic(pic1, pic2);
 
     //删除本次循环使用的Seed文件及其对应的Pic文件
     std::cout << "delete old pair index = " << seed_index << std::endl;
@@ -647,7 +651,8 @@ int StateMachine::CheckKey(int key_id) {
       arg->lcd->ShowBySeed(rand_seed);
       arg->camera->GetOnePic();
 
-      arg->key_file->CopyPicToBuffer(arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
+      arg->key_file->SetMatImage(arg->camera->GetPicMat());
+      // arg->key_file->CopyPicToBuffer(arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
       arg->key_file->SavePicAndSeed(key_id, seed_index, rand_seed);
       return 1;
     }

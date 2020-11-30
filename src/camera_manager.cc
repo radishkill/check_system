@@ -3,13 +3,14 @@
 #include <iostream>
 #include <chrono>
 
+
 #include "utils.h"
 
 namespace check_system
 {
 
   CameraManager::CameraManager(int auto_flag)
-      : is_open_flag_(0)
+      : is_open_flag_(0), roi_x_(-1), roi_y_(-1), roi_w_(-1), roi_h_(-1)
   {
     if (CAMERA_WIDTH == 1280)
       resolution_index_ = IMAGEOUT_MODE_1280X720;
@@ -33,14 +34,14 @@ namespace check_system
     std::cout << "enumerate camera num " << camera_nums_ << std::endl;
 
     //应该只有一个摄像头
-    status = CameraInitEx(&hCamera_, camera_nums_ - 1, -1, -1);
+    // status = CameraInitEx(&hCamera_, camera_nums_ - 1, -1, -1);
+    status = CameraInit(&hCamera_, camera_nums_-1);
     if (status != CAMERA_STATUS_SUCCESS)
     {
       printf("Camera init failed\n");
       return -1;
     }
     ShowResolutionOption();
-
 
     status = CameraSetTriggerMode(hCamera_, 1); //soft trigger
     status = CameraSetFrameSpeed(hCamera_, 1);
@@ -156,9 +157,15 @@ namespace check_system
     if (pbuffer_ == NULL)
     {
       std::cout << "can't get a frame" << std::endl;
+      return -1;
+    }
+    picture_mat = cv::Mat(image_info_.iHeight, image_info_.iWidth, CV_8UC1, pbuffer_);
+    if (roi_x_!=-1&&roi_y_!=-1&&roi_w_!=-1&&roi_h_!=-1) {
+      picture_mat = picture_mat(cv::Rect(roi_x_, roi_y_, roi_w_, roi_h_));
     }
 
-    std::cout << "photos widthxheight:" << image_info_.iWidth << "x" << image_info_.iHeight << " total bytes:" << image_info_.TotalBytes << std::endl;
+    // std::cout << "photos widthxheight:" << image_info_.iWidth << "x" << image_info_.iHeight << " total bytes:" << image_info_.TotalBytes << std::endl;
+    std::cout << "photos info" << picture_mat.size << " " << picture_mat.total() << std::endl;
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "take photos time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
     dwWidth_ = image_info_.iWidth;
@@ -169,6 +176,12 @@ namespace check_system
   char *CameraManager::GetPicBuffer()
   {
     return (char *)pbuffer_;
+  }
+  cv::Mat CameraManager::GetPicMat() {
+    return picture_mat;
+  }
+  cv::Mat CameraManager::GetPicMat(int x, int y, int w, int h) {
+    return picture_mat(cv::Rect(x, y, w, h));
   }
 
   int CameraManager::Reboot()
