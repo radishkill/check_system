@@ -21,7 +21,7 @@ class CameraManager {
   int InitCamera(int auto_flag);
 
   const std::vector<std::string>& GetDeviceList();
-  int SetExposureTime(int time);
+  int SetExposureTime(double time);
   int SetResolution(INT iResolutionIndex);
   int Play();
   int Pause();
@@ -42,6 +42,8 @@ class CameraManager {
   DWORD dwHeight_;
   BYTE* pbuffer_;
   DWORD dwRGBBufSize_;
+  double exposion_time_;
+  int resolution_index_;
   int camera_nums_;
 };
 }

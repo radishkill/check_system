@@ -11,6 +11,11 @@ namespace check_system
   CameraManager::CameraManager(int auto_flag)
       : is_open_flag_(0)
   {
+    if (CAMERA_WIDTH == 1280)
+      resolution_index_ = IMAGEOUT_MODE_1280X720;
+    else
+      resolution_index_ = IMAGEOUT_MODE_320X240;
+    exposion_time_ = 3000;
     InitCamera(auto_flag);
   }
 
@@ -44,11 +49,8 @@ namespace check_system
 
     if (auto_flag)
     {
-      SetExposureTime(3000);
-      if (CAMERA_WIDTH == 1280)
-        SetResolution(IMAGEOUT_MODE_1280X720);
-      else
-        SetResolution(IMAGEOUT_MODE_320X240);
+      SetExposureTime(exposion_time_);
+      SetResolution(resolution_index_);
 
       Play();
     }
@@ -72,7 +74,7 @@ namespace check_system
     return device_list_;
   }
 
-  int CameraManager::SetExposureTime(int time_ms)
+  int CameraManager::SetExposureTime(double time_ms)
   {
     CameraSdkStatus status;
     status = CameraSetExposureTime(hCamera_, time_ms);
@@ -81,9 +83,8 @@ namespace check_system
       std::cout << "Set Exposure Time Fault!!!\n";
       return -1;
     }
-    double actual_time;
-    CameraGetExposureTime(hCamera_, &actual_time);
-    std::cout << "actual exposure time:" << actual_time << "us\n";
+    CameraGetExposureTime(hCamera_, &exposion_time_);
+    std::cout << "actual exposure time:" << exposion_time_ << "us\n";
     return 0;
   }
 
@@ -98,6 +99,8 @@ namespace check_system
     }
     CameraGetOutImageSize(hCamera_, &dwWidth_, &dwHeight_);
     std::cout << "current resolution : " << dwWidth_ << "x" << dwHeight_ << std::endl;
+    CameraGetResolution(hCamera_, &resolution_index_);
+    std::cout << "resolution id" << resolution_index_ << std::endl;
     return 0;
   }
 
@@ -177,7 +180,7 @@ namespace check_system
       std::cout << "CameraUnInit fault status = " << status << std::endl;
     }
     Utils::MSleep(2000);
-    InitCamera(exposure_time_);
+    InitCamera(1);
     return 0;
   }
 

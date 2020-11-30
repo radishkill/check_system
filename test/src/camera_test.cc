@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "CKCameraInterface.h"
 
 #include <chrono>
 #include <iostream>
+
+#include <opencv2/opencv.hpp>
+
+#include "CKCameraInterface.h"
+#include "camera_manager.h"
 
 using namespace std;
 
@@ -22,7 +26,7 @@ void test_softtrigger()
   status = CameraSetExposureTime(hCamera, 30000);
   status = CameraSetIspOutFormat(hCamera, CAMERA_MEDIA_TYPE_RGB8);
   status = CameraSetTriggerDelayTime(hCamera, 0);
-  status = CameraSetTriggerFrameCount(hCamera, 1);
+  status = CameraSetTriggerFrameCount(hCamera, 9);
   status = CameraSetResolution(hCamera, IMAGEOUT_MODE_1280X720);
 
 
@@ -60,6 +64,7 @@ void test_softtrigger()
       cout << "can't get a frame" << endl;
       frameNo++;
     } else {
+      
       auto end_tick = chrono::steady_clock::now();
 
       cout << "soft trigger to get image duration " << chrono::duration_cast<chrono::milliseconds>(end_tick - begin_tick).count() << " ms" << endl;
@@ -74,6 +79,8 @@ void test_softtrigger()
 //      if(pImgData)
 //        cerr << "error: get a frame again" << endl;
     }
+    if (frameNo == 10)
+      break;
   }
   status = CameraPause(hCamera);
 
@@ -83,7 +90,7 @@ void test_softtrigger()
 int main(int argc, char *argv[])
 {
   int cameraNum = 0;
-    int ret = CameraEnumerateDevice(&cameraNum);
+  int ret = CameraEnumerateDevice(&cameraNum);
   if(ret != CAMERA_STATUS_SUCCESS || cameraNum == 0)
   {
     cerr << "find camera number " << cameraNum << endl;
