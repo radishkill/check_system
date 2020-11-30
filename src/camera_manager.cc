@@ -39,6 +39,9 @@ namespace check_system
       printf("Camera init failed\n");
       return -1;
     }
+    ShowResolutionOption();
+
+
     status = CameraSetTriggerMode(hCamera_, 1); //soft trigger
     status = CameraSetFrameSpeed(hCamera_, 1);
     status = CameraSetAeState(hCamera_, FALSE);
@@ -129,12 +132,9 @@ namespace check_system
   int CameraManager::GetOnePic()
   {
     int ret = 0;
-    //打开相机
-    //  Play();
 
     ret = GetPic();
 
-    //  Pause();
     return ret;
   }
 
@@ -161,7 +161,8 @@ namespace check_system
     std::cout << "photos widthxheight:" << image_info_.iWidth << "x" << image_info_.iHeight << " total bytes:" << image_info_.TotalBytes << std::endl;
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "take photos time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
-
+    dwWidth_ = image_info_.iWidth;
+    dwHeight_ = image_info_.iHeight;
     return 0;
   }
 
@@ -208,5 +209,18 @@ namespace check_system
       return 0;
     }
     return -1;
+  }
+  void CameraManager::ShowResolutionOption()
+  {
+    CameraGetCapability(hCamera_, &cap);
+    for (int i = 0; i < cap.tDeviceCapbility.iImageSizeDesc; i++)
+    {
+      std::cout << cap.tDeviceCapbility.pImageSizeDesc[i].iIndex << " "
+                << cap.tDeviceCapbility.pImageSizeDesc[i].iWidth << "x" << cap.tDeviceCapbility.pImageSizeDesc[i].iHeight
+                << std::endl;
+    }
+  }
+  void CameraManager::Uninit() {
+    CameraUnInit(hCamera_);
   }
 } // namespace check_system

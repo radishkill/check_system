@@ -126,6 +126,8 @@ add_executable(CameraTest_x64
   ${PROJECT_SOURCE_DIR}/src/utils.cc
 )
 target_link_libraries(CameraTest_x64
+  opencv_core
+  opencv_imgcodecs
   ${PROJECT_SOURCE_DIR}/lib/x64/libCKCameraSDK.a
 )
 

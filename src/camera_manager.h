@@ -32,8 +32,10 @@ class CameraManager {
   DWORD GetHeight() {return dwHeight_;};
   int Reboot();
   int CheckPic(int threshold_low, int threshold_high);
+  void ShowResolutionOption();
   bool IsOpen() {return is_open_flag_ == 1;};
   int is_open_flag_;
+  void Uninit();
  private:
   std::vector<std::string> device_list_;
   stImageInfo image_info_;
@@ -42,6 +44,7 @@ class CameraManager {
   DWORD dwHeight_;
   BYTE* pbuffer_;
   DWORD dwRGBBufSize_;
+  tSdkCameraCapbility cap;
   double exposion_time_;
   int resolution_index_;
   int camera_nums_;
