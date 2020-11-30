@@ -17,16 +17,19 @@ namespace check_system {
 
 class CameraManager {
  public:
-  CameraManager(int exposure_time = 3000);
-  int InitCamera(int exposure_time);
+  CameraManager(int auto_flag);
+  int InitCamera(int auto_flag);
 
   const std::vector<std::string>& GetDeviceList();
+  int SetExposureTime(int time);
   int SetResolution(INT iResolutionIndex);
   int Play();
   int Pause();
   int GetOnePic();
   int GetPic();
   char* GetPicBuffer();
+  DWORD GetWidth() {return dwWidth_;};
+  DWORD GetHeight() {return dwHeight_;};
   int Reboot();
   int CheckPic(int threshold_low, int threshold_high);
   bool IsOpen() {return is_open_flag_ == 1;};
@@ -39,7 +42,6 @@ class CameraManager {
   DWORD dwHeight_;
   BYTE* pbuffer_;
   DWORD dwRGBBufSize_;
-  int exposure_time_;
   int camera_nums_;
 };
 }
