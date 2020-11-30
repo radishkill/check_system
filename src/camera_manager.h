@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <opencv2/opencv.hpp>
 
 #include "CKCameraInterface.h"
 
@@ -28,12 +29,15 @@ class CameraManager {
   int GetOnePic();
   int GetPic();
   char* GetPicBuffer();
-  DWORD GetWidth() {return dwWidth_;};
-  DWORD GetHeight() {return dwHeight_;};
+  cv::Mat GetPicMat();
+  cv::Mat GetPicMat(int x, int y, int w, int h);
+  int GetWidth() const {return picture_mat.cols;};
+  int GetHeight() const {return picture_mat.rows;};
   int Reboot();
   int CheckPic(int threshold_low, int threshold_high);
   void ShowResolutionOption();
-  bool IsOpen() {return is_open_flag_ == 1;};
+  int SetRoi(int x, int y, int w, int h) {roi_x_ = x; roi_y_ = y; roi_w_ = w; roi_h_ = h;};
+  bool IsOpen() const {return is_open_flag_ == 1;};
   int is_open_flag_;
   void Uninit();
  private:
@@ -43,7 +47,9 @@ class CameraManager {
   DWORD dwWidth_;
   DWORD dwHeight_;
   BYTE* pbuffer_;
+  cv::Mat picture_mat;
   DWORD dwRGBBufSize_;
+  int roi_x_, roi_y_, roi_w_, roi_h_;
   tSdkCameraCapbility cap;
   double exposion_time_;
   int resolution_index_;

@@ -37,7 +37,10 @@ public:
   Lcd *lcd;
   EventManager *em;
   LedController *led;
-
+  int exposion_time;
+  int resolution_index;
+  int roi_x, roi_y, roi_w, roi_h;
+  bool mid_flag;
 private:
 };
 GlobalArg *arg;
@@ -47,7 +50,12 @@ bool is_running = false;
 void InitCmdLine(int argc, char **argv)
 {
   po::options_description desc("Allowed options");
-  desc.add_options()("help", "")("no-button", "")("no-laser", "")("no-lcd", "");
+  desc.add_options()("help", "")
+      ("no-button", "")
+      ("no-laser", "")
+      ("no-lcd", "")
+      ("mid-save", "")
+      ("resolution-index", po::value<int>(&arg->resolution_index)->default_value(-1), "")("ROI-x", po::value<int>(&arg->roi_x)->default_value(-1), "")("ROI-y", po::value<int>(&arg->roi_y)->default_value(-1), "")("ROI-w", po::value<int>(&arg->roi_w)->default_value(-1), "")("ROI-h", po::value<int>(&arg->roi_h)->default_value(-1), "")("exposion-time", po::value<int>(&arg->exposion_time)->default_value(-1), "us");
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -69,9 +77,19 @@ void InitCmdLine(int argc, char **argv)
   {
     no_lcd_flag = true;
   }
+  if (vm.count("mid-save"))
+  {
+    arg->mid_flag = true;
+  }
 }
 std::vector<int> empty_pair_list_;
 std::vector<int> available_pair_list_;
+
+void SavePic(cv::Mat pic, int key_id, int index) {
+  std::string addr = "./mid-pic";
+  addr = addr + std::string("/PUF") + Utils::DecToStr(key_id, 2) + "_Pic" + Utils::DecToStr(index, 4) + ".bmp";
+  cv::imwrite(addr, pic);
+}
 
 //插入检测算法
 int CheckKeyInsert()
@@ -118,9 +136,9 @@ int CheckKey(int key_id)
   while (n--)
   {
     int index = std::rand() % available_pair_list_.size();
-    int seed_index = available_pair_list_[index];
+    int key_id_index = available_pair_list_[index];
     //如果随机到的是已经被删除了的
-    if (seed_index == -1)
+    if (key_id_index == -1)
     {
       int i = index;
       while (i++)
@@ -132,7 +150,7 @@ int CheckKey(int key_id)
         if (available_pair_list_[i] != -1)
         {
           index = i;
-          seed_index = available_pair_list_[index];
+          key_id_index = available_pair_list_[index];
           break;
         }
         //钥匙已经被删完了
@@ -143,7 +161,7 @@ int CheckKey(int key_id)
         }
       }
     }
-    int seed = arg->key_file->GetSeed(key_id, seed_index);
+    int seed = arg->key_file->GetSeed(key_id, key_id_index);
     if (seed == -1)
     {
       std::cout << "fatal error seed = -1" << std::endl;
@@ -151,23 +169,27 @@ int CheckKey(int key_id)
     }
     if (arg->lcd)
       arg->lcd->ShowBySeed(seed);
-    arg->key_file->ReadPicAsBmp(key_id, seed_index);
+    arg->key_file->ReadPicAsBmp(key_id, key_id_index);
     arg->camera->GetOnePic();
     cv::Mat pic1 = arg->key_file->GetMatImage();
+    cv::Mat pic2 = arg->camera->GetPicMat();
+    if (arg->mid_flag) {
+      SavePic(pic2, key_id, key_id_index);
+    }
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    result = AuthPic(pic1, arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    result = AuthPic(pic1, pic2);
 
     //删除本次循环使用的Seed文件及其对应的Pic文件
-    std::cout << "delete old pair index = " << seed_index << std::endl;
-    arg->key_file->DeleteSeed(key_id, seed_index);
-    arg->key_file->DeletePic(key_id, seed_index);
+    std::cout << "delete old pair index = " << key_id_index << std::endl;
+    arg->key_file->DeleteSeed(key_id, key_id_index);
+    arg->key_file->DeletePic(key_id, key_id_index);
     available_pair_list_[index] = -1;
 
     //值越小说明两张图片越相似
     if (result <= check_system::kAuthThreshold)
     {
-      std::cout << "generate new a pair index = " << seed_index << std::endl;
+      std::cout << "generate new a pair index = " << key_id_index << std::endl;
       //认证通过
       //然后重新生成新的激励对
       int rand_seed = std::rand();
@@ -175,8 +197,8 @@ int CheckKey(int key_id)
         arg->lcd->ShowBySeed(rand_seed);
       arg->camera->GetOnePic();
 
-      arg->key_file->CopyPicToBuffer(arg->camera->GetPicBuffer(), CAMERA_WIDTH, CAMERA_HEIGHT);
-      arg->key_file->SavePicAndSeed(key_id, seed_index, rand_seed);
+      arg->key_file->SetMatImage(arg->camera->GetPicMat());
+      arg->key_file->SavePicAndSeed(key_id, key_id_index, rand_seed);
       return 1;
     }
     available_num--;
@@ -193,32 +215,36 @@ int CheckKey(int key_id)
 int FindKey()
 {
   std::srand(std::time(nullptr));
-  int i = -1;
+  int key_id = -1;
   double result;
   std::cout << "find key start " << std::endl;
-  while (i++ < 100)
+  while (key_id++ < 100)
   {
     auto begin_tick = std::chrono::steady_clock::now();
 
-    CheckPairStore(i);
+    CheckPairStore(key_id);
 
     if (available_pair_list_.empty())
       continue;
-    std::cout << "key id = " << i << std::endl;
+    std::cout << "key id = " << key_id << std::endl;
     std::cout << "available pair list = " << available_pair_list_.size() << std::endl;
     std::cout << "empty pair list = " << empty_pair_list_.size() << std::endl;
-    int seed_index = std::rand() % available_pair_list_.size();
-    int seed = arg->key_file->GetSeed(i, available_pair_list_[seed_index]);
+    int key_id_index = std::rand() % available_pair_list_.size();
+    int seed = arg->key_file->GetSeed(key_id, available_pair_list_[key_id_index]);
 
     if (arg->lcd)
       arg->lcd->ShowBySeed(seed);
-    arg->key_file->ReadPicAsBmp(i, seed_index);
+    arg->key_file->ReadPicAsBmp(key_id, key_id_index);
     int ret = arg->camera->GetOnePic();
     if (ret == -1)
       continue;
     cv::Mat pic1 = arg->key_file->GetMatImage();
+    cv::Mat pic2 = arg->camera->GetPicMat();
+    if (arg->mid_flag) {
+      SavePic(pic2, key_id, key_id_index);
+    }
     //验证两张图片
-    result = AuthPic(pic1, arg->camera->GetPicBuffer(), CAMERA_HEIGHT, CAMERA_WIDTH);
+    result = AuthPic(pic1, pic2);
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "auth pic elapsed time :" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
     if (result <= check_system::kAuthThreshold)
@@ -232,10 +258,10 @@ int FindKey()
       std::cout << "auth pic fault" << std::endl;
     }
   }
-  if (i >= 100)
-    i = -1;
+  if (key_id >= 100)
+    key_id = -1;
 
-  return i;
+  return key_id;
 }
 
 //认证
@@ -309,8 +335,10 @@ int main(int argc, char **argv)
     arg->lcd = new Lcd("/dev/fb0");
   }
   arg->camera = new CameraManager(0);
+  arg->resolution_index == -1 ?: arg->camera->SetResolution(arg->resolution_index);
+  arg->exposion_time == -1 ?: arg->camera->SetExposureTime(arg->exposion_time);
+  (arg->roi_x == -1 || arg->roi_y == -1 || arg->roi_w == -1 || arg->roi_h == -1) ?: arg->camera->SetRoi(arg->roi_x, arg->roi_y, arg->roi_w, arg->roi_h);
   arg->camera->Play();
-
 
   arg->key_file = new KeyFile("../res/PUFData");
 
