@@ -120,6 +120,13 @@ add_executable(LaserTest_x64
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
 )
+add_executable(CameraTest_x64
+  ../src/camera_test.cc
+  ${PROJECT_SOURCE_DIR}/src/camera_manager.cc
+)
+target_link_libraries(CameraTest_x64
+  ${PROJECT_SOURCE_DIR}/lib/x64/libCKCameraSDK.a
+)
 
 add_executable(MainTest_x64
   ../src/main.cpp
