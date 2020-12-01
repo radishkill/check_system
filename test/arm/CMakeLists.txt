@@ -102,6 +102,7 @@ add_executable(CalcTwoPic_arm
 
 target_link_libraries(CalcTwoPic_arm
   pthread
+  boost_program_options
   #  opencv_highgui
   opencv_core
   opencv_imgproc

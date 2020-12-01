@@ -98,6 +98,7 @@ add_executable(CalcTwoPic_x64
 target_link_libraries(CalcTwoPic_x64
   pthread
   tbb
+  boost_program_options
   #  opencv_highgui
   opencv_core
   opencv_imgproc
