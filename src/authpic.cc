@@ -177,14 +177,9 @@ double AuthPic(cv::Mat &speckle_database, cv::Mat &speckle_auth)
     emxInitArray_boolean_T(&K[i], 2);
   }
 
-  // Initialize function input argument 'image'.
-  // Mat speckle_database = imread("../13.bmp",CV_8U);
-  // Mat speckle_auth = imread("../14.bmp", CV_8U);
-
   // Mat ROI = speckle_database;//= speckle_database(Rect(50,50, speckle_database.cols-50, speckle_database.rows-50));
   // Mat ROI2 = speckle_auth;//= speckle_auth(Rect(50, 50, speckle_auth.cols - 50, speckle_auth.rows - 50));
-  // speckle_database = Rect(50, 50, speckle_database.cols-50, speckle_database.rows-50);
-
+ 
   image[0] = Mat2Emx_U8(speckle_database);
   image[1] = Mat2Emx_U8(speckle_auth);
 
