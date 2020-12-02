@@ -45,7 +45,8 @@ cv::Mat ReadPicAsBmp(int id, int index)
 
   // std::string base_path_ = "./res/resource1280x720/PUFData/";
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  cv::Mat image_ = cv::imread(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp");
+  cv::Mat image_ = cv::imread(base_path_ + puf_file_name + puf_file_name + "_Pic" 
+  + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp", cv::IMREAD_UNCHANGED);
   if (!image_.data)
   {
     std::cout << "read pic file "
