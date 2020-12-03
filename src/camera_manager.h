@@ -20,12 +20,18 @@ class CameraManager {
   CameraManager(int auto_flag);
   int InitCamera(int auto_flag);
 
-  const std::vector<std::string>& GetDeviceList();
-  int SetExposureTime(double time);
-  int SetResolution(INT iResolutionIndex);
+  int ShowDeviceList(int n);
+  int ReadParameterFromFile(const char* file);
+  int SaveParameterToFile(const char* file);
+  int SetLutMode(int value);
+  int SetExposureTime(double value);
+  int SetResolution(int value);
+  int SetGamma(int value);
+  int SetContrast(int value);
+  int SetSaturation(int value);
+  int SetSharpness(int value);
   int Play();
   int Pause();
-  int GetOnePic();
   int GetPic();
   char* GetPicBuffer();
   cv::Mat GetPicMat();
@@ -34,7 +40,7 @@ class CameraManager {
   int GetHeight() const { return dwHeight_; };
   int Reboot();
   int CheckPic(int threshold_low, int threshold_high);
-  void ShowResolutionOption();
+  void ShowCameraBaseConfig();
   int SetRoi(int x, int y, int w, int h) {
     roi_x_ = x;
     roi_y_ = y;
@@ -46,7 +52,6 @@ class CameraManager {
   void Uninit();
 
  private:
-  std::vector<std::string> device_list_;
   stImageInfo image_info_;
   HANDLE hCamera_;
   DWORD dwWidth_;

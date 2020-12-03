@@ -140,40 +140,6 @@ int KeyFile::CheckKeyDirAvailable(int id) {
   }
   return 0;
 }
-//获得Pic内容
-int KeyFile::GetPic(int id, int index) {
-  std::ifstream ifs;
-  std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  ifs.open(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4));
-  if (!ifs.is_open()) {
-    std::cout << "open pic file " << "PUF" << Utils::DecToStr(id, 2) << " wrong!!!" << std::endl;
-    return 0;
-  }
-  int i = 0;
-  int j = 0;
-  int ret = 0;
-  for (i = 0; i < CAMERA_HEIGHT; i++) {
-    for (j = 0; j< CAMERA_WIDTH; j++) {
-      ret = ifs.readsome(&pic_buffer_[i][j], 1);
-      if (ret == 0 && !ifs.eof()) {
-        ifs.sync();
-        ret = ifs.readsome(&pic_buffer_[i][j], 1);
-      }
-      if (ret == 0 && ifs.eof()) {
-        std::cout << "read pic file " << "PUF" << Utils::DecToStr(id, 2) << " wrong!!!" << std::endl;
-        break;
-      }
-    }
-    if (j != CAMERA_WIDTH) {
-      break;
-    }
-  }
-  ifs.close();
-  if (i != CAMERA_HEIGHT) {
-    return -1;
-  }
-  return 0;
-}
 
 int KeyFile::ReadPicAsBmp(int id, int index) {
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
@@ -184,34 +150,10 @@ int KeyFile::ReadPicAsBmp(int id, int index) {
   }
   return 0;
 }
-//得到照片的缓存路径
-char *KeyFile::GetPicBuffer() {
-  return *pic_buffer_;
-}
 //复制图片到文件图片缓冲区
 int KeyFile::CopyPicToBuffer(char *pic, int width, int height) {
-//  for (int i = 0; i < height; i++) {
-//    std::memcpy(pic_buffer_[i], pic + i*width, width);
-//  }
   image_ = cv::Mat(height, width, CV_8UC1);
   std::memcpy(image_.data, pic, width*height);
-  return 0;
-}
-//从缓存区保存照片
-int KeyFile::SavePic(int id, int index) {
-  std::ofstream ofs;
-  std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  ofs.open(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4));
-  if (!ofs.is_open()) {
-    std::cout << "open pic file " << "PUF" << Utils::DecToStr(id, 2) << " wrong!!!" << std::endl;
-    return 0;
-  }
-  int i = 0;
-  for (i = 0; i < CAMERA_HEIGHT; i++) {
-    ofs.write(pic_buffer_[i], CAMERA_WIDTH);
-    ofs.flush();
-  }
-  ofs.close();
   return 0;
 }
 

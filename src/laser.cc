@@ -183,10 +183,14 @@ namespace check_system
       std::cout << "check laser fault!!" << std::endl;
       return -1;
     }
+    if (ret == 1) {
+      std::cout << "bad data\n";
+      return -1;
+    }
     //如果数据格式不对temperature
     if (data_frame_[5] != 0x01 && data_frame_[7] != 0x12)
     {
-      perror("bad data!!!");
+      std::cout << "bad data" << std::endl;
       return -1;
     }
     status_ = data_frame_[10];
