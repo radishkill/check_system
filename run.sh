@@ -73,6 +73,6 @@ echo -e -n 0 > /sys/class/gpio/gpio255/value
 echo -e -n 0 > /sys/class/gpio/gpio254/value
 echo -e -n 0 > /sys/class/gpio/gpio164/value
 
-export LD_LIBRARY_PATH=/usr/local/lib/opencv2:$LD_LIBRARY_PATH
+# export LD_LIBRARY_PATH=/usr/local/lib/opencv2:$LD_LIBRARY_PATH
 
 ./CheckSystem

@@ -9,9 +9,9 @@ const static int kCmosGpioNumber = 138;
 const static int kErrorGpioNumber = 254;
 
 const static bool kLaserGpioReverse = true;
-const static bool kLcdGpioReverse = false;
+const static bool kLcdGpioReverse = true;
 const static bool kCmosGpioReverse = true;
-const static bool kErrorGpioReverse = false;
+const static bool kErrorGpioReverse = true;
 
 const static int kRegisterButtonNumber = 257;
 const static int kAuthButtonNumber = 252;

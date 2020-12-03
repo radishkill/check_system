@@ -30,8 +30,8 @@ class CameraManager {
   char* GetPicBuffer();
   cv::Mat GetPicMat();
   cv::Mat GetPicMat(int x, int y, int w, int h);
-  int GetWidth() const { return picture_mat.cols; };
-  int GetHeight() const { return picture_mat.rows; };
+  int GetWidth() const { return dwWidth_; };
+  int GetHeight() const { return dwHeight_; };
   int Reboot();
   int CheckPic(int threshold_low, int threshold_high);
   void ShowResolutionOption();
@@ -52,7 +52,6 @@ class CameraManager {
   DWORD dwWidth_;
   DWORD dwHeight_;
   BYTE* pbuffer_;
-  cv::Mat picture_mat;
   DWORD dwRGBBufSize_;
   int roi_x_, roi_y_, roi_w_, roi_h_;
   tSdkCameraCapbility cap;

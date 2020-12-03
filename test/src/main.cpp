@@ -1,33 +1,25 @@
-// a single header file is required
-#include <ev.h>
 
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <cstdlib>
 
-// all watcher callbacks have a similar signature
-// this callback is called when data is readable on stdin
-static void
-stdin_cb(EV_P_ ev_io *w, int revents)
+int main(int argc, char** argv)
 {
-  std::cout << "get:";
-  std::string str;
-  std::cin >> str;
-  std::cout << str << std::endl;;
-}
+  int seed = 0;
+  int n = 0;
+  
+  seed = std::atoi(argv[1]);
+  n = std::atoi(argv[2]);
+  std::cout << "seed=" << seed << std::endl;
+  std::cout << "n=" << n << std::endl;
+  std::srand(seed);
+  for (int i = 0; i < n; i++) {
+    std::rand();
+    if (i == n-1) {
+      std::cout << std::rand()%0x100 << std::endl;
+    }
+  }
 
-// another callback, this time for a time-out
-static void
-timeout_cb(EV_P_ ev_timer *w, int revents)
-{
-  std::cout << "e" << std::endl;
-  std::cout << ev_time() << std::endl;
-}
-
-int main(void)
-{
-  int a = 2359126;
-  std::cout << std::hex << ((a/0x100)&0xff) << " " << a%0x100 << std::endl;
-
-  // break was called, so exit
   return 0;
 }

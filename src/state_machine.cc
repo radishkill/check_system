@@ -524,6 +524,7 @@ int StateMachine::GenerateRandomSeed() {
 //库定位算法 判断一枚key是否已经建立过数据库了
 int StateMachine::FindKey() {
   GlobalArg* arg = GlobalArg::GetInstance();
+  int ret = 0;
   assert(arg->camera != nullptr);
   assert(arg->key_file != nullptr);
   assert(arg->lcd != nullptr);
@@ -548,7 +549,9 @@ int StateMachine::FindKey() {
     int seed = arg->key_file->GetSeed(i, available_pair_list_[seed_index]);
 
     arg->lcd->ShowBySeed(seed);
-    arg->key_file->ReadPicAsBmp(i, seed_index);
+    ret = arg->key_file->ReadPicAsBmp(i, seed_index);
+    if (ret == -1)
+      continue;
     int ret = arg->camera->GetOnePic();
     if (ret == -1)
       continue;
@@ -588,6 +591,7 @@ int StateMachine::CheckKeyInsert()
 
 int StateMachine::CheckKey(int key_id) {
   GlobalArg* arg = GlobalArg::GetInstance();
+  int ret;
   CheckPairStore(key_id);
   if (available_pair_list_.empty()) {
     std::cout << "available pair is empty keyid = " << key_id << endl;
@@ -626,7 +630,10 @@ int StateMachine::CheckKey(int key_id) {
     }
 
     arg->lcd->ShowBySeed(seed);
-    arg->key_file->ReadPicAsBmp(key_id, seed_index);
+    ret = arg->key_file->ReadPicAsBmp(key_id, seed_index);
+    if (ret == -1) {
+      continue;
+    }
     arg->camera->GetOnePic();
 
     cv::Mat pic1 = arg->key_file->GetMatImage();

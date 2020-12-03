@@ -13,6 +13,7 @@ class Laser {
   int ForceOpen();
   int ForceClose();
   int ForceCheck();
+  int ForceSetCurrent(int current);
 
   int OpenLaser();
   int CloseLaser();

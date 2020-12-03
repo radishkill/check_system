@@ -57,6 +57,22 @@ namespace check_system
     }
     return 0;
   }
+  int Laser::ForceSetCurrent(int current)
+  {
+    int n = 20;
+    while (n--)
+    {
+      int ret = SetCurrent(current);
+      if (ret == 0)
+        break;
+      Utils::MSleep(1000);
+    }
+    if (n <= 0)
+    {
+      return -1;
+    }
+    return 0;
+  }
 
   int Laser::OpenLaser()
   {

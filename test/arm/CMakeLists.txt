@@ -6,15 +6,16 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/arm)
 
 add_compile_options("-std=c++14")
 
-FIND_PACKAGE( OpenMP REQUIRED)
-if(OPENMP_FOUND)
-message("OPENMP FOUND")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-endif()
+# FIND_PACKAGE( OpenMP REQUIRED)
+# if(OPENMP_FOUND)
+# message("OPENMP FOUND")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+# endif()
 add_definitions(
-        -o3 -g -w -Wall -mcpu=cortex-a17 -mfloat-abi=hard -mfpu=neon
+        # -o3 -g -w -Wall -mcpu=cortex-a17 -mfloat-abi=hard -mfpu=neon
+        -o3 -g -w -Wall
         )
 
 include_directories(
@@ -124,4 +125,15 @@ add_executable(LaserTest_arm
   ${PROJECT_SOURCE_DIR}/src/utils.cc
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
+)
+add_executable(CameraTest_arm
+  ../src/camera_test.cc
+  ${PROJECT_SOURCE_DIR}/src/camera_manager.cc
+  ${PROJECT_SOURCE_DIR}/src/utils.cc
+)
+target_link_libraries(CameraTest_arm
+  pthread
+  opencv_core
+  opencv_imgcodecs
+  ${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
 )
