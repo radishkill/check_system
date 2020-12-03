@@ -104,7 +104,7 @@ namespace check_system
     CameraGetOutImageSize(hCamera_, &dwWidth_, &dwHeight_);
     std::cout << "current resolution : " << dwWidth_ << "x" << dwHeight_ << std::endl;
     CameraGetResolution(hCamera_, &resolution_index_);
-    std::cout << "resolution id" << resolution_index_ << std::endl;
+    std::cout << "resolution id=" << resolution_index_ << std::endl;
     return 0;
   }
 
@@ -149,7 +149,7 @@ namespace check_system
     {
       std::cout << "soft trigger failed : " << status << std::endl;
       //这个时候有可能是照相机突然断开连接了
-      Reboot();
+//      Reboot();
       return -1;
     }
 
@@ -159,13 +159,8 @@ namespace check_system
       std::cout << "can't get a frame" << std::endl;
       return -1;
     }
-    picture_mat = cv::Mat(image_info_.iHeight, image_info_.iWidth, CV_8UC1, pbuffer_);
-    if (roi_x_!=-1&&roi_y_!=-1&&roi_w_!=-1&&roi_h_!=-1) {
-      picture_mat = picture_mat(cv::Rect(roi_x_, roi_y_, roi_w_, roi_h_));
-    }
-
-    // std::cout << "photos widthxheight:" << image_info_.iWidth << "x" << image_info_.iHeight << " total bytes:" << image_info_.TotalBytes << std::endl;
-    std::cout << "photos info" << picture_mat.size << " " << picture_mat.total() << std::endl;
+    std::cout << "photos widthxheight:" << image_info_.iWidth << "x" << image_info_.iHeight << " total bytes:" << image_info_.TotalBytes << std::endl;
+    // std::cout << "photos info" << picture_mat.size << " " << picture_mat.total() << std::endl;
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "take photos time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick - begin_tick).count() << "ms" << std::endl;
     dwWidth_ = image_info_.iWidth;
@@ -178,10 +173,20 @@ namespace check_system
     return (char *)pbuffer_;
   }
   cv::Mat CameraManager::GetPicMat() {
+    cv::Mat picture_mat = cv::Mat(dwHeight_, dwWidth_, CV_8UC1, pbuffer_);
+    // std::memcpy(picture_mat.data, pbuffer_, dwHeight_*dwWidth_);
+    if (roi_x_!=-1&&roi_y_!=-1&&roi_w_!=-1&&roi_h_!=-1) {
+      picture_mat = picture_mat(cv::Rect(roi_x_, roi_y_, roi_w_, roi_h_));
+    }
     return picture_mat;
   }
   cv::Mat CameraManager::GetPicMat(int x, int y, int w, int h) {
-    return picture_mat(cv::Rect(x, y, w, h));
+    cv::Mat picture_mat = cv::Mat(dwHeight_, dwWidth_, CV_8UC1, pbuffer_);
+    // std::memcpy(picture_mat.data, pbuffer_, dwHeight_*dwWidth_);
+    if (roi_x_!=-1&&roi_y_!=-1&&roi_w_!=-1&&roi_h_!=-1) {
+      picture_mat = picture_mat(cv::Rect(x, y, w, h));
+    }
+    return picture_mat;
   }
 
   int CameraManager::Reboot()

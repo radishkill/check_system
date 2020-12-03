@@ -17,13 +17,17 @@ class Lcd {
   Lcd(const char* device_file);
   int Open(const char* device_file);
   int ShowBySeed(int seed);
+  void SetRect(int w, int h) {
+    rect_width_ = w;
+    rect_height_ = h;
+  }
   bool IsOpen() const;
   int Close();
  private:
   void PrintFixedInfo();
   void PrintVariableInfo();
-  const int width_;
-  const int height_;
+  int rect_width_;
+  int rect_height_;
   int fd_;
   struct fb_var_screeninfo var_info_;
   struct fb_fix_screeninfo fix_info_;

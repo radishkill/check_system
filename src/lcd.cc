@@ -16,7 +16,7 @@
 
 namespace check_system {
 Lcd::Lcd(const char *device_file)
-  : device_name_(device_file), width_(800), height_(600) {
+  : device_name_(device_file), rect_width_(50), rect_height_(50) {
   fd_ = -1;
   Open(device_file);
 }
@@ -71,7 +71,7 @@ int Lcd::ShowBySeed(int seed)
    char *dest = (char *)(frame_buffer_) + (y0 + var_info_.yoffset) * stride + (x0 + var_info_.xoffset);
    std::srand(seed);
    char c1,c2,c3;
-   int rect_width = 50, rect_height = 50;
+   int rect_width = rect_width_, rect_height = rect_height_;
    for (y = 0; y < height; y += rect_height)
    {
       for (x = 0; x < width; x++)
@@ -81,10 +81,11 @@ int Lcd::ShowBySeed(int seed)
             c2 = std::rand() % 0x100;
             c3 = std::rand() % 0x100;
          }
+         
          // std::cout << x << " " << y << " " << std::endl;
          for (int w = 0; w < rect_height; w++)
          {
-            if (y + w > height)
+            if (y + w >= height)
             {
                break;
             }

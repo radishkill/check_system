@@ -27,6 +27,7 @@ using check_system::LedController;
 bool no_button_flag = false;
 bool no_laser_flag = false;
 bool no_lcd_flag = false;
+bool no_led_flag = false;
 
 class GlobalArg {
  public:
@@ -37,8 +38,14 @@ class GlobalArg {
   EventManager *em;
   LedController *led;
   int exposion_time;
+  int laser_current;
   int resolution_index;
   int roi_x, roi_y, roi_w, roi_h;
+  bool no_button_flag;
+  bool no_laser_flag;
+  bool no_lcd_flag;
+  int lcd_width;
+  int lcd_height;
   std::string mid_save_addr;
 
  private:
@@ -51,10 +58,12 @@ void InitCmdLine(int argc, char **argv) {
   po::options_description desc("Allowed options");
   desc.add_options()("help", "");
   desc.add_options()("no-button", "")("no-laser", "")("no-lcd", "");
-  desc.add_options()("mid-save", po::value<std::string>(&arg->mid_save_addr), "");
+  desc.add_options()("no-led", "");
+  desc.add_options()("mid-save", po::value<std::string>(&arg->mid_save_addr),
+                     "");
   desc.add_options()("resolution-index",
                      po::value<int>(&arg->resolution_index)->default_value(-1),
-                     "4 8 15 19 -1=not set");
+                     "4 8=320x240 15 19 -1=not set");
   desc.add_options()("ROI-x", po::value<int>(&arg->roi_x)->default_value(-1),
                      "");
   desc.add_options()("ROI-y", po::value<int>(&arg->roi_y)->default_value(-1),
@@ -66,6 +75,11 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()("exposion-time",
                      po::value<int>(&arg->exposion_time)->default_value(-1),
                      "us");
+  desc.add_options()("laser-current",
+                     po::value<int>(&arg->laser_current)->default_value(-1),
+                     "uA");
+  desc.add_options()("lcd-width", po::value<int>(&arg->lcd_width)->default_value(-1), "");
+  desc.add_options()("lcd-height", po::value<int>(&arg->lcd_height)->default_value(-1), "");
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -82,6 +96,9 @@ void InitCmdLine(int argc, char **argv) {
   }
   if (vm.count("no-lcd")) {
     no_lcd_flag = true;
+  }
+  if (vm.count("no-led")) {
+    no_led_flag = true;
   }
 }
 std::vector<int> empty_pair_list_;
@@ -103,7 +120,7 @@ int CheckKeyInsert() {
   //  return (int)(std::rand()*48271ll%2147483647);
   int seed = std::rand();
   if (arg->lcd) arg->lcd->ShowBySeed(seed);
-  arg->camera->GetOnePic();
+  arg->camera->GetPic();
   return arg->camera->CheckPic(100, 200);
 }
 int CheckPairStore(int id) {
@@ -122,6 +139,7 @@ int CheckPairStore(int id) {
 }
 
 int CheckKey(int key_id) {
+  int ret = 0;
   CheckPairStore(key_id);
   if (available_pair_list_.empty()) {
     std::cout << "available pair is empty keyid = " << key_id << std::endl;
@@ -158,8 +176,10 @@ int CheckKey(int key_id) {
       return -1;
     }
     if (arg->lcd) arg->lcd->ShowBySeed(seed);
-    arg->key_file->ReadPicAsBmp(key_id, key_id_index);
-    arg->camera->GetOnePic();
+    ret = arg->key_file->ReadPicAsBmp(key_id, key_id_index);
+    if (ret == -1) continue;
+    ret = arg->camera->GetPic();
+    if (ret == -1) continue;
     cv::Mat pic1 = arg->key_file->GetMatImage();
     cv::Mat pic2 = arg->camera->GetPicMat();
     SavePic(pic2, key_id, key_id_index);
@@ -180,7 +200,7 @@ int CheckKey(int key_id) {
       //然后重新生成新的激励对
       int rand_seed = std::rand();
       if (arg->lcd) arg->lcd->ShowBySeed(rand_seed);
-      arg->camera->GetOnePic();
+      arg->camera->GetPic();
 
       arg->key_file->SetMatImage(arg->camera->GetPicMat());
       arg->key_file->SavePicAndSeed(key_id, key_id_index, rand_seed);
@@ -197,6 +217,7 @@ int CheckKey(int key_id) {
 
 //库定位算法 判断一枚key是否已经建立过数据库了
 int FindKey() {
+  int ret = 0;
   std::srand(std::time(nullptr));
   int key_id = -1;
   double result;
@@ -216,13 +237,14 @@ int FindKey() {
         arg->key_file->GetSeed(key_id, available_pair_list_[key_id_index]);
 
     if (arg->lcd) arg->lcd->ShowBySeed(seed);
-    arg->key_file->ReadPicAsBmp(key_id, key_id_index);
-    int ret = arg->camera->GetOnePic();
+    ret = arg->key_file->ReadPicAsBmp(key_id, key_id_index);
+    if (ret == -1) continue;
+    ret = arg->camera->GetPic();
     if (ret == -1) continue;
     cv::Mat pic1 = arg->key_file->GetMatImage();
     cv::Mat pic2 = arg->camera->GetPicMat();
     SavePic(pic2, key_id, key_id_index);
-    
+
     //验证两张图片
     result = AuthPic(pic1, pic2);
     auto end_tick = std::chrono::steady_clock::now();
@@ -305,21 +327,34 @@ int main(int argc, char **argv) {
   if (!no_button_flag) {
     arg->em = new EventManager();
   }
+  if (!no_led_flag) {
+    arg->led = new LedController();
+    arg->led->LaserLed(0);
+    arg->led->CmosLed(0);
+    arg->led->LcdLed(0);
+    arg->led->ErrorLed(0);
+  }
   if (!no_laser_flag) {
     arg->laser = new Laser("/dev/ttyS0");
     arg->laser->ForceCheck();
+    if (arg->laser_current != -1) arg->laser->SetCurrent(arg->laser_current);
     arg->laser->ForceOpen();
   }
   if (!no_lcd_flag) {
     arg->lcd = new Lcd("/dev/fb0");
+    if (arg->lcd_width!=-1 && arg->lcd_height!=-1)
+      arg->lcd->SetRect(arg->lcd_width, arg->lcd_height);
   }
   arg->camera = new CameraManager(0);
   if (!arg->camera->IsOpen()) {
     return -1;
   }
+  //设置分辨率
   arg->resolution_index == -1
       ?: arg->camera->SetResolution(arg->resolution_index);
+  //设置曝光时间
   arg->exposion_time == -1 ?: arg->camera->SetExposureTime(arg->exposion_time);
+  //设置兴趣区域
   (arg->roi_x == -1 || arg->roi_y == -1 || arg->roi_w == -1 || arg->roi_h == -1)
       ?: arg->camera->SetRoi(arg->roi_x, arg->roi_y, arg->roi_w, arg->roi_h);
   arg->camera->Play();
@@ -332,6 +367,8 @@ int main(int argc, char **argv) {
     ret = Authentication();
     if (ret != 0) {
       if (arg->led) arg->led->ErrorLed(1);
+    } else {
+      if (arg->led) arg->led->ErrorLed(0);
     }
     if (arg->laser) arg->laser->ForceClose();
     arg->camera->Pause();
@@ -361,6 +398,8 @@ int main(int argc, char **argv) {
       int ret = Authentication();
       if (ret != 0) {
         if (arg->led) arg->led->ErrorLed(1);
+      } else {
+        if (arg->led) arg->led->ErrorLed(0);
       }
     }
   });
