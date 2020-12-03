@@ -28,37 +28,14 @@ int main(int argc, char **argv)
   {
     std::cout << "cant open ttyS0" << std::endl;
   }
-  int n;
-  n = 12;
-  int laser_flag;
-  while (n--)
-  {
-    laser_flag = laser.CheckStatus();
-    if (laser_flag == 0)
-      break;
-    Utils::MSleep(1000);
-  }
+  laser.ForceCheck();
   if (std::atoi(argv[1]) == 0)
   {
     std::cout << "close laser" << std::endl;
-    n = 20;
-    while (n--)
-    {
-      if (0 == laser.CloseLaser())
-        break;
-      Utils::MSleep(1000);
-    }
-  }
-  else
-  {
+    laser.ForceClose();
+  } else {
     std::cout << "open laser" << std::endl;
-    n = 20;
-    while (n--)
-    {
-      if (0 == laser.OpenLaser())
-        break;
-      Utils::MSleep(1000);
-    }
+    laser.ForceOpen();
   }
   return 0;
 }

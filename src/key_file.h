@@ -37,13 +37,10 @@ class KeyFile {
   int GetSeed(int id,int index);
   int IsSeedAvailable(int id, int index);
   int CheckKeyDirAvailable(int id);
-  int GetPic(int id,int index);
   int ReadPicAsBmp(int id, int index);
-  char* GetPicBuffer();
   int SetMatImage(cv::Mat m) {image_ = m;};
   cv::Mat GetMatImage() {return image_;};
   int CopyPicToBuffer(char* pic, int width, int height);
-  int SavePic(int id, int index);
   int SavePicAsBmp(int id, int index);
   int SaveSeed(int id,int index,int seed);
   int SavePicAndSeed(int key_id, int index, int seed);
@@ -54,7 +51,6 @@ class KeyFile {
  private:
   //base_path应该指向PUFData文件夹的内部,地址最后不包括/
   std::string base_path_;
-  char pic_buffer_[CAMERA_WIDTH][CAMERA_HEIGHT];
   cv::Mat image_;
   int error = 0 ;
 };

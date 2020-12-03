@@ -46,11 +46,22 @@ class GlobalArg {
   bool no_lcd_flag;
   int lcd_width;
   int lcd_height;
+
+  int camera_gamma;
+  int camera_contrast;
+  int camera_saturation;
+  int camera_sharpness;
+
+  int camera_lut_mode;
+  int stable_flag;
+
+
+  std::string camera_config_file_addr;
   std::string mid_save_addr;
 
  private:
 };
-GlobalArg *arg;
+GlobalArg *global_arg;
 
 bool is_running = false;
 
@@ -59,27 +70,48 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()("help", "");
   desc.add_options()("no-button", "")("no-laser", "")("no-lcd", "");
   desc.add_options()("no-led", "");
-  desc.add_options()("mid-save", po::value<std::string>(&arg->mid_save_addr),
+  desc.add_options()("mid-save", po::value<std::string>(&global_arg->mid_save_addr),
                      "");
   desc.add_options()("resolution-index",
-                     po::value<int>(&arg->resolution_index)->default_value(-1),
+                     po::value<int>(&global_arg->resolution_index)->default_value(-1),
                      "4 8=320x240 15 19 -1=not set");
-  desc.add_options()("ROI-x", po::value<int>(&arg->roi_x)->default_value(-1),
+  desc.add_options()("ROI-x", po::value<int>(&global_arg->roi_x)->default_value(-1),
                      "");
-  desc.add_options()("ROI-y", po::value<int>(&arg->roi_y)->default_value(-1),
+  desc.add_options()("ROI-y", po::value<int>(&global_arg->roi_y)->default_value(-1),
                      "");
-  desc.add_options()("ROI-w", po::value<int>(&arg->roi_w)->default_value(-1),
+  desc.add_options()("ROI-w", po::value<int>(&global_arg->roi_w)->default_value(-1),
                      "");
-  desc.add_options()("ROI-h", po::value<int>(&arg->roi_h)->default_value(-1),
+  desc.add_options()("ROI-h", po::value<int>(&global_arg->roi_h)->default_value(-1),
                      "");
   desc.add_options()("exposion-time",
-                     po::value<int>(&arg->exposion_time)->default_value(-1),
+                     po::value<int>(&global_arg->exposion_time)->default_value(-1),
                      "us");
   desc.add_options()("laser-current",
-                     po::value<int>(&arg->laser_current)->default_value(-1),
+                     po::value<int>(&global_arg->laser_current)->default_value(-1),
                      "uA");
-  desc.add_options()("lcd-width", po::value<int>(&arg->lcd_width)->default_value(-1), "");
-  desc.add_options()("lcd-height", po::value<int>(&arg->lcd_height)->default_value(-1), "");
+  desc.add_options()("lcd-width",
+                     po::value<int>(&global_arg->lcd_width)->default_value(-1), "");
+  desc.add_options()("lcd-height",
+                     po::value<int>(&global_arg->lcd_height)->default_value(-1), "");
+  desc.add_options()("camera-gamma",
+                     po::value<int>(&global_arg->camera_gamma)->default_value(-1), "");
+  desc.add_options()("camera-contrast",
+                     po::value<int>(&global_arg->camera_contrast)->default_value(-1),
+                     "");
+  desc.add_options()("camera-saturation",
+                     po::value<int>(&global_arg->camera_saturation)->default_value(-1),
+                     "");
+  desc.add_options()("camera-sharpness",
+                     po::value<int>(&global_arg->camera_sharpness)->default_value(-1),
+                     "");
+  desc.add_options()("camera-config-addr",
+                     po::value<std::string>(&global_arg->camera_config_file_addr), "");
+  desc.add_options()(
+      "camera-lut-mode",
+      po::value<int>(&global_arg->camera_lut_mode)->default_value(-1),
+      "GAMMA_DYNAMIC_MODE = 0, GAMMA_PRESET_MODE, GAMMA_USER_MODE");
+  desc.add_options()("stable-flag",po::value<int>(&global_arg->stable_flag)->default_value(-1), "no rand index");
+
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -105,10 +137,10 @@ std::vector<int> empty_pair_list_;
 std::vector<int> available_pair_list_;
 
 void SavePic(cv::Mat pic, int key_id, int index) {
-  if (arg->mid_save_addr.empty()) {
+  if (global_arg->mid_save_addr.empty()) {
     return;
   }
-  std::string addr = arg->mid_save_addr;
+  std::string addr = global_arg->mid_save_addr;
   addr = addr + std::string("/PUF") + Utils::DecToStr(key_id, 2) + "_Pic" +
          Utils::DecToStr(index, 4) + ".bmp";
   cv::imwrite(addr, pic);
@@ -117,11 +149,10 @@ void SavePic(cv::Mat pic, int key_id, int index) {
 //插入检测算法
 int CheckKeyInsert() {
   std::srand(std::time(nullptr));
-  //  return (int)(std::rand()*48271ll%2147483647);
   int seed = std::rand();
-  if (arg->lcd) arg->lcd->ShowBySeed(seed);
-  arg->camera->GetPic();
-  return arg->camera->CheckPic(100, 200);
+  if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
+  global_arg->camera->GetPic();
+  return global_arg->camera->CheckPic(100, 200);
 }
 int CheckPairStore(int id) {
   //清空empty_pairs
@@ -129,7 +160,7 @@ int CheckPairStore(int id) {
   std::vector<int>().swap(available_pair_list_);
 
   for (int i = 0; i < 1000; i++) {
-    if (arg->key_file->IsSeedAvailable(id, i)) {
+    if (global_arg->key_file->IsSeedAvailable(id, i)) {
       available_pair_list_.push_back(i);
     } else {
       empty_pair_list_.push_back(i);
@@ -149,7 +180,11 @@ int CheckKey(int key_id) {
   int available_num = available_pair_list_.size();
   double result;
   while (n--) {
-    int index = std::rand() % available_pair_list_.size();
+    int index;
+    if (global_arg->stable_flag == -1)
+      index = std::rand() % available_pair_list_.size();
+    else
+      index = global_arg->stable_flag;
     int key_id_index = available_pair_list_[index];
     //如果随机到的是已经被删除了的
     if (key_id_index == -1) {
@@ -170,18 +205,18 @@ int CheckKey(int key_id) {
         }
       }
     }
-    int seed = arg->key_file->GetSeed(key_id, key_id_index);
+    int seed = global_arg->key_file->GetSeed(key_id, key_id_index);
     if (seed == -1) {
       std::cout << "fatal error seed = -1" << std::endl;
       return -1;
     }
-    if (arg->lcd) arg->lcd->ShowBySeed(seed);
-    ret = arg->key_file->ReadPicAsBmp(key_id, key_id_index);
+    if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
+    ret = global_arg->key_file->ReadPicAsBmp(key_id, key_id_index);
     if (ret == -1) continue;
-    ret = arg->camera->GetPic();
+    ret = global_arg->camera->GetPic();
     if (ret == -1) continue;
-    cv::Mat pic1 = arg->key_file->GetMatImage();
-    cv::Mat pic2 = arg->camera->GetPicMat();
+    cv::Mat pic1 = global_arg->key_file->GetMatImage();
+    cv::Mat pic2 = global_arg->camera->GetPicMat();
     SavePic(pic2, key_id, key_id_index);
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
@@ -189,8 +224,8 @@ int CheckKey(int key_id) {
 
     //删除本次循环使用的Seed文件及其对应的Pic文件
     std::cout << "delete old pair index = " << key_id_index << std::endl;
-    arg->key_file->DeleteSeed(key_id, key_id_index);
-    arg->key_file->DeletePic(key_id, key_id_index);
+    global_arg->key_file->DeleteSeed(key_id, key_id_index);
+    global_arg->key_file->DeletePic(key_id, key_id_index);
     available_pair_list_[index] = -1;
 
     //值越小说明两张图片越相似
@@ -199,11 +234,11 @@ int CheckKey(int key_id) {
       //认证通过
       //然后重新生成新的激励对
       int rand_seed = std::rand();
-      if (arg->lcd) arg->lcd->ShowBySeed(rand_seed);
-      arg->camera->GetPic();
+      if (global_arg->lcd) global_arg->lcd->ShowBySeed(rand_seed);
+      global_arg->camera->GetPic();
 
-      arg->key_file->SetMatImage(arg->camera->GetPicMat());
-      arg->key_file->SavePicAndSeed(key_id, key_id_index, rand_seed);
+      global_arg->key_file->SetMatImage(global_arg->camera->GetPicMat());
+      global_arg->key_file->SavePicAndSeed(key_id, key_id_index, rand_seed);
       return 1;
     }
     available_num--;
@@ -232,17 +267,23 @@ int FindKey() {
     std::cout << "available pair list = " << available_pair_list_.size()
               << std::endl;
     std::cout << "empty pair list = " << empty_pair_list_.size() << std::endl;
-    int key_id_index = std::rand() % available_pair_list_.size();
+    int index;
+    int key_id_index;
+    if (global_arg->stable_flag == -1)
+      index = std::rand() % available_pair_list_.size();
+    else
+      index = global_arg->stable_flag;
+    key_id_index = available_pair_list_[index];
     int seed =
-        arg->key_file->GetSeed(key_id, available_pair_list_[key_id_index]);
+        global_arg->key_file->GetSeed(key_id, key_id_index);
 
-    if (arg->lcd) arg->lcd->ShowBySeed(seed);
-    ret = arg->key_file->ReadPicAsBmp(key_id, key_id_index);
+    if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
+    ret = global_arg->key_file->ReadPicAsBmp(key_id, key_id_index);
     if (ret == -1) continue;
-    ret = arg->camera->GetPic();
+    ret = global_arg->camera->GetPic();
     if (ret == -1) continue;
-    cv::Mat pic1 = arg->key_file->GetMatImage();
-    cv::Mat pic2 = arg->camera->GetPicMat();
+    cv::Mat pic1 = global_arg->key_file->GetMatImage();
+    cv::Mat pic2 = global_arg->camera->GetPicMat();
     SavePic(pic2, key_id, key_id_index);
 
     //验证两张图片
@@ -270,9 +311,9 @@ int FindKey() {
 int Authentication() {
   int ret = 0;
 
-  assert(arg->camera != nullptr);
+  assert(global_arg->camera != nullptr);
 
-  if (!arg->camera->IsOpen()) {
+  if (!global_arg->camera->IsOpen()) {
     return -1;
   }
 
@@ -308,7 +349,7 @@ int Authentication() {
   //认证失败 或者发生错误check key
   if (ret == 0 || ret == -1) {
     //红灯 ON没找到成功的对象
-    arg->led->ErrorLed(1);
+    global_arg->led->ErrorLed(1);
     return -1;
   }
   //  //认证成功了,绿灯1 2 3 ON
@@ -322,57 +363,76 @@ int Authentication() {
 }
 
 int main(int argc, char **argv) {
-  arg = new GlobalArg();
+  global_arg = new GlobalArg();
   InitCmdLine(argc, argv);
   if (!no_button_flag) {
-    arg->em = new EventManager();
+    global_arg->em = new EventManager();
   }
   if (!no_led_flag) {
-    arg->led = new LedController();
-    arg->led->LaserLed(0);
-    arg->led->CmosLed(0);
-    arg->led->LcdLed(0);
-    arg->led->ErrorLed(0);
+    global_arg->led = new LedController();
+    global_arg->led->LaserLed(0);
+    global_arg->led->CmosLed(0);
+    global_arg->led->LcdLed(0);
+    global_arg->led->ErrorLed(0);
   }
   if (!no_laser_flag) {
-    arg->laser = new Laser("/dev/ttyS0");
-    arg->laser->ForceCheck();
-    if (arg->laser_current != -1) arg->laser->SetCurrent(arg->laser_current);
-    arg->laser->ForceOpen();
+    global_arg->laser = new Laser("/dev/ttyS0");
+    global_arg->laser->ForceCheck();
+    if (global_arg->laser_current != -1) global_arg->laser->SetCurrent(global_arg->laser_current);
+    global_arg->laser->ForceOpen();
   }
   if (!no_lcd_flag) {
-    arg->lcd = new Lcd("/dev/fb0");
-    if (arg->lcd_width!=-1 && arg->lcd_height!=-1)
-      arg->lcd->SetRect(arg->lcd_width, arg->lcd_height);
+    global_arg->lcd = new Lcd("/dev/fb0");
+    if (global_arg->lcd_width != -1 && global_arg->lcd_height != -1)
+      global_arg->lcd->SetRect(global_arg->lcd_width, global_arg->lcd_height);
   }
-  arg->camera = new CameraManager(0);
-  if (!arg->camera->IsOpen()) {
+  global_arg->camera = new CameraManager(0);
+  if (!global_arg->camera->IsOpen()) {
     return -1;
   }
+  //设置lut模式
+  global_arg->camera_lut_mode == -1 ?: global_arg->camera->SetLutMode(global_arg->camera_lut_mode);
   //设置分辨率
-  arg->resolution_index == -1
-      ?: arg->camera->SetResolution(arg->resolution_index);
+  global_arg->resolution_index == -1
+      ?: global_arg->camera->SetResolution(global_arg->resolution_index);
   //设置曝光时间
-  arg->exposion_time == -1 ?: arg->camera->SetExposureTime(arg->exposion_time);
+  global_arg->exposion_time == -1 ?: global_arg->camera->SetExposureTime(global_arg->exposion_time);
   //设置兴趣区域
-  (arg->roi_x == -1 || arg->roi_y == -1 || arg->roi_w == -1 || arg->roi_h == -1)
-      ?: arg->camera->SetRoi(arg->roi_x, arg->roi_y, arg->roi_w, arg->roi_h);
-  arg->camera->Play();
+  (global_arg->roi_x == -1 || global_arg->roi_y == -1 || global_arg->roi_w == -1 || global_arg->roi_h == -1)
+      ?: global_arg->camera->SetRoi(global_arg->roi_x, global_arg->roi_y, global_arg->roi_w, global_arg->roi_h);
+  global_arg->camera_contrast == -1 ?: global_arg->camera->SetContrast(global_arg->camera_contrast);
+  global_arg->camera_gamma == -1 ?: global_arg->camera->SetContrast(global_arg->camera_gamma);
+  //设置饱和度 这个值对于黑白相机无效
+  global_arg->camera_saturation == -1
+      ?: global_arg->camera->SetContrast(global_arg->camera_saturation);
+  global_arg->camera_sharpness == -1
+      ?: global_arg->camera->SetContrast(global_arg->camera_sharpness);
+  if (!global_arg->camera_config_file_addr.empty())
+    global_arg->camera->ReadParameterFromFile(global_arg->camera_config_file_addr.c_str());
 
-  arg->key_file = new KeyFile("../res/PUFData");
+  global_arg->camera->Play();
 
-  if (arg->em == nullptr) {
+  global_arg->key_file = new KeyFile("../res/PUFData");
+
+  if (global_arg->em == nullptr) {
     //直接运行
     int ret;
     ret = Authentication();
     if (ret != 0) {
-      if (arg->led) arg->led->ErrorLed(1);
+      if (global_arg->led) global_arg->led->ErrorLed(1);
     } else {
-      if (arg->led) arg->led->ErrorLed(0);
+      if (global_arg->led) global_arg->led->ErrorLed(1);
+      Utils::MSleep(500);
+      if (global_arg->led) global_arg->led->ErrorLed(0);
+      Utils::MSleep(500);
+      if (global_arg->led) global_arg->led->ErrorLed(1);
+      Utils::MSleep(500);
+      if (global_arg->led) global_arg->led->ErrorLed(0);
+      Utils::MSleep(500);
     }
-    if (arg->laser) arg->laser->ForceClose();
-    arg->camera->Pause();
-    arg->camera->Uninit();
+    if (global_arg->laser) global_arg->laser->ForceClose();
+    global_arg->camera->Pause();
+    global_arg->camera->Uninit();
     return 0;
   }
   int fd;
@@ -388,7 +448,7 @@ int main(int argc, char **argv) {
     return 0;
   }
   read(fd, &key, 1);
-  arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
+  global_arg->em->ListenFd(fd, EventManager::kEventPri, [fd]() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
@@ -397,12 +457,19 @@ int main(int argc, char **argv) {
     if (key == 0x31) {
       int ret = Authentication();
       if (ret != 0) {
-        if (arg->led) arg->led->ErrorLed(1);
+        if (global_arg->led) global_arg->led->ErrorLed(1);
       } else {
-        if (arg->led) arg->led->ErrorLed(0);
+        if (global_arg->led) global_arg->led->ErrorLed(1);
+        Utils::MSleep(500);
+        if (global_arg->led) global_arg->led->ErrorLed(0);
+        Utils::MSleep(500);
+        if (global_arg->led) global_arg->led->ErrorLed(1);
+        Utils::MSleep(500);
+        if (global_arg->led) global_arg->led->ErrorLed(0);
+        Utils::MSleep(500);
       }
     }
   });
   ss.str("");
-  arg->em->Start(1);
+  global_arg->em->Start(1);
 }

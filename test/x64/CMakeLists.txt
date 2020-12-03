@@ -11,7 +11,7 @@ include_directories(
 
 FIND_PACKAGE(OpenMP REQUIRED)
 if(OPENMP_FOUND)
-  message("OPENMP FOUND")
+  message("x86_64 OPENMP FOUND")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
@@ -129,6 +129,7 @@ add_executable(CameraTest_x64
 target_link_libraries(CameraTest_x64
   opencv_core
   opencv_imgcodecs
+  boost_program_options
   ${PROJECT_SOURCE_DIR}/lib/x64/libCKCameraSDK.a
 )
 
@@ -138,4 +139,14 @@ add_executable(MainTest_x64
 )
 target_link_libraries(MainTest_x64
   ev
+)
+
+add_executable(GpioTest_x64
+  ../src/gpio_test.cc
+  ${PROJECT_SOURCE_DIR}/src/eventmanager.cc
+  ${PROJECT_SOURCE_DIR}/src/led.cc
+  ${PROJECT_SOURCE_DIR}/src/utils.cc
+)
+target_link_libraries(GpioTest_x64
+boost_program_options
 )

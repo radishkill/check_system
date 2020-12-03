@@ -1,7 +1,6 @@
 #ifndef LED_H
 #define LED_H
 
-#include <thread>
 
 #include "constant.h"
 
@@ -36,7 +35,7 @@ class LedController {
   int cmos_fd_;
   int error_fd_;
    private:
-  std::thread blink_thread_;
+  // std::thread blink_thread_;
 };
 }
 
