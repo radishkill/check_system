@@ -9,7 +9,7 @@ namespace check_system {
 
 class LedController {
  public:
-  LedController();
+  LedController(int laser_gpio=-1, int cmos_gpio=-1, int lcd_gpio=-1, int error_gpio=-1);
   ~LedController();
   // s == 0关灯 s == 1 开灯
   int LaserLed(int s);
@@ -17,7 +17,6 @@ class LedController {
   int CmosLed(int s);
   int ErrorLed(int s);
 
-  int RunBlink();
   int CloseBlink();
 
   int laser_blink_;
@@ -34,7 +33,12 @@ class LedController {
   int lcd_fd_;
   int cmos_fd_;
   int error_fd_;
-   private:
+
+  int laser_gpio_id_;
+  int lcd_gpio_id_;
+  int cmos_gpio_id_;
+  int error_gpio_id_;
+  private:
   // std::thread blink_thread_;
 };
 }

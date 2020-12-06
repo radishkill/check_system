@@ -39,6 +39,9 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
     detector->detectAndCompute(img2, noArray(), keypoints2, descriptors2);
 
     cout << "key1 key2  " << keypoints1.size() << "   " << keypoints2.size() << endl;
+    if (keypoints1.size() == 0 || keypoints2.size() == 0) {
+        return -1;
+    }
 
     //-- Step 2: Matching descriptor vectors with a brute force matcher
     // Since SURF is a floating-point descriptor NORM_L2 is used
@@ -89,7 +92,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
         circle(img1, keypoints01[i], 10, Scalar(0, 255, 0));
     }
     cout << "  1 的特征点的坐标" << keypoints01 << endl;
-    cout << " 2 的特征点的坐标" << keypoints02 << endl;
+    cout << "  2 的特征点的坐标" << keypoints02 << endl;
 
 
     Mat img_matches;

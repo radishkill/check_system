@@ -16,7 +16,7 @@ SOURCES += src/main.cc \
     src/laser.cc \
     src/lcd.cc \
     src/led.cc \
-    src/utils.cc \
+    src/mutils.cc \
     src/state_machine.cc \
     src/gabor_im/bluesteinSetup.cpp \
     src/gabor_im/cosd.cpp \

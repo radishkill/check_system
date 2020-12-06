@@ -3,17 +3,12 @@
 #include <chrono>
 #include <iostream>
 
-#include "utils.h"
+#include "mutils.h"
 
 namespace check_system {
 
 CameraManager::CameraManager(int auto_flag)
     : is_open_flag_(0), roi_x_(-1), roi_y_(-1), roi_w_(-1), roi_h_(-1) {
-  if (CAMERA_WIDTH == 1280)
-    resolution_index_ = IMAGEOUT_MODE_1280X720;
-  else
-    resolution_index_ = IMAGEOUT_MODE_320X240;
-  exposion_time_ = 3000;
   InitCamera(auto_flag);
 }
 
@@ -31,17 +26,18 @@ int CameraManager::InitCamera(int auto_flag) {
   ShowDeviceList(camera_nums_);
 
   //应该只有一个摄像头
-  status = CameraInitEx(&hCamera_, camera_nums_ - 1, -1, -1);
-  // status = CameraInit(&hCamera_, camera_nums_-1);
+  // status = CameraInitEx(&hCamera_, camera_nums_ - 1, -1, -1);
+  status = CameraInit(&hCamera_, camera_nums_ - 1);
   if (status != CAMERA_STATUS_SUCCESS) {
     printf("Camera init failed\n");
     return -1;
   }
   ShowCameraBaseConfig();
 
-  status = CameraLoadParameter(hCamera_, PARAMETER_TEAM_A);
+  // status = CameraLoadParameter(hCamera_, PARAMETER_TEAM_A);
   status = CameraSetTriggerMode(hCamera_, 1);  // soft trigger
-  status = CameraSetFrameSpeed(hCamera_, 2);   // high speed
+  status = CameraSetFrameSpeed(
+      hCamera_, 0);  // low speed when use high speed have some problem
   status = CameraSetAeState(hCamera_, FALSE);  // by hand
   //  status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_RGB8);
   status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_MONO8);
@@ -53,7 +49,6 @@ int CameraManager::InitCamera(int auto_flag) {
   if (auto_flag) {
     SetExposureTime(exposion_time_);
     SetResolution(resolution_index_);
-
     Play();
   }
 
@@ -66,7 +61,8 @@ int CameraManager::ShowDeviceList(int n) {
     tDevEnumInfo devAllInfo;
     CameraSdkStatus status = CameraGetEnumIndexInfo(i, &devAllInfo);
     if (status != CAMERA_STATUS_SUCCESS) continue;
-    std::cout << i << ":" << devAllInfo.DevAttribute.Name << std::endl;
+    std::cout << i << ":" << devAllInfo.DevAttribute.acProductName << " "
+              << devAllInfo.DevAttribute.acSensorType << std::endl;
   }
   return 0;
 }
@@ -207,26 +203,35 @@ int CameraManager::Pause() {
 
 int CameraManager::GetPic() {
   CameraSdkStatus status;
+  int ret;
 
   auto begin_tick = std::chrono::steady_clock::now();
   status = CameraSoftTrigger(hCamera_);
   if (status != CAMERA_STATUS_SUCCESS) {
     std::cout << "soft trigger failed : " << status << std::endl;
     //这个时候有可能是照相机突然断开连接了
-    //      Reboot();
+    ret = Reboot();
+    if (ret == -1)
+      return -1;
+    status = CameraSoftTrigger(hCamera_);
+    if (status != CAMERA_STATUS_SUCCESS) {
+      std::cout << "soft trigger failed : " << status << std::endl;
+      return -1;
+    }
+  }
+  pbuffer_ = CameraGetImageBufferEx(hCamera_, &image_info_, 10000);
+  if (pbuffer_ == nullptr) {
+    std::cout << "can't get a frame picture status=" << std::endl;
     return -1;
   }
-  status = CameraGetImageBufferEx1(hCamera_, pbuffer_, &image_info_, 1000);
-  // pbuffer_ = CameraGetImageBufferEx(hCamera_, &image_info_, 1000);
-  if (status != CAMERA_STATUS_SUCCESS) {
-    std::cout << "can't get a frame picture status=" << status << std::endl;
-    return -1;
-  }
-  std::cout << "photos widthxheight:" << image_info_.iWidth << "x"
-            << image_info_.iHeight << " total bytes:" << image_info_.TotalBytes
+  picture_mat_ =
+      cv::Mat(image_info_.iHeight, image_info_.iWidth, CV_8UC1, pbuffer_);
+  // std::cout << "photos widthxheight:" << image_info_.iWidth << "x"
+  //           << image_info_.iHeight << " total bytes:" <<
+  //           image_info_.TotalBytes
+  //           << std::endl;
+  std::cout << "photos info" << picture_mat_.size << " " << picture_mat_.total()
             << std::endl;
-  // std::cout << "photos info" << picture_mat.size << " " <<
-  // picture_mat.total() << std::endl;
   auto end_tick = std::chrono::steady_clock::now();
   std::cout << "take photos time:"
             << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -
@@ -240,20 +245,18 @@ int CameraManager::GetPic() {
 
 char* CameraManager::GetPicBuffer() { return (char*)pbuffer_; }
 cv::Mat CameraManager::GetPicMat() {
-  cv::Mat picture_mat = cv::Mat(dwHeight_, dwWidth_, CV_8UC1, pbuffer_);
   // std::memcpy(picture_mat.data, pbuffer_, dwHeight_*dwWidth_);
   if (roi_x_ != -1 && roi_y_ != -1 && roi_w_ != -1 && roi_h_ != -1) {
-    picture_mat = picture_mat(cv::Rect(roi_x_, roi_y_, roi_w_, roi_h_));
+    picture_mat_ = picture_mat_(cv::Rect(roi_x_, roi_y_, roi_w_, roi_h_));
   }
-  return picture_mat;
+  return picture_mat_;
 }
 cv::Mat CameraManager::GetPicMat(int x, int y, int w, int h) {
-  cv::Mat picture_mat = cv::Mat(dwHeight_, dwWidth_, CV_8UC1, pbuffer_);
   // std::memcpy(picture_mat.data, pbuffer_, dwHeight_*dwWidth_);
   if (roi_x_ != -1 && roi_y_ != -1 && roi_w_ != -1 && roi_h_ != -1) {
-    picture_mat = picture_mat(cv::Rect(x, y, w, h));
+    picture_mat_ = picture_mat_(cv::Rect(x, y, w, h));
   }
-  return picture_mat;
+  return picture_mat_;
 }
 
 int CameraManager::Reboot() {
@@ -263,31 +266,39 @@ int CameraManager::Reboot() {
   if (status != CAMERA_STATUS_SUCCESS) {
     std::cout << "CameraUnInit fault status = " << status << std::endl;
   }
-  Utils::MSleep(2000);
-  InitCamera(1);
-  return 0;
+  Utils::MSleep(500);
+  if ((status = CameraEnumerateDevice(&camera_nums_)) !=
+      CAMERA_STATUS_SUCCESS) {
+    std::cout << "none camera device" << std::endl;
+    return -1;
+  }
+  std::cout << "enumerate camera num " << camera_nums_ << std::endl;
+  // ShowDeviceList(camera_nums_);
+
+  //应该只有一个摄像头
+  // status = CameraInitEx(&hCamera_, camera_nums_ - 1, -1, -1);
+  status = CameraInit(&hCamera_, camera_nums_ - 1);
+  if (status != CAMERA_STATUS_SUCCESS) {
+    printf("Camera init failed\n");
+    return -1;
+  }
+  return Play();
 }
 
 int CameraManager::CheckPic(int threshold_low, int threshold_high) {
-  int average_data = 0;
-  auto begin_tick = std::chrono::steady_clock::now();
+  double average_data = 0;
   if (pbuffer_ == nullptr) {
     std::cout << "pic buffer == nullptr" << std::endl;
     return -1;
   }
-  average_data = pbuffer_[0];
+  average_data = picture_mat_.data[0];
 
-  for (unsigned int i = 1; i < dwWidth_ * dwHeight_; i++) {
-    average_data += pbuffer_[i];
+  for (unsigned int i = 1; i < picture_mat_.cols * picture_mat_.rows; i++) {
+    average_data += picture_mat_.data[i];
     average_data /= 2;
   }
   std::cout << "pic average value = " << average_data << std::endl;
-  auto end_tick = std::chrono::steady_clock::now();
-  std::cout << "check picture average time:"
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -
-                                                                     begin_tick)
-                   .count()
-            << "ms" << std::endl;
+
   if (average_data <= threshold_high && average_data >= threshold_low) {
     return 0;
   }

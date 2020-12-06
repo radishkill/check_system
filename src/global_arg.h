@@ -1,6 +1,4 @@
-#ifndef GLOBAL_ARG_H
-#define GLOBAL_ARG_H
-
+#pragma once
 #include <string>
 
 namespace check_system {
@@ -13,11 +11,17 @@ class EventManager;
 class LedController;
 class HostController;
 
-
 class GlobalArg {
  public:
   static GlobalArg* GetInstance();
-  GlobalArg();
+  GlobalArg() {
+    interrupt_flag = 0;
+    hsk_flag = 0;
+    is_fault = 0;
+    no_button_flag = false;
+    no_laser_flag = false;
+    no_lcd_flag = false;
+  }
   Laser* laser;
   CameraManager* camera;
   StateMachine* sm;
@@ -28,20 +32,32 @@ class GlobalArg {
   HostController* host;
 
   int interrupt_flag;
-  int hsk_flag;//上位机握手控制
+  int hsk_flag;  //上位机握手控制
   int is_fault;
 
-  int exposion_time;
+  double exposion_time;
   int laser_current;
   int resolution_index;
   int roi_x, roi_y, roi_w, roi_h;
   bool no_button_flag;
   bool no_laser_flag;
   bool no_lcd_flag;
+  bool no_led_flag;
+  int lcd_width;
+  int lcd_height;
+
+  int camera_gamma;
+  int camera_contrast;
+  int camera_saturation;
+  int camera_sharpness;
+
+  int camera_lut_mode;
+  int stable_flag;
+
+  std::string camera_config_file_addr;
   std::string mid_save_addr;
+
  private:
   static GlobalArg* global_arg_;
 };
-}
-
-#endif // GLOBAL_ARG_H
+}  // namespace check_system

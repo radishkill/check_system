@@ -2,21 +2,21 @@
 
 cd `dirname $0`
 
-echo "open vga"
+echo "off vga"
 echo off > /sys/class/drm/card0-HDMI-A-1/status
 #sleep 1
 #echo on > /sys/class/drm/card0-HDMI-A-1/status
 #sleep 1
+echo "open vga"
 echo on > /sys/class/drm/card0-VGA-1/status
-echo "open vga success"
 
 
 if [ ! -d "/sys/class/gpio/gpio223" ];then
   echo -e -n 223 > /sys/class/gpio/export
 fi
 
-if [ ! -d "/sys/class/gpio/gpio138" ];then
-  echo -e -n 138 > /sys/class/gpio/export
+if [ ! -d "/sys/class/gpio/gpio139" ];then
+  echo -e -n 139 > /sys/class/gpio/export
 fi
 
 if [ ! -d "/sys/class/gpio/gpio255" ];then
@@ -49,7 +49,23 @@ if [ ! -d "/sys/class/gpio/gpio164" ];then
 fi
 
 echo -e -n out > /sys/class/gpio/gpio223/direction 
-echo -e -n out > /sys/class/gpio/gpio138/direction 
+echo -e -n out > /sys/class/gpio/gpio139/direction 
+echo -e -n out > /sys/class/gpio/gpio255/direction 
+echo -e -n out > /sys/class/gpio/gpio254/direction 
+#rs485 ctl
+echo -e -n out > /sys/class/gpio/gpio164/direction
+
+
+echo -e -n in > /sys/class/gpio/gpio257/direction 
+echo -e -n in > /sys/class/gpio/gpio252/direction 
+echo -e -n in > /sys/class/gpio/gpio218/direction 
+echo -e -n in > /sys/class/gpio/gpio251/direction 
+echo -e -n both > /sys/class/gpio/gpio257/edge 
+echo -e -n both > /sys/class/gpio/gpio252/edge
+echo -e -n both > /sys/class/gpio/gpio218/edge
+echo -e -n both > /sys/class/gpio/gpio251/edge
+
+echo -e -n 0 > /sys/class/gpio/gpio164/value
 
 
 if test $1 == "1"
@@ -58,9 +74,8 @@ then
 fi
 if test $1 == "2"
 then
-  ./OnlyAuth_arm --no-button --no-laser --no-lcd \
+  ./OnlyAuth_arm --no-button --no-laser \
     --mid-save=./mid_save \
-    --ROI-x=10 --ROI-y=10 --ROI-w=50 --ROI-h=50 \
-    --exposion-time=2000 \
-    --laser-current=300 
+    --ROI-x=0 --ROI-y=0 --ROI-w=320 --ROI-h=240 \
+    --exposion-time=2000
 fi
