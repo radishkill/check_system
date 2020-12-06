@@ -78,8 +78,8 @@ int Lcd::ShowBySeed(int seed)
       {
          if (x % rect_width == 0) {
             c1 = std::rand() % 0x100;
-            c2 = std::rand() % 0x100;
-            c3 = std::rand() % 0x100;
+            // c2 = std::rand() % 0x100;
+            // c3 = std::rand() % 0x100;
          }
          
          // std::cout << x << " " << y << " " << std::endl;
@@ -90,14 +90,21 @@ int Lcd::ShowBySeed(int seed)
                break;
             }
             *(dest + (y + w) * stride + x * bytes_per_pixel) = c1;
-            *(dest + (y + w) * stride + x * bytes_per_pixel + 1) = c2;
-            *(dest + (y + w) * stride + x * bytes_per_pixel + 2) = c3;
+            *(dest + (y + w) * stride + x * bytes_per_pixel + 1) = c1;
+            *(dest + (y + w) * stride + x * bytes_per_pixel + 2) = c1;
 
             *(dest + (y + w) * stride + x * bytes_per_pixel + 3) = 0xff;
          }
       }
    }
    return 0;
+}
+
+int Lcd::GetFbWidth() const {
+  return fix_info_.line_length/4;
+}
+int Lcd::GetFbHeight() const {
+  return var_info_.yres_virtual;
 }
 
 bool Lcd::IsOpen() const {

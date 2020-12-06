@@ -1,9 +1,10 @@
-#include <boost/program_options.hpp>
 #include <chrono>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <thread>
+
+#include <boost/program_options.hpp>
 
 #include "authpic.h"
 #include "camera_manager.h"
@@ -14,7 +15,7 @@
 #include "lcd.h"
 #include "led.h"
 #include "usart.h"
-#include "utils.h"
+#include "mutils.h"
 
 namespace po = boost::program_options;
 using check_system::CameraManager;
@@ -24,11 +25,6 @@ using check_system::Laser;
 using check_system::Lcd;
 using check_system::LedController;
 
-bool no_button_flag = false;
-bool no_laser_flag = false;
-bool no_lcd_flag = false;
-bool no_led_flag = false;
-
 class GlobalArg {
  public:
   Laser *laser;
@@ -37,13 +33,14 @@ class GlobalArg {
   Lcd *lcd;
   EventManager *em;
   LedController *led;
-  int exposion_time;
+  double exposion_time;
   int laser_current;
   int resolution_index;
   int roi_x, roi_y, roi_w, roi_h;
   bool no_button_flag;
   bool no_laser_flag;
   bool no_lcd_flag;
+  bool no_led_flag;
   int lcd_width;
   int lcd_height;
 
@@ -62,8 +59,6 @@ class GlobalArg {
  private:
 };
 GlobalArg *global_arg;
-
-bool is_running = false;
 
 void InitCmdLine(int argc, char **argv) {
   po::options_description desc("Allowed options");
@@ -84,7 +79,7 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()("ROI-h", po::value<int>(&global_arg->roi_h)->default_value(-1),
                      "");
   desc.add_options()("exposion-time",
-                     po::value<int>(&global_arg->exposion_time)->default_value(-1),
+                     po::value<double>(&global_arg->exposion_time)->default_value(-1),
                      "us");
   desc.add_options()("laser-current",
                      po::value<int>(&global_arg->laser_current)->default_value(-1),
@@ -121,28 +116,28 @@ void InitCmdLine(int argc, char **argv) {
     exit(1);
   }
   if (vm.count("no-button")) {
-    no_button_flag = true;
+    global_arg->no_button_flag = true;
   }
   if (vm.count("no-laser")) {
-    no_laser_flag = true;
+    global_arg->no_laser_flag = true;
   }
   if (vm.count("no-lcd")) {
-    no_lcd_flag = true;
+    global_arg->no_lcd_flag = true;
   }
   if (vm.count("no-led")) {
-    no_led_flag = true;
+    global_arg->no_led_flag = true;
   }
 }
 std::vector<int> empty_pair_list_;
 std::vector<int> available_pair_list_;
 
-void SavePic(cv::Mat pic, int key_id, int index) {
+void SavePic(cv::Mat pic, int key_id, int index, std::string info) {
   if (global_arg->mid_save_addr.empty()) {
     return;
   }
   std::string addr = global_arg->mid_save_addr;
   addr = addr + std::string("/PUF") + Utils::DecToStr(key_id, 2) + "_Pic" +
-         Utils::DecToStr(index, 4) + ".bmp";
+         Utils::DecToStr(index, 4) + info + ".bmp";
   cv::imwrite(addr, pic);
 }
 
@@ -152,7 +147,7 @@ int CheckKeyInsert() {
   int seed = std::rand();
   if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
   global_arg->camera->GetPic();
-  return global_arg->camera->CheckPic(100, 200);
+  return global_arg->camera->CheckPic(20, 70);
 }
 int CheckPairStore(int id) {
   //清空empty_pairs
@@ -217,11 +212,15 @@ int CheckKey(int key_id) {
     if (ret == -1) continue;
     cv::Mat pic1 = global_arg->key_file->GetMatImage();
     cv::Mat pic2 = global_arg->camera->GetPicMat();
-    SavePic(pic2, key_id, key_id_index);
-
+    cv::Mat pic3 = cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(), CV_8UC4, global_arg->lcd->GetFrameBuffer());
+    
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
     result = AuthPic(pic1, pic2);
-
+    
+    SavePic(pic1, key_id, key_id_index, std::string("_base") + std::to_string(seed) + std::string("_") + std::to_string(result));
+    SavePic(pic2, key_id, key_id_index, std::string("_auth") + std::to_string(seed) + std::string("_") + std::to_string(result));
+    SavePic(pic3, key_id, key_id_index, std::string("_lcd_") + std::to_string(seed) + std::string("_") + std::to_string(result));
+    
     //删除本次循环使用的Seed文件及其对应的Pic文件
     std::cout << "delete old pair index = " << key_id_index << std::endl;
     global_arg->key_file->DeleteSeed(key_id, key_id_index);
@@ -284,10 +283,15 @@ int FindKey() {
     if (ret == -1) continue;
     cv::Mat pic1 = global_arg->key_file->GetMatImage();
     cv::Mat pic2 = global_arg->camera->GetPicMat();
-    SavePic(pic2, key_id, key_id_index);
-
+    cv::Mat pic3 = cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(), CV_8UC4, global_arg->lcd->GetFrameBuffer());
+    
     //验证两张图片
     result = AuthPic(pic1, pic2);
+
+    SavePic(pic1, key_id, key_id_index, std::string("_base") + std::to_string(seed) + std::string("_") + std::to_string(result));
+    SavePic(pic2, key_id, key_id_index, std::string("_auth") + std::to_string(seed) + std::string("_") + std::to_string(result));
+    SavePic(pic3, key_id, key_id_index, std::string("_lcd_") + std::to_string(seed) + std::string("_") + std::to_string(result));
+    
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "auth pic elapsed time :"
               << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -312,10 +316,6 @@ int Authentication() {
   int ret = 0;
 
   assert(global_arg->camera != nullptr);
-
-  if (!global_arg->camera->IsOpen()) {
-    return -1;
-  }
 
   if (CheckKeyInsert() == -1) {
     std::cout << "no key insert" << std::endl;
@@ -345,19 +345,10 @@ int Authentication() {
                                                                      begin_tick)
                    .count()
             << "ms" << std::endl;
-
   //认证失败 或者发生错误check key
   if (ret == 0 || ret == -1) {
-    //红灯 ON没找到成功的对象
-    global_arg->led->ErrorLed(1);
     return -1;
   }
-  //  //认证成功了,绿灯1 2 3 ON
-  //  arg->led->LaserLed(1);
-  //  arg->led->LcdLed(1);
-  //  arg->led->CmosLed(1);
-  //  arg->led->ErrorLed(0);
-
   std::cout << "auth success!!!" << std::endl;
   return 0;
 }
@@ -365,23 +356,23 @@ int Authentication() {
 int main(int argc, char **argv) {
   global_arg = new GlobalArg();
   InitCmdLine(argc, argv);
-  if (!no_button_flag) {
+  if (!global_arg->no_button_flag) {
     global_arg->em = new EventManager();
   }
-  if (!no_led_flag) {
+  if (!global_arg->no_led_flag) {
     global_arg->led = new LedController();
     global_arg->led->LaserLed(0);
     global_arg->led->CmosLed(0);
     global_arg->led->LcdLed(0);
     global_arg->led->ErrorLed(0);
   }
-  if (!no_laser_flag) {
+  if (!global_arg->no_laser_flag) {
     global_arg->laser = new Laser("/dev/ttyS0");
     global_arg->laser->ForceCheck();
     if (global_arg->laser_current != -1) global_arg->laser->SetCurrent(global_arg->laser_current);
     global_arg->laser->ForceOpen();
   }
-  if (!no_lcd_flag) {
+  if (!global_arg->no_lcd_flag) {
     global_arg->lcd = new Lcd("/dev/fb0");
     if (global_arg->lcd_width != -1 && global_arg->lcd_height != -1)
       global_arg->lcd->SetRect(global_arg->lcd_width, global_arg->lcd_height);
@@ -401,12 +392,12 @@ int main(int argc, char **argv) {
   (global_arg->roi_x == -1 || global_arg->roi_y == -1 || global_arg->roi_w == -1 || global_arg->roi_h == -1)
       ?: global_arg->camera->SetRoi(global_arg->roi_x, global_arg->roi_y, global_arg->roi_w, global_arg->roi_h);
   global_arg->camera_contrast == -1 ?: global_arg->camera->SetContrast(global_arg->camera_contrast);
-  global_arg->camera_gamma == -1 ?: global_arg->camera->SetContrast(global_arg->camera_gamma);
+  global_arg->camera_gamma == -1 ?: global_arg->camera->SetGamma(global_arg->camera_gamma);
   //设置饱和度 这个值对于黑白相机无效
   global_arg->camera_saturation == -1
-      ?: global_arg->camera->SetContrast(global_arg->camera_saturation);
+      ?: global_arg->camera->SetSaturation(global_arg->camera_saturation);
   global_arg->camera_sharpness == -1
-      ?: global_arg->camera->SetContrast(global_arg->camera_sharpness);
+      ?: global_arg->camera->SetSharpness(global_arg->camera_sharpness);
   if (!global_arg->camera_config_file_addr.empty())
     global_arg->camera->ReadParameterFromFile(global_arg->camera_config_file_addr.c_str());
 
@@ -417,7 +408,13 @@ int main(int argc, char **argv) {
   if (global_arg->em == nullptr) {
     //直接运行
     int ret;
+    auto begin_tick = std::chrono::steady_clock::now();
     ret = Authentication();
+    auto end_tick = std::chrono::steady_clock::now();
+    std::cout << "authentication sum elapsed time :"
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -
+                                                                                         begin_tick).count()
+              << "ms" << std::endl;
     if (ret != 0) {
       if (global_arg->led) global_arg->led->ErrorLed(1);
     } else {

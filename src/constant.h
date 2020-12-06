@@ -4,17 +4,18 @@
 namespace check_system {
 
 const static int kLaserGpioNumber = 223;
+const static int kCmosGpioNumber = 139;
 const static int kLcdGpioNumber = 255;
-const static int kCmosGpioNumber = 138;
 const static int kErrorGpioNumber = 254;
 
-const static bool kLaserGpioReverse = true;
-const static bool kLcdGpioReverse = true;
-const static bool kCmosGpioReverse = true;
-const static bool kErrorGpioReverse = true;
+const static bool kLaserGpioReverse = false;
+const static bool kLcdGpioReverse = false;
+const static bool kCmosGpioReverse = false;
+const static bool kErrorGpioReverse = false;
 
-const static int kRegisterButtonNumber = 257;
-const static int kAuthButtonNumber = 252;
+
+const static int kAuthButtonNumber = 257;
+const static int kRegisterButtonNumber = 252;
 const static int kInterruptButtonNumber = 218;
 const static int kCheckSelfButtonNumber = 251;
 

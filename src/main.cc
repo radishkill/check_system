@@ -12,7 +12,7 @@
 #include "usart.h"
 #include "laser.h"
 #include "camera_manager.h"
-#include "utils.h"
+#include "mutils.h"
 #include "state_machine.h"
 #include "key_file.h"
 #include "lcd.h"
@@ -20,6 +20,7 @@
 #include "led.h"
 #include "hostcontroller.h"
 #include "constant.h"
+#include "cmdline.h"
 
 using check_system::GlobalArg;
 using check_system::Laser;
@@ -83,8 +84,6 @@ void SimpleTimer() {
 void InitSystem() {
   GlobalArg* global_arg = GlobalArg::GetInstance();
   global_arg->led = new LedController();
-  //启动LED闪烁线程
-//  global_arg->led->RunBlink();
 
   global_arg->em = new check_system::EventManager();
 
@@ -252,6 +251,7 @@ void InitSystem() {
   });
   ss.str("");
 
+  //定时器线程
   timer_thread_ = std::thread(SimpleTimer);
 
 
@@ -261,13 +261,13 @@ void InitSystem() {
     global_arg->host->RecvData();
   });
 
-
   std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm, StateMachine::kSelfTest));
   th.detach();
 }
 
-int main() {
+int main(int argc, char** argv) {
   GlobalArg* global_arg = GlobalArg::GetInstance();
+  check_system::InitCmdLine(argc, argv);
   global_arg->sm = new StateMachine();
   InitSystem();
   global_arg->em->Start(1);

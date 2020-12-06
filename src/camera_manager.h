@@ -9,8 +9,8 @@
 
 namespace check_system {
 
-#define CAMERA_WIDTH 320
-#define CAMERA_HEIGHT 240
+// #define CAMERA_WIDTH 320
+// #define CAMERA_HEIGHT 240
 
 //#define CAMERA_WIDTH 1280
 //#define CAMERA_HEIGHT 720
@@ -36,8 +36,8 @@ class CameraManager {
   char* GetPicBuffer();
   cv::Mat GetPicMat();
   cv::Mat GetPicMat(int x, int y, int w, int h);
-  int GetWidth() const { return dwWidth_; };
-  int GetHeight() const { return dwHeight_; };
+  int GetWidth() const { return picture_mat_.cols; };
+  int GetHeight() const { return picture_mat_.rows; };
   int Reboot();
   int CheckPic(int threshold_low, int threshold_high);
   void ShowCameraBaseConfig();
@@ -63,6 +63,7 @@ class CameraManager {
   double exposion_time_;
   int resolution_index_;
   int camera_nums_;
+  cv::Mat picture_mat_;
 };
 }  // namespace check_system
 

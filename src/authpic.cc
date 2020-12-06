@@ -92,7 +92,6 @@ double hamming(Mat input1, Mat input2) {
   }
   // cout << "pdist=" << diff << endl;
   diff = diff / input1.cols / input1.rows;
-  cout << "FHD=" << diff << endl;
   return diff;
 }
 
@@ -164,15 +163,13 @@ double AuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
   image[0] = Mat2Emx_U8(speckle_database);
   image[1] = Mat2Emx_U8(speckle_auth);
 
-  for (int i = 0; i < 2; i++) {
-    std::cout << "allocatedSize " << image[i]->allocatedSize << std::endl;
-    std::cout << "numDimensions " << image[i]->numDimensions << std::endl;
-    std::cout << "image1 size : " << image[i]->size[0] << " "
-              << image[i]->size[1] << std::endl;
-  }
+  // for (int i = 0; i < 2; i++) {
+  //   std::cout << "allocatedSize " << image[i]->allocatedSize << std::endl;
+  //   std::cout << "numDimensions " << image[i]->numDimensions << std::endl;
+  //   std::cout << "image1 size : " << image[i]->size[0] << " "
+  //             << image[i]->size[1] << std::endl;
+  // }
 
-  // gabor_im(image[0], 8, 45, Gimage_im[0], BW_im[0], K[0]);
-  // gabor_im(image[1], 8, 45, Gimage_im[1], BW_im[1], K[1]);
   // gabor_im(image[0], 8, 45, Gimage_im[0], BW_im[0], K[0]);
   // Gim_mat[0] = Emx2Mat_U8(Gimage_im[0]);
   // //阈值
@@ -189,18 +186,23 @@ double AuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
 
   parallel_for_(Range(0, 2),
                 MyLoopBody(image, Gimage_im, BW_im, K, Gim_mat, bw_im));
+  // imshow("test1", bw_im[0]);
+  // imshow("test2", bw_im[1]);
 
   FHD = hamming(bw_im[0], bw_im[1]);
+  cout << "FHD=" << FHD << endl;
   if (FHD >= 0.1 && FHD <= 0.25)
   {
-    TransformPic(speckle_database, speckle_auth, speckle_auth);
-    image[2] = Mat2Emx_U8(speckle_auth);
-    gabor_im(image[2], 8, 45, Gimage_im[2], BW_im[2], K[2]);
-    Gim_mat[2] = Emx2Mat_U8(Gimage_im[2]);
-    threshold(Gim_mat[2], bw_im[2], 0, 255, THRESH_BINARY_INV);
-    bw_im[2].convertTo(bw_im[2], CV_8U, 1, 0);
-    FHD = hamming(bw_im[0], bw_im[2]);
-    cout << "FHD2=" << FHD << endl;
+    int ret = TransformPic(speckle_database, speckle_auth, speckle_auth);
+    if (ret != -1) {
+      image[2] = Mat2Emx_U8(speckle_auth);
+      gabor_im(image[2], 8, 45, Gimage_im[2], BW_im[2], K[2]);
+      Gim_mat[2] = Emx2Mat_U8(Gimage_im[2]);
+      threshold(Gim_mat[2], bw_im[2], 0, 255, THRESH_BINARY_INV);
+      bw_im[2].convertTo(bw_im[2], CV_8U, 1, 0);
+      FHD = hamming(bw_im[0], bw_im[2]);
+      cout << "FHD2=" << FHD << endl;
+    }
   }
 
   for (int i = 0; i < 3; i++) {
@@ -212,5 +214,6 @@ double AuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
 
   // Terminate the application.
   gabor_im_terminate();
+  // waitKey(0);
   return FHD;
 }

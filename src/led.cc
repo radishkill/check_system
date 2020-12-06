@@ -6,14 +6,20 @@
 #include <iostream>
 #include <string>
 
-#include "utils.h"
+#include "mutils.h"
 
 namespace check_system {
 
-LedController::LedController() {
+LedController::LedController(int laser_gpio, int cmos_gpio, int lcd_gpio, int error_gpio) {
+  laser_gpio_id_ = laser_gpio==-1?kLaserGpioNumber:laser_gpio;
+  cmos_gpio_id_ = cmos_gpio==-1?kCmosGpioNumber:cmos_gpio;
+  lcd_gpio_id_ = lcd_gpio==-1?kLcdGpioNumber:lcd_gpio;
+  error_gpio_id_ = error_gpio==-1?kErrorGpioNumber:error_gpio;
+  
+
   std::string addr;
   addr = std::string("/sys/class/gpio/gpio") +
-         std::to_string(kLaserGpioNumber) + "/value";
+         std::to_string(laser_gpio_id_) + "/value";
   laser_fd_ = open(addr.c_str(), O_RDWR);
   if (laser_fd_ == -1) {
     std::cout << "can't open laser's led gpio " << std::endl;
@@ -21,7 +27,7 @@ LedController::LedController() {
     return;
   }
 
-  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kLcdGpioNumber) +
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(lcd_gpio_id_) +
          "/value";
   lcd_fd_ = open(addr.c_str(), O_RDWR);
   if (lcd_fd_ == -1) {
@@ -30,7 +36,7 @@ LedController::LedController() {
     return;
   }
 
-  addr = std::string("/sys/class/gpio/gpio") + std::to_string(kCmosGpioNumber) +
+  addr = std::string("/sys/class/gpio/gpio") + std::to_string(cmos_gpio_id_) +
          "/value";
   cmos_fd_ = open(addr.c_str(), O_RDWR);
   if (cmos_fd_ == -1) {
@@ -40,7 +46,7 @@ LedController::LedController() {
   }
 
   addr = std::string("/sys/class/gpio/gpio") +
-         std::to_string(kErrorGpioNumber) + "/value";
+         std::to_string(error_gpio_id_) + "/value";
   error_fd_ = open(addr.c_str(), O_RDWR);
   if (error_fd_ == -1) {
     std::cout << "can't open Error'led gpio " << std::endl;
@@ -52,10 +58,15 @@ LedController::LedController() {
   lcd_status_ = 0;
   cmos_status_ = 0;
   error_status_ = 0;
+
   laser_blink_ = 0;
   lcd_blink_ = 0;
   cmos_blink_ = 0;
   error_blink_ = 0;
+  LaserLed(0);
+  LcdLed(0);
+  CmosLed(0);
+  ErrorLed(0);
 }
 
 LedController::~LedController() {
@@ -66,130 +77,59 @@ LedController::~LedController() {
 }
 
 int LedController::LaserLed(int s) {
+  assert(s==0||s==1);
   //  std::cout << "laser :" << s << std::endl;
+  char key;
+  if (kLaserGpioReverse)
+    s = (s==1)?0:1;
+  key = '0'+s;
   //重置读写位置到文件开头
   lseek(laser_fd_, 0, SEEK_SET);
-  if (s == 0) {
-    if (kLaserGpioReverse)
-      write(laser_fd_, "1", 1);
-    else
-      write(laser_fd_, "0", 1);
-  } else if (s == 1) {
-    if (kLaserGpioReverse)
-      write(laser_fd_, "0", 1);
-    else
-      write(laser_fd_, "1", 1);
-  } else {
-    std::cout << "bad status" << std::endl;
-    return -1;
-  }
+  write(laser_fd_, &key, 1);
+
   laser_status_ = s;
   return 0;
 }
 
 int LedController::LcdLed(int s) {
+  assert(s==0||s==1);
   //  std::cout << "lcd :" << s << std::endl;
+  char key;
+  if (kLcdGpioReverse)
+    s = (s==1)?0:1;
+  key = '0'+s;
   //重置读写位置到文件开头
   lseek(lcd_fd_, 0, SEEK_SET);
-  if (s == 0) {
-    if (kLcdGpioReverse)
-      write(lcd_fd_, "1", 1);
-    else
-      write(lcd_fd_, "0", 1);
-  } else if (s == 1) {
-    if (kLcdGpioReverse)
-      write(lcd_fd_, "0", 1);
-    else
-      write(lcd_fd_, "1", 1);
-  } else {
-    std::cout << "bad status" << std::endl;
-    return -1;
-  }
+  write(lcd_fd_, &key, 1);
   lcd_status_ = s;
   return 0;
 }
 
 int LedController::CmosLed(int s) {
+  assert(s==0||s==1);
   //  std::cout << "cmos :" << s << std::endl;
+  char key;
+  if (kCmosGpioReverse)
+    s = (s==1)?0:1;
+  key = '0'+s;
   //重置读写位置到文件开头
   lseek(cmos_fd_, 0, SEEK_SET);
-  if (s == 0) {
-    if (kCmosGpioReverse)
-      write(cmos_fd_, "1", 1);
-    else
-      write(cmos_fd_, "0", 1);
-  } else if (s == 1) {
-    if (kCmosGpioReverse)
-      write(cmos_fd_, "0", 1);
-    else
-      write(cmos_fd_, "1", 1);
-  } else {
-    std::cout << "bad status" << std::endl;
-    return -1;
-  }
+  write(cmos_fd_, &key, 1);
   cmos_status_ = s;
   return 0;
 }
 
 int LedController::ErrorLed(int s) {
+  assert(s==0||s==1);
   //  std::cout << "error :" << s << std::endl;
+  char key;
+  if (kErrorGpioReverse)
+    s = (s==1)?0:1;
+  key = '0'+s;
   //重置读写位置到文件开头
   lseek(error_fd_, 0, SEEK_SET);
-  if (s == 0) {
-    if (kErrorGpioReverse)
-      write(error_fd_, "1", 1);
-    else
-      write(error_fd_, "0", 1);
-  } else if (s == 1) {
-    if (kErrorGpioReverse)
-      write(error_fd_, "0", 1);
-    else
-      write(error_fd_, "1", 1);
-  } else {
-    std::cout << "bad status" << std::endl;
-    return -1;
-  }
+  write(error_fd_, &key, 1);
   error_status_ = s;
-  return 0;
-}
-
-int LedController::RunBlink() {
-  // blink_thread_ = std::thread([&]() {
-  //   int i = 0;
-  //   while (1) {
-  //     if (this->laser_blink_ && ((i * 100) % this->laser_blink_ == 0)) {
-  //       if (laser_status_) {
-  //         LaserLed(0);
-  //       } else {
-  //         LaserLed(1);
-  //       }
-  //     }
-  //     if (this->lcd_blink_ && ((i * 100) % this->lcd_blink_ == 0)) {
-  //       if (lcd_status_) {
-  //         LcdLed(0);
-  //       } else {
-  //         LcdLed(1);
-  //       }
-  //     }
-  //     if (this->cmos_blink_ && ((i * 100) % this->cmos_blink_ == 0)) {
-  //       if (cmos_status_) {
-  //         CmosLed(0);
-  //       } else {
-  //         CmosLed(1);
-  //       }
-  //     }
-  //     if (this->error_blink_ && ((i * 100) % this->error_blink_ == 0)) {
-  //       if (error_status_) {
-  //         ErrorLed(0);
-  //       } else {
-  //         ErrorLed(1);
-  //       }
-  //     }
-  //     Utils::MSleep(100);
-  //     i++;
-  //     if (i == 1000000) i = 0;
-  //   }
-  // });
   return 0;
 }
 

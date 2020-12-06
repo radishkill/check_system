@@ -25,7 +25,7 @@ add_definitions(
 add_executable(OnlyAuth_x64
     ../src/onlyauth.cpp
     ${PROJECT_SOURCE_DIR}/src/authpic.cc
-    ${PROJECT_SOURCE_DIR}/src/utils.cc
+    ${PROJECT_SOURCE_DIR}/src/mutils.cc
     ${PROJECT_SOURCE_DIR}/src/lcd.cc
     ${PROJECT_SOURCE_DIR}/src/led.cc
     ${PROJECT_SOURCE_DIR}/src/laser.cc
@@ -72,7 +72,7 @@ target_link_libraries(OnlyAuth_x64
 add_executable(CalcTwoPic_x64
     ../src/calc_two_pic.cpp
     ${PROJECT_SOURCE_DIR}/src/authpic.cc
-    ${PROJECT_SOURCE_DIR}/src/utils.cc
+    ${PROJECT_SOURCE_DIR}/src/mutils.cc
     ${PROJECT_SOURCE_DIR}/src/gabor_im/bluesteinSetup.cpp 
     ${PROJECT_SOURCE_DIR}/src/gabor_im/cosd.cpp 
     ${PROJECT_SOURCE_DIR}/src/gabor_im/createNormalizedFrequencyVector.cpp 
@@ -114,17 +114,22 @@ target_link_libraries(CalcTwoPic_x64
 add_executable(ScreenTest_x64
   ../src/screen_test.cpp
   )
+target_link_libraries(ScreenTest_x64
+  opencv_core
+  opencv_imgcodecs
+)
 
 add_executable(LaserTest_x64
   ../src/laser_test.cpp
-  ${PROJECT_SOURCE_DIR}/src/utils.cc
+  ${PROJECT_SOURCE_DIR}/src/mutils.cc
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
 )
 add_executable(CameraTest_x64
   ../src/camera_test.cc
   ${PROJECT_SOURCE_DIR}/src/camera_manager.cc
-  ${PROJECT_SOURCE_DIR}/src/utils.cc
+  ${PROJECT_SOURCE_DIR}/src/lcd.cc
+  ${PROJECT_SOURCE_DIR}/src/mutils.cc
 )
 target_link_libraries(CameraTest_x64
   opencv_core
@@ -145,7 +150,7 @@ add_executable(GpioTest_x64
   ../src/gpio_test.cc
   ${PROJECT_SOURCE_DIR}/src/eventmanager.cc
   ${PROJECT_SOURCE_DIR}/src/led.cc
-  ${PROJECT_SOURCE_DIR}/src/utils.cc
+  ${PROJECT_SOURCE_DIR}/src/mutils.cc
 )
 target_link_libraries(GpioTest_x64
 boost_program_options

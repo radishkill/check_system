@@ -8,14 +8,18 @@
 
 #include "CKCameraInterface.h"
 #include "camera_manager.h"
+#include "lcd.h"
+#include "mutils.h"
 
 using namespace std;
 using check_system::CameraManager;
+using check_system::Lcd;
 namespace po = boost::program_options;
 
 class GlobalArg {
  public:
   CameraManager *camera;
+  Lcd *lcd;
   int exposion_time;
   int laser_current;
   int resolution_index;
@@ -33,6 +37,10 @@ class GlobalArg {
 
   int camera_lut_mode;
   int stable_flag;
+  int n1;
+  int n2;
+  int seed;
+  std::string temp;
 
   std::string camera_config_file_addr;
   std::string mid_save_addr;
@@ -48,7 +56,7 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()("no-button", "")("no-laser", "")("no-lcd", "");
   desc.add_options()("no-led", "");
   desc.add_options()("mid-save",
-                     po::value<std::string>(&global_arg->mid_save_addr), "");
+                     po::value<std::string>(&global_arg->mid_save_addr)->default_value("./mid_save1/"), "");
   desc.add_options()(
       "resolution-index",
       po::value<int>(&global_arg->resolution_index)->default_value(-1),
@@ -96,6 +104,14 @@ void InitCmdLine(int argc, char **argv) {
       "stable-flag",
       po::value<int>(&global_arg->stable_flag)->default_value(-1),
       "no rand index");
+  desc.add_options()("n1", po::value<int>(&global_arg->n1)->default_value(1),
+                     "");
+  desc.add_options()("n2", po::value<int>(&global_arg->n2)->default_value(1),
+                     "");
+  desc.add_options()("temp,T", po::value<std::string>(&global_arg->temp)->default_value("test"),
+                     "");
+  desc.add_options()("seed,S", po::value<int>(&global_arg->seed)->default_value(-1),
+                     "");   
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -107,11 +123,8 @@ void InitCmdLine(int argc, char **argv) {
   }
 }
 
-void SavePic(std::string name, cv::Mat pic) {
-  cv::imwrite(name, cv::Mat(pic, cv::Rect(0, 0, pic.rows / 2, pic.cols / 2)));
-}
-
 int main(int argc, char *argv[]) {
+  int ret = 0;
   global_arg = new GlobalArg();
   InitCmdLine(argc, argv);
   global_arg->camera = new CameraManager(0);
@@ -132,35 +145,65 @@ int main(int argc, char *argv[]) {
    global_arg->roi_w == -1 || global_arg->roi_h == -1)
       ?: global_arg->camera->SetRoi(global_arg->roi_x, global_arg->roi_y,
                                     global_arg->roi_w, global_arg->roi_h);
+
   global_arg->camera_contrast == -1
       ?: global_arg->camera->SetContrast(global_arg->camera_contrast);
+
   global_arg->camera_gamma == -1
-      ?: global_arg->camera->SetContrast(global_arg->camera_gamma);
+      ?: global_arg->camera->SetGamma(global_arg->camera_gamma);
+
   //设置饱和度 这个值对于黑白相机无效
   global_arg->camera_saturation == -1
-      ?: global_arg->camera->SetContrast(global_arg->camera_saturation);
+      ?: global_arg->camera->SetSaturation(global_arg->camera_saturation);
+
   global_arg->camera_sharpness == -1
-      ?: global_arg->camera->SetContrast(global_arg->camera_sharpness);
+      ?: global_arg->camera->SetSharpness(global_arg->camera_sharpness);
+
   if (!global_arg->camera_config_file_addr.empty())
     global_arg->camera->ReadParameterFromFile(
         global_arg->camera_config_file_addr.c_str());
 
   global_arg->camera->Play();
-  int n = 100;
-  auto begin_tick = std::chrono::steady_clock::now();
+  global_arg->lcd = new Lcd("/dev/fb0");
 
+  int n = global_arg->n1;
+  int n2 = global_arg->n2;
+  auto begin_tick = std::chrono::steady_clock::now();
+  if (global_arg->seed==-1)
+    std::srand(time(0));
+  else
+    std::srand(global_arg->seed);
   for (int i = 0; i < n; i++) {
-    global_arg->camera->GetPic();
-    if (!global_arg->mid_save_addr.empty())
-    SavePic(global_arg->mid_save_addr + std::string("/test") + std::to_string(i) + ".bmp",
-            global_arg->camera->GetPicMat());
+    global_arg->lcd->ShowBySeed(std::rand());
+    cv::Mat pic1 =
+        cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(),
+                CV_8UC4, global_arg->lcd->GetFrameBuffer());
+    Utils::MSleep(1000);
+    std::cout << "-----------------" << std::endl;
+    for (int j = 0; j < n2; j++) {
+      ret = global_arg->camera->GetPic();
+      if (ret == -1) continue;
+      global_arg->camera->CheckPic(0, 255);
+      if (!global_arg->mid_save_addr.empty()) {
+        cv::imwrite(global_arg->mid_save_addr + global_arg->temp + std::string("_camera") +
+                        std::to_string(i) + std::string("_") +
+                        std::to_string(j) + ".bmp",
+                    global_arg->camera->GetPicMat());
+        cv::imwrite(global_arg->mid_save_addr + global_arg->temp + std::string("_lcd") +
+                        std::to_string(i) + std::string("_") +
+                        std::to_string(j) + ".bmp",
+                    pic1);
+      }
+      Utils::MSleep(200);
+    }
   }
 
   auto end_tick = std::chrono::steady_clock::now();
   std::cout << "sum time:"
-            << (std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -
-                                                                     begin_tick)
-                   .count()/n)
+            << (std::chrono::duration_cast<std::chrono::milliseconds>(
+                    end_tick - begin_tick)
+                    .count() /
+                n)
             << "ms" << std::endl;
   global_arg->camera->Uninit();
   return 0;

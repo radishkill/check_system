@@ -14,6 +14,7 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <opencv2/opencv.hpp>
 #include <random>
 struct fb_var_screeninfo vinfo;
 struct fb_fix_screeninfo finfo;
@@ -156,17 +157,16 @@ int ShowBySeed(int seed) {
     for (x = 0; x < width; x++) {
       if (x % rect_width == 0) {
         c1 = std::rand() % 0x100;
-        c2 = std::rand() % 0x100;
-        c3 = std::rand() % 0x100;
+        // c2 = std::rand() % 0x100;
+        // c3 = std::rand() % 0x100;
       }
-      if (y + rect_height >= height) {
-        break;
-      }
-      // std::cout << x << " " << y << " " << std::endl;
       for (int w = 0; w < rect_height; w++) {
+        if (y + w >= height) {
+          break;
+        }
         *(dest + (y + w) * stride + x * 4) = c1;
-        *(dest + (y + w) * stride + x * 4 + 1) = c2;
-        *(dest + (y + w) * stride + x * 4 + 2) = c3;
+        *(dest + (y + w) * stride + x * 4 + 1) = c1;
+        *(dest + (y + w) * stride + x * 4 + 2) = c1;
 
         *(dest + (y + w) * stride + x * 4 + 3) = 0xff;
       }
@@ -174,6 +174,8 @@ int ShowBySeed(int seed) {
   }
   return 0;
 }
+int GetFbWidth() { return finfo.line_length / 4; }
+int GetFbHeight() { return vinfo.yres_virtual; }
 int main(int argc, char **argv) {
   const char *devfile = "/dev/fb0";
   long int screensize = 0;
@@ -227,6 +229,8 @@ int main(int argc, char **argv) {
   auto begin_tick = std::chrono::steady_clock::now();
   std::srand(std::time(nullptr));
   ShowBySeed(std::rand());
+  cv::Mat pic = cv::Mat(GetFbHeight(), GetFbWidth(), CV_8UC4, frameBuffer);
+  cv::imwrite("./pic.bmp", pic);
   auto end_tick = std::chrono::steady_clock::now();
   std::cout << "elapsed time:"
             << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -

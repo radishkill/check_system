@@ -38,7 +38,7 @@ void test_softtrigger()
     status = CameraSetResolution(hCamera, 4);
     if(status != CAMERA_STATUS_SUCCESS)
     {
-      cerr << "camera start failed" << status <<  endl;
+      cerr << "resolution start failed" << status <<  endl;
     //	CameraUnInit(hCamera);
       return;
     }
@@ -49,7 +49,7 @@ void test_softtrigger()
     status = CameraPlay(hCamera);
 	if(status != CAMERA_STATUS_SUCCESS)
 	{
-		cerr << "camera start failed" << endl;
+		cerr << "play start failed" << endl;
 		CameraUnInit(hCamera);
 		return;
 	}
@@ -94,7 +94,7 @@ void test_softtrigger()
 int main(int argc, char *argv[])
 {
 	int cameraNum = 0;
-    int ret = CameraEnumerateDevice(&cameraNum);
+  int ret = CameraEnumerateDevice(&cameraNum);
 	if(ret != CAMERA_STATUS_SUCCESS || cameraNum == 0)
 	{
 		cerr << "find camera number " << cameraNum << endl;

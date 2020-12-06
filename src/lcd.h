@@ -17,9 +17,14 @@ class Lcd {
   Lcd(const char* device_file);
   int Open(const char* device_file);
   int ShowBySeed(int seed);
+  int GetFbWidth() const;
+  int GetFbHeight() const;
   void SetRect(int w, int h) {
     rect_width_ = w;
     rect_height_ = h;
+  }
+  char* GetFrameBuffer() {
+    return frame_buffer_;
   }
   bool IsOpen() const;
   int Close();
