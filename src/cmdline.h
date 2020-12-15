@@ -11,7 +11,9 @@ void InitCmdLine(int argc, char **argv) {
   GlobalArg* global_arg = GlobalArg::GetInstance();
   po::options_description desc("Allowed options");
   desc.add_options()("help", "");
-  desc.add_options()("no-button", "")("no-laser", "")("no-lcd", "");
+  desc.add_options()("no-button", "");
+  desc.add_options()("no-laser", "");
+  desc.add_options()("no-lcd", "");
   desc.add_options()("no-led", "");
   desc.add_options()("mid-save", po::value<std::string>(&global_arg->mid_save_addr),
                      "");

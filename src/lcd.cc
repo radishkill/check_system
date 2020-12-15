@@ -16,7 +16,7 @@
 
 namespace check_system {
 Lcd::Lcd(const char *device_file)
-  : device_name_(device_file), rect_width_(50), rect_height_(50) {
+  : device_name_(device_file), rect_width_(5), rect_height_(5) {
   fd_ = -1;
   Open(device_file);
 }
@@ -78,8 +78,8 @@ int Lcd::ShowBySeed(int seed)
       {
          if (x % rect_width == 0) {
             c1 = std::rand() % 0x100;
-            // c2 = std::rand() % 0x100;
-            // c3 = std::rand() % 0x100;
+            // if (c1 == 1)
+              // c1 = 0xff;
          }
          
          // std::cout << x << " " << y << " " << std::endl;
@@ -98,6 +98,40 @@ int Lcd::ShowBySeed(int seed)
       }
    }
    return 0;
+}
+int Lcd::ShowByMat(cv::Mat pic) {
+  const int width = var_info_.xres;
+  const int height = var_info_.yres;
+  const int bytes_per_pixel = 4;
+  const int stride = fix_info_.line_length;
+  int x, y;
+  int x0 = 0, y0 = 0;
+  char *dest = (char *)(frame_buffer_) + (y0 + var_info_.yoffset) * stride + (x0 + var_info_.xoffset);
+  char *src = (char*)pic.data;
+  for (y = 0; y < height && y < pic.rows; y++) {
+    int w = width<pic.cols?width:pic.cols;
+    std::memcpy(dest, src, w*bytes_per_pixel);
+    dest += stride;
+    src += pic.cols*bytes_per_pixel;
+  }
+  return 0;
+}
+int Lcd::ShowByColor(unsigned char color[4]) {
+  const int width = var_info_.xres;
+  const int height = var_info_.yres;
+  const int bytes_per_pixel = 4;
+  const int stride = fix_info_.line_length;
+  int x, y;
+  int x0 = 0, y0 = 0;
+  char *dest = (char *)(frame_buffer_) + (y0 + var_info_.yoffset) * stride +
+               (x0 + var_info_.xoffset);
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++) {
+      std::memcpy(dest + x*bytes_per_pixel, color, bytes_per_pixel);
+    }
+    dest += stride;
+  }
+  return 0;
 }
 
 int Lcd::GetFbWidth() const {

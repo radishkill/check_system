@@ -47,8 +47,8 @@ int CameraManager::InitCamera(int auto_flag) {
   // status = CameraSetAnalogGain(hCamera_)
 
   if (auto_flag) {
-    SetExposureTime(exposion_time_);
-    SetResolution(resolution_index_);
+    // SetExposureTime(exposion_time_);
+    // SetResolution(resolution_index_);
     Play();
   }
 
@@ -226,6 +226,9 @@ int CameraManager::GetPic() {
   }
   picture_mat_ =
       cv::Mat(image_info_.iHeight, image_info_.iWidth, CV_8UC1, pbuffer_);
+  if (roi_x_ != -1 && roi_y_ != -1 && roi_w_ != -1 && roi_h_ != -1) {
+    picture_mat_ = picture_mat_(cv::Rect(roi_x_, roi_y_, roi_w_, roi_h_));
+  }
   // std::cout << "photos widthxheight:" << image_info_.iWidth << "x"
   //           << image_info_.iHeight << " total bytes:" <<
   //           image_info_.TotalBytes
@@ -246,9 +249,7 @@ int CameraManager::GetPic() {
 char* CameraManager::GetPicBuffer() { return (char*)pbuffer_; }
 cv::Mat CameraManager::GetPicMat() {
   // std::memcpy(picture_mat.data, pbuffer_, dwHeight_*dwWidth_);
-  if (roi_x_ != -1 && roi_y_ != -1 && roi_w_ != -1 && roi_h_ != -1) {
-    picture_mat_ = picture_mat_(cv::Rect(roi_x_, roi_y_, roi_w_, roi_h_));
-  }
+  
   return picture_mat_;
 }
 cv::Mat CameraManager::GetPicMat(int x, int y, int w, int h) {
@@ -313,13 +314,9 @@ void CameraManager::ShowCameraBaseConfig() {
               << cap.tDeviceCapbility.pImageSizeDesc[i].iWidth << "x"
               << cap.tDeviceCapbility.pImageSizeDesc[i].iHeight << std::endl;
   }
-  CameraGetParameterMode(hCamera_, &mode);
-  std::cout << "ParameterMode = " << mode << std::endl;
-  CameraGetLutMode(hCamera_, &mode);
-  std::cout << "LutMod = " << mode << std::endl;
-  WORD r, g, b;
-  CameraGetGain(hCamera_, &r, &g, &b);
-  std::cout << "RGB Gain = " << r << " " << g << " " << b << std::endl;
+  double exposion_time;
+  CameraGetExposureTime(hCamera_, &exposion_time);
+  std::cout << "exposion time = " << exposion_time << std::endl;
 }
 void CameraManager::Uninit() {
   CameraSaveParameter(hCamera_, PARAMETER_TEAM_A);

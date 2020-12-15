@@ -109,7 +109,7 @@ class MyLoopBody : public ParallelLoopBody {
   };
   virtual void operator()(const Range &range) const {
     for (int colIdx = range.start; colIdx < range.end; ++colIdx) {
-      gabor_im(image_[colIdx], 8, 45, Gimage_im_[colIdx], BW_im_[colIdx],
+      gabor_im(image_[colIdx], kWaveLength, 45, Gimage_im_[colIdx], BW_im_[colIdx],
                K_[colIdx]);
 
       Gim_mat_[colIdx] = Emx2Mat_U8(Gimage_im_[colIdx]);
@@ -186,8 +186,7 @@ double AuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
 
   parallel_for_(Range(0, 2),
                 MyLoopBody(image, Gimage_im, BW_im, K, Gim_mat, bw_im));
-  // imshow("test1", bw_im[0]);
-  // imshow("test2", bw_im[1]);
+
 
   FHD = hamming(bw_im[0], bw_im[1]);
   cout << "FHD=" << FHD << endl;
@@ -196,7 +195,7 @@ double AuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
     int ret = TransformPic(speckle_database, speckle_auth, speckle_auth);
     if (ret != -1) {
       image[2] = Mat2Emx_U8(speckle_auth);
-      gabor_im(image[2], 8, 45, Gimage_im[2], BW_im[2], K[2]);
+      gabor_im(image[2], kWaveLength, 45, Gimage_im[2], BW_im[2], K[2]);
       Gim_mat[2] = Emx2Mat_U8(Gimage_im[2]);
       threshold(Gim_mat[2], bw_im[2], 0, 255, THRESH_BINARY_INV);
       bw_im[2].convertTo(bw_im[2], CV_8U, 1, 0);

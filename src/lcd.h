@@ -4,6 +4,8 @@
 #include <string>
 #include <linux/fb.h>
 
+#include <opencv2/opencv.hpp>
+
 namespace check_system {
 
 
@@ -17,6 +19,8 @@ class Lcd {
   Lcd(const char* device_file);
   int Open(const char* device_file);
   int ShowBySeed(int seed);
+  int ShowByMat(cv::Mat pic);
+  int ShowByColor(unsigned char color[4]);
   int GetFbWidth() const;
   int GetFbHeight() const;
   void SetRect(int w, int h) {

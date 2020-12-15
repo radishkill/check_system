@@ -67,12 +67,7 @@
                 "--no-led",
                 // "--no-lcd", 
                 "--mid-save=./mid-save",
-                "--resolution-index=15", "--ROI-x=50", "--ROI-y=50",
-                "--ROI-w=800", "--ROI-h=600",
-                // "--exposion-time=6000",
-                // "--laser-current=300",
-                "--lcd-width=100",
-                "--lcd-height=100"
+                "--resolution-index=15",
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/test/x64",
