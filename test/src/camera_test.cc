@@ -29,6 +29,7 @@ class GlobalArg {
   bool no_lcd_flag;
   int lcd_width;
   int lcd_height;
+  int lcd_wh;
 
   int camera_gamma;
   int camera_contrast;
@@ -40,7 +41,9 @@ class GlobalArg {
   int n1;
   int n2;
   int seed;
+  std::vector<int> rgb;
   std::string temp;
+  std::string lcd_pic_addr;
 
   std::string camera_config_file_addr;
   std::string mid_save_addr;
@@ -56,7 +59,9 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()("no-button", "")("no-laser", "")("no-lcd", "");
   desc.add_options()("no-led", "");
   desc.add_options()("mid-save",
-                     po::value<std::string>(&global_arg->mid_save_addr)->default_value("./mid_save1/"), "");
+                     po::value<std::string>(&global_arg->mid_save_addr)
+                         ->default_value(""),
+                     "");
   desc.add_options()(
       "resolution-index",
       po::value<int>(&global_arg->resolution_index)->default_value(-1),
@@ -70,17 +75,13 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()("ROI-h",
                      po::value<int>(&global_arg->roi_h)->default_value(-1), "");
   desc.add_options()(
-      "exposion-time",
+      "exposion-time,e",
       po::value<int>(&global_arg->exposion_time)->default_value(-1), "us");
   desc.add_options()(
       "laser-current",
       po::value<int>(&global_arg->laser_current)->default_value(-1), "uA");
-  desc.add_options()("lcd-width",
-                     po::value<int>(&global_arg->lcd_width)->default_value(-1),
-                     "");
-  desc.add_options()("lcd-height",
-                     po::value<int>(&global_arg->lcd_height)->default_value(-1),
-                     "");
+  desc.add_options()(
+      "lcdwh", po::value<int>(&global_arg->lcd_wh)->default_value(-1), "");
   desc.add_options()(
       "camera-gamma",
       po::value<int>(&global_arg->camera_gamma)->default_value(-1), "");
@@ -108,13 +109,20 @@ void InitCmdLine(int argc, char **argv) {
                      "");
   desc.add_options()("n2", po::value<int>(&global_arg->n2)->default_value(1),
                      "");
-  desc.add_options()("temp,T", po::value<std::string>(&global_arg->temp)->default_value("test"),
-                     "");
-  desc.add_options()("seed,S", po::value<int>(&global_arg->seed)->default_value(-1),
-                     "");   
+  desc.add_options()(
+      "temp,T",
+      po::value<std::string>(&global_arg->temp)->default_value("test"), "");
+  desc.add_options()("seed,S",
+                     po::value<int>(&global_arg->seed)->default_value(-1), "");
+  desc.add_options()(
+      "rgb", po::value<std::vector<int>>(&global_arg->rgb)->multitoken(), "");
+  desc.add_options()(
+      "lcdaddr,A",
+      po::value<std::string>(&global_arg->lcd_pic_addr)->default_value(""), "");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::store(po::parse_config_file("./base.cfg", desc), vm);
   po::notify(vm);
 
   if (vm.count("help")) {
@@ -131,6 +139,7 @@ int main(int argc, char *argv[]) {
   if (!global_arg->camera->IsOpen()) {
     return 0;
   }
+
   //设置lut模式
   global_arg->camera_lut_mode == -1
       ?: global_arg->camera->SetLutMode(global_arg->camera_lut_mode);
@@ -140,6 +149,7 @@ int main(int argc, char *argv[]) {
   //设置曝光时间
   global_arg->exposion_time == -1
       ?: global_arg->camera->SetExposureTime(global_arg->exposion_time);
+
   //设置兴趣区域
   (global_arg->roi_x == -1 || global_arg->roi_y == -1 ||
    global_arg->roi_w == -1 || global_arg->roi_h == -1)
@@ -165,16 +175,32 @@ int main(int argc, char *argv[]) {
 
   global_arg->camera->Play();
   global_arg->lcd = new Lcd("/dev/fb0");
-
+  if (global_arg->lcd_wh != -1) {
+    global_arg->lcd->SetRect(global_arg->lcd_wh, global_arg->lcd_wh);
+  }
   int n = global_arg->n1;
   int n2 = global_arg->n2;
   auto begin_tick = std::chrono::steady_clock::now();
-  if (global_arg->seed==-1)
+  if (global_arg->seed == -1)
     std::srand(time(0));
   else
     std::srand(global_arg->seed);
   for (int i = 0; i < n; i++) {
-    global_arg->lcd->ShowBySeed(std::rand());
+    if (global_arg->rgb.size() == 3) {
+      unsigned char color[4] = {(unsigned char)global_arg->rgb[2],
+                                (unsigned char)global_arg->rgb[1],
+                                (unsigned char)global_arg->rgb[0], 0xff};
+      std::cout << global_arg->rgb[0] << " " << global_arg->rgb[1] << " "
+                << global_arg->rgb[2] << std::endl;
+      global_arg->lcd->ShowByColor(color);
+    } else if (!global_arg->lcd_pic_addr.empty()) {
+      cv::Mat lcd_pic =
+          cv::imread(global_arg->lcd_pic_addr, cv::IMREAD_UNCHANGED);
+      global_arg->lcd->ShowByMat(lcd_pic);
+    } else {
+      global_arg->lcd->ShowBySeed(std::rand());
+    }
+
     cv::Mat pic1 =
         cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(),
                 CV_8UC4, global_arg->lcd->GetFrameBuffer());
@@ -185,13 +211,13 @@ int main(int argc, char *argv[]) {
       if (ret == -1) continue;
       global_arg->camera->CheckPic(0, 255);
       if (!global_arg->mid_save_addr.empty()) {
-        cv::imwrite(global_arg->mid_save_addr + global_arg->temp + std::string("_camera") +
-                        std::to_string(i) + std::string("_") +
-                        std::to_string(j) + ".bmp",
+        cv::imwrite(global_arg->mid_save_addr + global_arg->temp +
+                        std::string("_camera") + std::to_string(i) +
+                        std::string("_") + std::to_string(j) + ".bmp",
                     global_arg->camera->GetPicMat());
-        cv::imwrite(global_arg->mid_save_addr + global_arg->temp + std::string("_lcd") +
-                        std::to_string(i) + std::string("_") +
-                        std::to_string(j) + ".bmp",
+        cv::imwrite(global_arg->mid_save_addr + global_arg->temp +
+                        std::string("_lcd") + std::to_string(i) +
+                        std::string("_") + std::to_string(j) + ".bmp",
                     pic1);
       }
       Utils::MSleep(200);

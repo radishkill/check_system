@@ -140,7 +140,8 @@ target_link_libraries(CameraTest_arm
   opencv_core
   opencv_imgcodecs
   boost_program_options
-  ${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
+  lCKCameraSDK
+  # ${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
 )
 
 add_executable(GpioTest_arm
@@ -152,4 +153,8 @@ add_executable(GpioTest_arm
 target_link_libraries(GpioTest_arm
 pthread
 boost_program_options
+)
+
+add_executable(SerialTrans_arm
+  ../src/serialtrans.cpp
 )

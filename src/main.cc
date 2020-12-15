@@ -1,84 +1,88 @@
-#include <unistd.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
+#include <unistd.h>
 
-#include <iostream>
-#include <thread>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <thread>
 
-#include "global_arg.h"
-#include "usart.h"
-#include "laser.h"
 #include "camera_manager.h"
+#include "cmdline.h"
+#include "constant.h"
+#include "eventmanager.h"
+#include "global_arg.h"
+#include "hostcontroller.h"
+#include "key_file.h"
+#include "laser.h"
+#include "lcd.h"
+#include "led.h"
 #include "mutils.h"
 #include "state_machine.h"
-#include "key_file.h"
-#include "lcd.h"
-#include "eventmanager.h"
-#include "led.h"
-#include "hostcontroller.h"
-#include "constant.h"
-#include "cmdline.h"
+#include "usart.h"
 
-using check_system::GlobalArg;
-using check_system::Laser;
 using check_system::CameraManager;
-using check_system::KeyFile;
-using check_system::Lcd;
 using check_system::EventManager;
-using check_system::StateMachine;
-using check_system::LedController;
+using check_system::GlobalArg;
 using check_system::HostController;
+using check_system::KeyFile;
+using check_system::Laser;
+using check_system::Lcd;
+using check_system::LedController;
+using check_system::StateMachine;
 
 std::thread timer_thread_;
-
 
 void SimpleTimer() {
   GlobalArg* global_arg = GlobalArg::GetInstance();
   int i = 0;
   while (1) {
-    if (global_arg->led->laser_blink_ && ((i*100)%global_arg->led->laser_blink_ == 0)) {
+    if (global_arg->led->laser_blink_ &&
+        ((i * 100) % global_arg->led->laser_blink_ == 0)) {
       if (global_arg->led->laser_status_) {
         global_arg->led->LaserLed(0);
       } else {
         global_arg->led->LaserLed(1);
       }
     }
-    if (global_arg->led->lcd_blink_ && ((i*100)%global_arg->led->lcd_blink_ == 0)) {
+    if (global_arg->led->lcd_blink_ &&
+        ((i * 100) % global_arg->led->lcd_blink_ == 0)) {
       if (global_arg->led->lcd_status_) {
         global_arg->led->LcdLed(0);
       } else {
         global_arg->led->LcdLed(1);
       }
     }
-    if (global_arg->led->cmos_blink_ && ((i*100)%global_arg->led->cmos_blink_ == 0)) {
+    if (global_arg->led->cmos_blink_ &&
+        ((i * 100) % global_arg->led->cmos_blink_ == 0)) {
       if (global_arg->led->cmos_status_) {
         global_arg->led->CmosLed(0);
       } else {
         global_arg->led->CmosLed(1);
       }
     }
-    if (global_arg->led->error_blink_ && ((i*100)%global_arg->led->error_blink_ == 0)) {
+    if (global_arg->led->error_blink_ &&
+        ((i * 100) % global_arg->led->error_blink_ == 0)) {
       if (global_arg->led->error_status_) {
         global_arg->led->ErrorLed(0);
       } else {
         global_arg->led->ErrorLed(1);
       }
     }
-    if (global_arg->laser->ttl >= 0) {
-      global_arg->laser->ttl--;
+    if (global_arg->laser) {
+      if (global_arg->laser->ttl >= 0) {
+        global_arg->laser->ttl--;
+      }
+      if (global_arg->laser->ttl == 0 && global_arg->laser->GetStatus()) {
+        global_arg->laser->CloseLaser();
+      }
     }
-    if (global_arg->laser->ttl == 0 && global_arg->laser->GetStatus()) {
-      global_arg->laser->CloseLaser();
-    }
+
     Utils::MSleep(100);
     i++;
-    if (i == 1000000)
-      i = 0;
+    if (i == 1000000) i = 0;
   }
-
 }
 
 void InitSystem() {
@@ -87,36 +91,38 @@ void InitSystem() {
 
   global_arg->em = new check_system::EventManager();
 
-  global_arg->laser = new Laser(check_system::kLaserAddr);
-  if(!global_arg->laser->IsOpen()) {
+  if (!global_arg->no_laser_flag) {
+    global_arg->laser = new Laser(check_system::kLaserAddr);
+    if (!global_arg->laser->IsOpen()) {
+      global_arg->led->laser_blink_ = 200;
+      global_arg->led->lcd_blink_ = 200;
+      global_arg->led->cmos_blink_ = 200;
+      global_arg->led->error_blink_ = 200;
+      std::cout << "laser connect error!!" << std::endl;
+      return;
+    } else {
+      std::cout << "laser connect ok!!" << std::endl;
+    }
+  }
+
+  global_arg->camera = new CameraManager(1);
+  if (global_arg->camera->is_open_flag_ == 0) {
     global_arg->led->laser_blink_ = 200;
     global_arg->led->lcd_blink_ = 200;
     global_arg->led->cmos_blink_ = 200;
     global_arg->led->error_blink_ = 200;
-    std::cout << "laser connect error!!" <<std::endl;
-    return ;
-  } else {
-    std::cout << "laser connect ok!!" <<std::endl;
-  }
-
-  global_arg->camera = new CameraManager(1);
-  if(global_arg->camera->is_open_flag_ == 0) {
-    global_arg->led->laser_blink_=200;
-    global_arg->led->lcd_blink_=200;
-    global_arg->led->cmos_blink_=200;
-    global_arg->led->error_blink_=200;
     std::cout << "camera connect error!!" << std::endl;
-    return ;
+    return;
   } else {
     std::cout << "camera connect ok!!" << std::endl;
   }
 
   global_arg->lcd = new Lcd("/dev/fb0");
   if (!global_arg->lcd->IsOpen()) {
-    global_arg->led->laser_blink_=200;
-    global_arg->led->lcd_blink_=200;
-    global_arg->led->cmos_blink_=200;
-    global_arg->led->error_blink_=200;
+    global_arg->led->laser_blink_ = 200;
+    global_arg->led->lcd_blink_ = 200;
+    global_arg->led->cmos_blink_ = 200;
+    global_arg->led->error_blink_ = 200;
     std::cout << "lcd buffer connect error!!" << std::endl;
     return;
   } else {
@@ -142,8 +148,8 @@ void InitSystem() {
     std::cout << "key file ok" << std::endl;
   }
 
-  //led闪烁提示结果匹配
-  for(int i = 0; i < 3; i++) {
+  // led闪烁提示结果匹配
+  for (int i = 0; i < 3; i++) {
     global_arg->led->CmosLed(0);
     global_arg->led->LaserLed(0);
     global_arg->led->LcdLed(0);
@@ -161,11 +167,11 @@ void InitSystem() {
   int fd;
   char key;
   ss << "/sys/class/gpio/gpio"
-     << std::to_string(check_system::kRegisterButtonNumber)
-     << "/value";
+     << std::to_string(check_system::kRegisterButtonNumber) << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    std::cout << "can not open :" << check_system::kRegisterButtonNumber << std::endl;
+    std::cout << "can not open :" << check_system::kRegisterButtonNumber
+              << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -174,9 +180,11 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button " << check_system::kAuthButtonNumber << " " << key << std::endl;
+    std::cout << "button " << check_system::kAuthButtonNumber << " " << key
+              << std::endl;
     if (key == 0x31) {
-      std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm, StateMachine::kRegister));
+      std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                               StateMachine::kRegister));
       th.detach();
     }
   });
@@ -184,11 +192,11 @@ void InitSystem() {
 
   //认证
   ss << "/sys/class/gpio/gpio"
-     << std::to_string(check_system::kAuthButtonNumber)
-     << "/value";
+     << std::to_string(check_system::kAuthButtonNumber) << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    std::cout << "can not open :" << check_system::kAuthButtonNumber << std::endl;
+    std::cout << "can not open :" << check_system::kAuthButtonNumber
+              << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -197,9 +205,11 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button " << check_system::kAuthButtonNumber << " " << key << std::endl;
+    std::cout << "button " << check_system::kAuthButtonNumber << " " << key
+              << std::endl;
     if (key == 0x31) {
-      std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm, StateMachine::kAuth));
+      std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                               StateMachine::kAuth));
       th.detach();
     }
   });
@@ -207,11 +217,11 @@ void InitSystem() {
 
   //中断按钮
   ss << "/sys/class/gpio/gpio"
-     << std::to_string(check_system::kInterruptButtonNumber)
-     << "/value";
+     << std::to_string(check_system::kInterruptButtonNumber) << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    std::cout << "can not open :" << check_system::kInterruptButtonNumber << std::endl;
+    std::cout << "can not open :" << check_system::kInterruptButtonNumber
+              << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -220,7 +230,8 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button " << check_system::kInterruptButtonNumber << " " << key << std::endl;
+    std::cout << "button " << check_system::kInterruptButtonNumber << " " << key
+              << std::endl;
     if (key == 0x31) {
       std::cout << "set interrupt flag" << std::endl;
       global_arg->interrupt_flag = 1;
@@ -230,11 +241,11 @@ void InitSystem() {
 
   //自检
   ss << "/sys/class/gpio/gpio"
-     << std::to_string(check_system::kCheckSelfButtonNumber)
-     << "/value";
+     << std::to_string(check_system::kCheckSelfButtonNumber) << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd == -1) {
-    std::cout << "can not open :" << check_system::kCheckSelfButtonNumber << std::endl;
+    std::cout << "can not open :" << check_system::kCheckSelfButtonNumber
+              << std::endl;
     return;
   }
   read(fd, &key, 1);
@@ -243,9 +254,11 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button " << check_system::kCheckSelfButtonNumber << " " << key << std::endl;
+    std::cout << "button " << check_system::kCheckSelfButtonNumber << " " << key
+              << std::endl;
     if (key == 0x31) {
-      std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm, StateMachine::kSelfTest));
+      std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                               StateMachine::kSelfTest));
       th.detach();
     }
   });
@@ -254,19 +267,21 @@ void InitSystem() {
   //定时器线程
   timer_thread_ = std::thread(SimpleTimer);
 
+  global_arg->em->ListenFd(global_arg->host->GetFd(), EventManager::kEventRead,
+                           []() {
+                             GlobalArg* global_arg = GlobalArg::GetInstance();
+                             std::cout << "recv data " << std::endl;
+                             global_arg->host->RecvData();
+                           });
 
-  global_arg->em->ListenFd(global_arg->host->GetFd(), EventManager::kEventRead, []() {
-    GlobalArg* global_arg = GlobalArg::GetInstance();
-    std::cout << "recv data " << std::endl;
-    global_arg->host->RecvData();
-  });
-
-  std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm, StateMachine::kSelfTest));
+  std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                           StateMachine::kSelfTest));
   th.detach();
 }
 
 int main(int argc, char** argv) {
   GlobalArg* global_arg = GlobalArg::GetInstance();
+  global_arg->no_laser_flag = true;
   check_system::InitCmdLine(argc, argv);
   global_arg->sm = new StateMachine();
   InitSystem();

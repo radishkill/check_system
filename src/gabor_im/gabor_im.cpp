@@ -47,7 +47,7 @@ void gabor_im(const emxArray_uint8_T *image, double wavelength, double angle,
                       / 0.5 * 0.58870501125773733 / 3.1415926535897931 * 3.0, M,
                       Gimage_im);
 
-  //      BW_im=im2bw(Gimage_im,0);       %¶ÔRGB´¦Àí
+  //      BW_im=im2bw(Gimage_im,0);       %ï¿½ï¿½RGBï¿½ï¿½ï¿½ï¿½
   i0 = BW_im->size[0] * BW_im->size[1];
   BW_im->size[0] = Gimage_im->size[0];
   BW_im->size[1] = Gimage_im->size[1];
@@ -59,7 +59,7 @@ void gabor_im(const emxArray_uint8_T *image, double wavelength, double angle,
     BW_im->data[i0] = (Gimage_im->data[i0] > 0.0);
   }
 
-  // È«¾ÖãÐÖµ¶ÔÍ¼ÏñI½øÐÐ¶þÖµ»¯
+  // È«ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Í¼ï¿½ï¿½Iï¿½ï¿½ï¿½Ð¶ï¿½Öµï¿½ï¿½
   loop_ub = BW_im->size[0] * BW_im->size[1];
   i0 = K->size[0] * K->size[1];
   K->size[0] = 1;

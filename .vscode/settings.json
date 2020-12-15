@@ -84,7 +84,8 @@
         "variant": "cpp",
         "shared_mutex": "cpp",
         "*.ipp": "cpp",
-        "hash_map": "cpp"
-    },
-    "cmake.configureOnOpen": true
+        "hash_map": "cpp",
+        "any": "cpp",
+        "span": "cpp"
+    }
 }
