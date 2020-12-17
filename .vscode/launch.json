@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/test/x64/CalcTwoPic_x64",
-            "args": ["--pic1=../res/pic1.bmp", "--pic2=../res/pic1.png", "--n=10"],
+            "args": ["-p", "./mid_save1/10_camera0_0.bmp", "./mid_save1/11_camera0_0.bmp"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/test/x64",
             "environment": [],

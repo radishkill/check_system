@@ -18,6 +18,7 @@ namespace check_system {
 Lcd::Lcd(const char *device_file)
   : device_name_(device_file), rect_width_(5), rect_height_(5) {
   fd_ = -1;
+  color_range_ = 256;
   Open(device_file);
 }
 
@@ -77,7 +78,10 @@ int Lcd::ShowBySeed(int seed)
       for (x = 0; x < width; x++)
       {
          if (x % rect_width == 0) {
-            c1 = std::rand() % 0x100;
+            c1 = std::rand() % color_range_;
+            if (color_range_ == 2 && c1 == 1) {
+              c1 = 0xff;
+            }
             // if (c1 == 1)
               // c1 = 0xff;
          }

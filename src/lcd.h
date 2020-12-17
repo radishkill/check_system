@@ -32,9 +32,11 @@ class Lcd {
   }
   bool IsOpen() const;
   int Close();
+  int color_range_;
  private:
   void PrintFixedInfo();
   void PrintVariableInfo();
+  
   int rect_width_;
   int rect_height_;
   int fd_;
