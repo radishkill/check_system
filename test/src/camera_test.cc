@@ -30,6 +30,7 @@ class GlobalArg {
   int lcd_width;
   int lcd_height;
   int lcd_wh;
+  int lcdcolor;
 
   int camera_gamma;
   int camera_contrast;
@@ -119,6 +120,8 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()(
       "lcdaddr,A",
       po::value<std::string>(&global_arg->lcd_pic_addr)->default_value(""), "");
+  desc.add_options()(
+      "lcd-color", po::value<int>(&global_arg->lcdcolor)->default_value(256), "");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -177,6 +180,9 @@ int main(int argc, char *argv[]) {
   global_arg->lcd = new Lcd("/dev/fb0");
   if (global_arg->lcd_wh != -1) {
     global_arg->lcd->SetRect(global_arg->lcd_wh, global_arg->lcd_wh);
+  }
+  if (global_arg->lcdcolor != -1) {
+    global_arg->lcd->color_range_ = global_arg->lcdcolor;
   }
   int n = global_arg->n1;
   int n2 = global_arg->n2;

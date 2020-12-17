@@ -24,7 +24,7 @@ int mode;
 void InitCmdLine(int argc, char **argv) {
   po::options_description desc("Allowed options");
   desc.add_options()("help", "");
-  desc.add_options()("mode", po::value<int>(&mode)->default_value(-1), "");
+  desc.add_options()("mode", po::value<int>(&mode)->default_value(0), "");
   desc.add_options()(
       "pic,p", po::value<std::vector<std::string>>(&pic_addr)->multitoken(),
       "picture addr");
@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
   if (mode == 1) {
     int n1 = 10;
     int n2 = 5;
-    for (int i = 0; i < 20; i++) {
-      for (int j = 0; j < 20; j++) {
+    for (int i = 0; i < 19; i++) {
+      for (int j = i+1; j < 20; j++) {
         std::string picture_addr1 = std::string("test_camera") +
                                     std::to_string(i) + std::string("_") +
                                     std::to_string(1) + ".bmp";
@@ -78,12 +78,13 @@ int main(int argc, char **argv) {
     }
     return 0;
   } else if (mode == 2) {
-    for (int i = 0; i < 10; i++) {
-      for (int j = 0; j < 10; j++) {
-        std::string picture_addr1 = std::to_string(0) + std::to_string(i) + std::string("_camera") +
+    for (int k = 0; k < 3; k++)
+    for (int i = 0; i < 9; i++) {
+      for (int j = i + 1; j < 10; j++) {
+        std::string picture_addr1 = std::to_string(k) + std::to_string(i) + std::string("_camera") +
                                     std::to_string(0) + std::string("_") +
                                     std::to_string(0) + ".bmp";
-        std::string picture_addr2 = std::to_string(0) + std::to_string(j) + std::string("_camera") +
+        std::string picture_addr2 = std::to_string(k) + std::to_string(j) + std::string("_camera") +
                                     std::to_string(0) + std::string("_") +
                                     std::to_string(0) + ".bmp";
         std::cout << picture_addr1 << " " << picture_addr2 << std::endl;
@@ -94,6 +95,7 @@ int main(int argc, char **argv) {
         AuthPic(pic1, pic2);
       }
     }
+    return 0;
   }
 
   if (pic_addr.size() < 2) return 0;
