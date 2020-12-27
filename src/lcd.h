@@ -32,13 +32,12 @@ class Lcd {
   }
   bool IsOpen() const;
   int Close();
-  int color_range_;
+  int rect_width_;
+  int rect_height_;
  private:
   void PrintFixedInfo();
   void PrintVariableInfo();
-  
-  int rect_width_;
-  int rect_height_;
+
   int fd_;
   struct fb_var_screeninfo var_info_;
   struct fb_fix_screeninfo fix_info_;

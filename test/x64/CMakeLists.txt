@@ -17,10 +17,9 @@ if(OPENMP_FOUND)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-
 add_definitions(
-        -o3 -g -w -Wall 
-        )
+  -g -w -Wall 
+  )
 
 add_executable(OnlyAuth_x64
     ../src/onlyauth.cpp
@@ -143,7 +142,7 @@ add_executable(MainTest_x64
   ${PROJECT_SOURCE_DIR}/src/eventmanager.cc
 )
 target_link_libraries(MainTest_x64
-  ev
+  
 )
 
 add_executable(GpioTest_x64
@@ -151,6 +150,7 @@ add_executable(GpioTest_x64
   ${PROJECT_SOURCE_DIR}/src/eventmanager.cc
   ${PROJECT_SOURCE_DIR}/src/led.cc
   ${PROJECT_SOURCE_DIR}/src/mutils.cc
+  ${PROJECT_SOURCE_DIR}/src/lcd.cc
 )
 target_link_libraries(GpioTest_x64
 boost_program_options

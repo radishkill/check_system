@@ -377,7 +377,7 @@ int main(int argc, char **argv) {
     if (global_arg->lcd_width != -1 && global_arg->lcd_height != -1)
       global_arg->lcd->SetRect(global_arg->lcd_width, global_arg->lcd_height);
   }
-  global_arg->camera = new CameraManager(0);
+  global_arg->camera = new CameraManager();
   if (!global_arg->camera->IsOpen()) {
     return -1;
   }

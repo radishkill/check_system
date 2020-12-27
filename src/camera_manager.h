@@ -17,8 +17,8 @@ namespace check_system {
 
 class CameraManager {
  public:
-  CameraManager(int auto_flag);
-  int InitCamera(int auto_flag);
+  CameraManager();
+  int InitCameraByDefault();
 
   int ShowDeviceList(int n);
   int ReadParameterFromFile(const char* file);

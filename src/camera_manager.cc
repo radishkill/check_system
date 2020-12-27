@@ -7,51 +7,44 @@
 
 namespace check_system {
 
-CameraManager::CameraManager(int auto_flag)
+CameraManager::CameraManager()
     : is_open_flag_(0), roi_x_(-1), roi_y_(-1), roi_w_(-1), roi_h_(-1) {
-  InitCamera(auto_flag);
-}
-
-int CameraManager::InitCamera(int auto_flag) {
   pbuffer_ = nullptr;
   dwRGBBufSize_ = 0;
   camera_nums_ = 0;
   CameraSdkStatus status;
-  if ((status = CameraEnumerateDevice(&camera_nums_)) !=
-      CAMERA_STATUS_SUCCESS) {
+  status = CameraEnumerateDevice(&camera_nums_);
+  if (status != CAMERA_STATUS_SUCCESS) {
     std::cout << "none camera device" << std::endl;
-    return -1;
+    is_open_flag_ = -1;
+    return;
   }
   std::cout << "enumerate camera num " << camera_nums_ << std::endl;
   ShowDeviceList(camera_nums_);
-
   //应该只有一个摄像头
   // status = CameraInitEx(&hCamera_, camera_nums_ - 1, -1, -1);
   status = CameraInit(&hCamera_, camera_nums_ - 1);
   if (status != CAMERA_STATUS_SUCCESS) {
-    printf("Camera init failed\n");
-    return -1;
+    std::cout << "Camera init failed" << status << std::endl;
+    is_open_flag_ = -1;
+    return;
   }
-  ShowCameraBaseConfig();
+}
 
-  // status = CameraLoadParameter(hCamera_, PARAMETER_TEAM_A);
+int CameraManager::InitCameraByDefault() {
+  CameraSdkStatus status;
+  //status = CameraLoadParameter(hCamera_, PARAMETER_TEAM_A);
   status = CameraSetTriggerMode(hCamera_, 1);  // soft trigger
   status = CameraSetFrameSpeed(
       hCamera_, 0);  // low speed when use high speed have some problem
   status = CameraSetAeState(hCamera_, FALSE);  // by hand
-  //  status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_RGB8);
   status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_MONO8);
   status = CameraSetTriggerDelayTime(hCamera_, 0);
   status = CameraSetTriggerFrameCount(hCamera_, 1);
-
-  // status = CameraSetAnalogGain(hCamera_)
-
-  if (auto_flag) {
-    // SetExposureTime(exposion_time_);
-    // SetResolution(resolution_index_);
-    Play();
+  if (status != CAMERA_STATUS_SUCCESS) {
+    printf("Camera init failed\n");
+    is_open_flag_ = -1;
   }
-
   is_open_flag_ = 1;
   return 0;
 }
@@ -189,6 +182,7 @@ int CameraManager::Play() {
     std::cout << "Play Fault status=" << status << std::endl;
     return -1;
   }
+  std::cout << "camera play\n";
   return 0;
 }
 

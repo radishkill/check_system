@@ -87,5 +87,6 @@
         "hash_map": "cpp",
         "any": "cpp",
         "span": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

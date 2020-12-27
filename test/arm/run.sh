@@ -74,8 +74,8 @@ then
 fi
 if test $1 == "2"
 then
-  ./OnlyAuth_arm --no-button --no-laser \
+  ./OnlyAuth_arm --no-laser \
     --mid-save=./mid_save \
     --ROI-x=0 --ROI-y=0 --ROI-w=320 --ROI-h=240 \
-    --exposion-time=2000
+    --exposion-time=10000
 fi
