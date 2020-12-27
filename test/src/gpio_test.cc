@@ -6,22 +6,32 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <tuple>
+#include <vector>
 
 #include "constant.h"
 #include "eventmanager.h"
+#include "lcd.h"
 #include "led.h"
 #include "mutils.h"
 
 namespace po = boost::program_options;
 using check_system::EventManager;
+using check_system::Lcd;
 using check_system::LedController;
 
 class GlobalArg {
  public:
   EventManager *em;
   LedController *led;
+  Lcd *lcd;
+
   int button1, button2, button3, button4;
   int led1, led2, led3, led4;
+  int with_lcd;
+  std::vector<std::pair<int, int>> seeds;
+  int cur_seed_index;
+  bool reverse;
 
  private:
 };
@@ -46,9 +56,13 @@ void InitCmdLine(int argc, char **argv) {
                      po::value<int>(&global_arg->led3)->default_value(-1), "");
   desc.add_options()("led4",
                      po::value<int>(&global_arg->led4)->default_value(-1), "");
+  desc.add_options()("with-lcd",
+                     po::value<int>(&global_arg->with_lcd)->default_value(-1),
+                     "to controll lcd");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::store(po::parse_config_file("./base.cfg", desc), vm);
   po::notify(vm);
 
   if (vm.count("help")) {
@@ -62,6 +76,13 @@ std::vector<int> available_pair_list_;
 int main(int argc, char **argv) {
   global_arg = new GlobalArg();
   InitCmdLine(argc, argv);
+  if (global_arg->with_lcd != -1) {
+    global_arg->lcd = new Lcd("/dev/fb0");
+    global_arg->lcd->SetRect(global_arg->with_lcd, global_arg->with_lcd);
+  }
+  std::srand(std::time(nullptr));
+  global_arg->cur_seed_index = 0;
+  global_arg->reverse = false;
 
   global_arg->em = new EventManager();
   global_arg->led = new LedController(global_arg->led1, global_arg->led2,
@@ -97,6 +118,29 @@ int main(int argc, char **argv) {
     std::cout << "button " << auth_button_id << " " << key << std::endl;
     if (key == 0x31) {
       global_arg->led->LaserLed(1);
+      if (global_arg->lcd != nullptr) {
+        global_arg->reverse = false;
+        if (global_arg->seeds.empty()) {
+          global_arg->seeds.push_back(
+              std::make_pair(std::rand(), global_arg->lcd->rect_width_));
+        }
+        if (global_arg->reverse) {
+          global_arg->cur_seed_index = global_arg->cur_seed_index == 0
+                                           ? 0
+                                           : global_arg->cur_seed_index - 1;
+        } else {
+          global_arg->cur_seed_index++;
+          if (global_arg->cur_seed_index + 1 > global_arg->seeds.size()) {
+            global_arg->seeds.push_back(
+                std::make_pair(std::rand(), global_arg->lcd->rect_width_));
+          }
+        }
+        global_arg->lcd->SetRect(
+            global_arg->seeds[global_arg->cur_seed_index].second,
+            global_arg->seeds[global_arg->cur_seed_index].second);
+        global_arg->lcd->ShowBySeed(
+            global_arg->seeds[global_arg->cur_seed_index].first);
+      }
     } else {
       global_arg->led->LaserLed(0);
     }
@@ -121,6 +165,17 @@ int main(int argc, char **argv) {
 
         if (key == 0x31) {
           global_arg->led->CmosLed(1);
+          if (global_arg->lcd != nullptr) {
+            if (global_arg->lcd->rect_width_ > 1)
+              global_arg->lcd->rect_width_--;
+            if (global_arg->lcd->rect_height_ > 1)
+              global_arg->lcd->rect_height_--;
+            if (!global_arg->seeds.empty()) {
+              global_arg->seeds[global_arg->cur_seed_index].second = global_arg->lcd->rect_width_;
+              global_arg->lcd->ShowBySeed(
+                  global_arg->seeds[global_arg->cur_seed_index].first);
+            }
+          }
         } else {
           global_arg->led->CmosLed(0);
         }
@@ -143,6 +198,15 @@ int main(int argc, char **argv) {
 
     if (key == 0x31) {
       global_arg->led->LcdLed(1);
+      if (global_arg->lcd != nullptr) {
+        global_arg->lcd->rect_width_++;
+        global_arg->lcd->rect_height_++;
+        if (!global_arg->seeds.empty()) {
+          global_arg->seeds[global_arg->cur_seed_index].second = global_arg->lcd->rect_width_;
+          global_arg->lcd->ShowBySeed(
+              global_arg->seeds[global_arg->cur_seed_index].first);
+        }
+      }
     } else {
       global_arg->led->LcdLed(0);
     }
@@ -164,6 +228,29 @@ int main(int argc, char **argv) {
         read(fd, &key, 1);
         std::cout << "button " << check_button_id << " " << key << std::endl;
         if (key == 0x31) {
+          global_arg->reverse = true;
+          if (global_arg->lcd != nullptr) {
+            if (global_arg->seeds.empty()) {
+              global_arg->seeds.push_back(
+                  std::make_pair(std::rand(), global_arg->lcd->rect_width_));
+            }
+            if (global_arg->reverse) {
+              global_arg->cur_seed_index = global_arg->cur_seed_index == 0
+                                               ? 0
+                                               : global_arg->cur_seed_index - 1;
+            } else {
+              global_arg->cur_seed_index++;
+              if (global_arg->cur_seed_index + 1 > global_arg->seeds.size()) {
+                global_arg->seeds.push_back(
+                    std::make_pair(std::rand(), global_arg->lcd->rect_width_));
+              }
+            }
+            global_arg->lcd->SetRect(
+                global_arg->seeds[global_arg->cur_seed_index].second,
+                global_arg->seeds[global_arg->cur_seed_index].second);
+            global_arg->lcd->ShowBySeed(
+                global_arg->seeds[global_arg->cur_seed_index].first);
+          }
           global_arg->led->ErrorLed(1);
         } else {
           global_arg->led->ErrorLed(0);

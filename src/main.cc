@@ -105,7 +105,7 @@ void InitSystem() {
     }
   }
 
-  global_arg->camera = new CameraManager(1);
+  global_arg->camera = new CameraManager();
   if (global_arg->camera->is_open_flag_ == 0) {
     global_arg->led->laser_blink_ = 200;
     global_arg->led->lcd_blink_ = 200;
@@ -116,6 +116,7 @@ void InitSystem() {
   } else {
     std::cout << "camera connect ok!!" << std::endl;
   }
+  global_arg->camera->Play();
 
   global_arg->lcd = new Lcd("/dev/fb0");
   if (!global_arg->lcd->IsOpen()) {
