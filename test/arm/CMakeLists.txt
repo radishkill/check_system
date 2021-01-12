@@ -15,7 +15,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}
 endif()
 add_definitions(
         # -o3 -g -w -Wall -mcpu=cortex-a17 -mfloat-abi=hard -mfpu=neon
-        -o3 -g -w -Wall
+        -o3 -w -Wall
         )
 
 include_directories(
@@ -70,8 +70,10 @@ target_link_libraries(OnlyAuth_arm
   opencv_calib3d
   opencv_xfeatures2d
   opencv_highgui
-  /opt/arm/lib/libgomp.a
-	${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
+  # /opt/arm/lib/libgomp.a
+  # ${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
+  gomp
+  CKCameraSDK
 )
 
 

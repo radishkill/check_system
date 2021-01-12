@@ -159,8 +159,7 @@ int ShowBySeed(int seed) {
   for (y = 0; y < height; y += rect_height) {
     for (x = 0; x < width; x++) {
       if (x % rect_width == 0) {
-        c1 = std::rand() % 2;
-        if (c1 == 1) c1 = 0xff;
+        c1 = std::rand() % 0x100;
         // c2 = std::rand() % 0x100;
         // c3 = std::rand() % 0x100;
       }
@@ -217,6 +216,9 @@ int ShowByColor(unsigned char color[4]) {
 int GetFbWidth() { return fix_info_.line_length / 4; }
 int GetFbHeight() { return var_info_.yres_virtual; }
 int main(int argc, char **argv) {
+  int mode = 0;
+  if (argc > 2)
+   mode = std::atoi(argv[1]);
   const char *devfile = "/dev/fb0";
   long int screensize = 0;
   int fbFd = 0;
@@ -267,15 +269,15 @@ int main(int argc, char **argv) {
 
   // drawline_rgb16(260,10,100,280,0xff00ff00,1);//可以画出一个交叉的十字，坐标都是自己设的。
   auto begin_tick = std::chrono::steady_clock::now();
-  unsigned char color[4] = {0xff, 0x00, 0x00, 0xff};
-  ShowByColor(color);
+  // unsigned char color[4] = {0xff, 0x00, 0x00, 0xff};
+  // ShowByColor(color);
   // cv::Mat pic = cv::imread("./pic.bmp", cv::IMREAD_UNCHANGED);
   // ShowByMat(pic);
 
-  // std::srand(std::time(nullptr));
-  // ShowBySeed(std::rand());
-  // cv::Mat pic = cv::Mat(GetFbHeight(), GetFbWidth(), CV_8UC4, frameBuffer);
-  // cv::imwrite("./pic.bmp", pic);
+  std::srand(std::time(nullptr));
+  ShowBySeed(std::rand());
+  cv::Mat pic = cv::Mat(GetFbHeight(), GetFbWidth(), CV_8UC4, frame_buffer_);
+  cv::imwrite("./randpic.bmp", pic);
   auto end_tick = std::chrono::steady_clock::now();
   std::cout << "elapsed time:"
             << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -

@@ -60,14 +60,17 @@ int main(int argc, char **argv) {
   if (mode == 1) {
     int n1 = 10;
     int n2 = 5;
-    for (int i = 0; i < 19; i++) {
-      for (int j = i+1; j < 20; j++) {
-        std::string picture_addr1 = std::string("test_camera") +
-                                    std::to_string(i) + std::string("_") +
-                                    std::to_string(1) + ".bmp";
-        std::string picture_addr2 = std::string("test_camera") +
-                                    std::to_string(j) + std::string("_") +
-                                    std::to_string(1) + ".bmp";
+    for (int i = 1; i < 33; i++) {
+      for (int j = i+1; j < 34; j++) {
+        // std::string picture_addr1 = std::string("test_camera") +
+        //                             std::to_string(i) + std::string("_") +
+        //                             std::to_string(1) + ".bmp";
+        // std::string picture_addr2 = std::string("test_camera") +
+        //                             std::to_string(j) + std::string("_") +
+        //                             std::to_string(1) + ".bmp";
+
+        std::string picture_addr1 = std::to_string(i) + ".bmp";
+        std::string picture_addr2 = std::to_string(j) + ".bmp";
         std::cout << picture_addr1 << " " << picture_addr2 << std::endl;
         pic1 = cv::imread(std::string("./mid_save1/") + picture_addr1,
                           cv::IMREAD_UNCHANGED);

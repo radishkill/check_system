@@ -72,6 +72,7 @@ int Lcd::ShowBySeed(int seed)
    std::srand(seed);
    char c1,c2,c3;
    int rect_width = rect_width_, rect_height = rect_height_;
+  //  std::cout << width << "x" << height << std::endl;
    for (y = 0; y < height; y += rect_height)
    {
       for (x = 0; x < width; x++)
