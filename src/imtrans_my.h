@@ -38,7 +38,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
     detector->detectAndCompute(img1, noArray(), keypoints1, descriptors1);
     detector->detectAndCompute(img2, noArray(), keypoints2, descriptors2);
 
-    cout << "key1 key2  " << keypoints1.size() << "   " << keypoints2.size() << endl;
+    //cout << "key1 key2  " << keypoints1.size() << "   " << keypoints2.size() << endl;
     if (keypoints1.size() == 0 || keypoints2.size() == 0) {
         return -1;
     }
@@ -54,7 +54,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
     std::vector< std::vector<DMatch> > knn_matches;
     matcher->knnMatch(descriptors1, descriptors2, knn_matches, 2);
-    cout << "KNN_matches; " << knn_matches.size() << endl;
+    //cout << "KNN_matches; " << knn_matches.size() << endl;
     /*对应matlab中的MaxRatio*/
     const float ratio_thresh = 0.6f;
     std::vector<DMatch> good_matches;
@@ -65,7 +65,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
             good_matches.push_back(knn_matches[i][0]);
         }
     }
-    cout << "ratio_thresh good_matches; " << good_matches.size() << endl;
+    //cout << "ratio_thresh good_matches; " << good_matches.size() << endl;
     /*对应matlab中的MatchThreshold*/
     //sort函数对数据进行升序排列
     //筛选匹配点，根据match里面特征对的距离从小到大排序
@@ -79,7 +79,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
         if (good_matches[i].distance < matche_distant)
             good_good_matches.push_back(good_matches[i]);
     }
-    cout << "MatchThreshold good good_matches; " << good_good_matches.size() << endl;
+    //cout << "MatchThreshold good good_matches; " << good_good_matches.size() << endl;
 
     //-- Draw matches
     std::vector<Point2f> keypoints01;
@@ -91,8 +91,8 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
         keypoints02.push_back(keypoints2[good_good_matches[i].trainIdx].pt);
         circle(img1, keypoints01[i], 10, Scalar(0, 255, 0));
     }
-    cout << "  1 的特征点的坐标" << keypoints01 << endl;
-    cout << "  2 的特征点的坐标" << keypoints02 << endl;
+    //cout << "  1 的特征点的坐标" << keypoints01 << endl;
+    //cout << "  2 的特征点的坐标" << keypoints02 << endl;
 
 
     Mat img_matches;
@@ -114,7 +114,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
         scene.push_back(keypoints2[good_good_matches[i].trainIdx].pt);
     }
 
-    cout << "筛选之前的数量" << good_good_matches.size() << endl;
+    //cout << "筛选之前的数量" << good_good_matches.size() << endl;
 
     //TODO
     std::vector<Point2f>x1;
@@ -149,7 +149,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
 
     for (int a = 0; a < distant.size(); ) {///distant.size()  是变化的，值为最开始的size-count（删除了多少个）,因为做了删除之后值会变小
         if (distant[a] > 2000) {
-            cout << " 删除此点 位置 距离" << obj[a] << "  " << scene[a] << " " << distant[a] << endl;
+            //cout << " 删除此点 位置 距离" << obj[a] << "  " << scene[a] << " " << distant[a] << endl;
             obj.begin() + a = obj.erase(obj.begin() + a);//删除
             scene.begin() + a = scene.erase(scene.begin() + a);
             distant.begin() + a = distant.erase(distant.begin() + a);
@@ -161,7 +161,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
         }
 
     }
-    cout << "删除半径过大的 " << obj.size() << "  " << distant.size() << endl;
+    //cout << "删除半径过大的 " << obj.size() << "  " << distant.size() << endl;
 
     /*经过测试，删除成功*/
     /*cout << endl << "删除之后的 理论值" << matches.size() -test_count << endl;
@@ -181,11 +181,11 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
 
             double stdev = sqrt(accum / (distant.size() - 1)); //方差  标准差
 
-            cout << "avg " << mean << "std  " << stdev << endl;
+            //cout << "avg " << mean << "std  " << stdev << endl;
             for (int a = 0; a < distant.size(); ) {
 
                 if ((distant[a] > (mean + 3 * stdev)) || (distant[a] < (mean - 3 * stdev))) {
-                    cout << " 删除此点 位置 距离" << obj[a] << "  " << scene[a] << " " << distant[a] << endl;
+                    //cout << " 删除此点 位置 距离" << obj[a] << "  " << scene[a] << " " << distant[a] << endl;
                     obj.begin() + a = obj.erase(obj.begin() + a);//删除
                     scene.begin() + a = scene.erase(scene.begin() + a);
                     distant.begin() + a = distant.erase(distant.begin() + a);
@@ -200,7 +200,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
         else continue;
 
     }
-    cout << "/*消除半径异常的*/ " << obj.size() << "  " << distant.size() << endl;
+    //cout << "/*消除半径异常的*/ " << obj.size() << "  " << distant.size() << endl;
 
     /*消除方向异常的*/
     std::vector<float> x_div_y_of_delt_distant;//方向异常
@@ -217,7 +217,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
 
     }
 
-    cout << "删除方向异常前 " << x_div_y_of_delt_distant.size();
+    //cout << "删除方向异常前 " << x_div_y_of_delt_distant.size();
     for (int aa = 0; aa < 3; aa++) {
         float sum = std::accumulate(x_div_y_of_delt_distant.begin(), x_div_y_of_delt_distant.end(), 0.0);
         float mean = sum / x_div_y_of_delt_distant.size(); //均值
@@ -235,7 +235,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
             for (int a = 0; a < x_div_y_of_delt_distant.size(); ) {
 
                 if ((x_div_y_of_delt_distant[a] > (mean + 3 * stdev)) || (x_div_y_of_delt_distant[a] < (mean - 3 * stdev))) {
-                    cout << " 删除此点 位置 方向" << obj[a] << "  " << scene[a] << " " << x_div_y_of_delt_distant[a] << endl;
+                    //cout << " 删除此点 位置 方向" << obj[a] << "  " << scene[a] << " " << x_div_y_of_delt_distant[a] << endl;
                     obj.begin() + a = obj.erase(obj.begin() + a);//删除
                     scene.begin() + a = scene.erase(scene.begin() + a);
                     x_div_y_of_delt_distant.begin() + a = x_div_y_of_delt_distant.erase(x_div_y_of_delt_distant.begin() + a);
@@ -251,7 +251,7 @@ int TransformPic(Mat& img1, Mat& img2, Mat rI2) {
         else continue;
 
     }
-    cout << "/*消除方向异常的*/ " << x_div_y_of_delt_distant.size() << "   " << obj.size() << endl;
+    //cout << "/*消除方向异常的*/ " << x_div_y_of_delt_distant.size() << "   " << obj.size() << endl;
 
     Rect rect = Rect(Point(50, 50), Point(img2.cols - 50, img2.rows - 50));
 
