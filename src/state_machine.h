@@ -11,7 +11,8 @@ class StateMachine {
   enum MachineState {
     kSelfTest,
     kRegister,
-    kAuth
+    kAuth,
+    kOther
   };
   StateMachine();
   int RunMachine(MachineState state);
@@ -20,6 +21,7 @@ class StateMachine {
   int Authentication();            //认证
   int GenerateRandomSeed();        //随机生成seed
   int FindKey();                   //库定位算法
+  int Other(int s);
 
   int CheckKeyInsert();                  //插入检测算法
   int CheckKey(int key_id);

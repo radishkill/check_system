@@ -25,7 +25,7 @@ const static int kRs485CtlGpio = 164;
 const static char* const kLaserAddr = "/dev/ttyS0";
 const static char* const kHostAddr = "/dev/ttyS1";
 
-const static double kAuthThreshold = 0.5;
+const static double kAuthThreshold = 0.2;
 
 }
 #endif // CONSTANT_H

@@ -12,8 +12,9 @@ void InitCmdLine(int argc, char **argv) {
   po::options_description desc("Allowed options");
   desc.add_options()("help", "");
   desc.add_options()("no-button", "");
-  desc.add_options()("no-laser", "");
-  desc.add_options()("no-lcd", "");
+  desc.add_options()("no-laser", po::bool_switch(&global_arg->no_laser_flag)->default_value(false) ,"");
+  desc.add_options()(
+      "no-lcd", po::bool_switch(&global_arg->no_lcd_flag)->default_value(false), "");
   desc.add_options()("no-led", "");
   desc.add_options()("mid-save", po::value<std::string>(&global_arg->mid_save_addr),
                      "");
@@ -34,10 +35,8 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()("laser-current",
                      po::value<int>(&global_arg->laser_current)->default_value(-1),
                      "uA");
-  desc.add_options()("lcd-width",
-                     po::value<int>(&global_arg->lcd_width)->default_value(-1), "");
-  desc.add_options()("lcd-height",
-                     po::value<int>(&global_arg->lcd_height)->default_value(-1), "");
+  desc.add_options()("lcd-wh",
+                     po::value<int>(&global_arg->lcd_wh)->default_value(-1), "");
   desc.add_options()("camera-gamma",
                      po::value<int>(&global_arg->camera_gamma)->default_value(-1), "");
   desc.add_options()("camera-contrast",
@@ -59,6 +58,7 @@ void InitCmdLine(int argc, char **argv) {
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::store(po::parse_config_file("./config/base.cfg", desc), vm);
   po::notify(vm);
 
   if (vm.count("help")) {
@@ -67,12 +67,6 @@ void InitCmdLine(int argc, char **argv) {
   }
   if (vm.count("no-button")) {
     global_arg->no_button_flag = true;
-  }
-  if (vm.count("no-laser")) {
-    global_arg->no_laser_flag = true;
-  }
-  if (vm.count("no-lcd")) {
-    global_arg->no_lcd_flag = true;
   }
   if (vm.count("no-led")) {
     global_arg->no_led_flag = true;

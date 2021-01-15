@@ -4,7 +4,7 @@
 #set (CMAKE_CXX_COMPILER "g++")
 set (CMAKE_CXX_COMPILER ${CROSS_COMPILE}g++)
 
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/)
 
 add_compile_options("-std=c++14")
@@ -19,7 +19,7 @@ link_directories(
     )
 
 add_definitions(
-        -o3 -g -w -Wall
+        -o3 -w -Wall
         )
 
 # 指定生成目标
@@ -71,5 +71,5 @@ target_link_libraries(CheckSystem
   opencv_xfeatures2d
   opencv_highgui
   gomp
-	~/workspace/check_system/lib/armhf/libCKCameraSDK.a
+	CKCameraSDK
 )

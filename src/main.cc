@@ -99,23 +99,42 @@ void InitSystem() {
       global_arg->led->cmos_blink_ = 200;
       global_arg->led->error_blink_ = 200;
       std::cout << "laser connect error!!" << std::endl;
-      return;
+      // return;
     } else {
       std::cout << "laser connect ok!!" << std::endl;
     }
   }
 
   global_arg->camera = new CameraManager();
-  if (global_arg->camera->is_open_flag_ == 0) {
+  if (global_arg->camera->is_open_flag_ == -1) {
     global_arg->led->laser_blink_ = 200;
     global_arg->led->lcd_blink_ = 200;
     global_arg->led->cmos_blink_ = 200;
     global_arg->led->error_blink_ = 200;
     std::cout << "camera connect error!!" << std::endl;
-    return;
   } else {
     std::cout << "camera connect ok!!" << std::endl;
   }
+  //从配置文件中读相机的配置
+  if (!global_arg->camera_config_file_addr.empty()) {
+    // std::cout << "config addr:" << global_arg->camera_config_file_addr <<
+    // std::endl;
+    global_arg->camera->ReadParameterFromFile(
+        global_arg->camera_config_file_addr.c_str());
+  }
+  global_arg->camera->InitCameraByDefault();
+  global_arg->camera->ShowCameraBaseConfig();
+
+  //设置曝光时间
+  global_arg->exposion_time == -1
+      ?: global_arg->camera->SetExposureTimeAndAnalogGain(
+             global_arg->exposion_time, 5);
+
+  //设置兴趣区域
+  (global_arg->roi_x == -1 || global_arg->roi_y == -1 ||
+   global_arg->roi_w == -1 || global_arg->roi_h == -1)
+      ?: global_arg->camera->SetRoi(global_arg->roi_x, global_arg->roi_y,
+                                    global_arg->roi_w, global_arg->roi_h);
   global_arg->camera->Play();
 
   global_arg->lcd = new Lcd("/dev/fb0");
@@ -128,6 +147,8 @@ void InitSystem() {
     return;
   } else {
     std::cout << "lcd buffer connect ok!!" << std::endl;
+
+    global_arg->lcd->SetRect(global_arg->lcd_wh, global_arg->lcd_wh);
   }
 
   global_arg->host = new HostController(check_system::kHostAddr);
@@ -163,7 +184,7 @@ void InitSystem() {
 
   //下面部分是用来打开button的
 
-  //注册按钮
+  //认证按钮
   std::stringstream ss;
   int fd;
   char key;
@@ -185,13 +206,13 @@ void InitSystem() {
               << std::endl;
     if (key == 0x31) {
       std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                               StateMachine::kRegister));
+                               StateMachine::kAuth));
       th.detach();
     }
   });
   ss.str("");
 
-  //认证
+  //注册
   ss << "/sys/class/gpio/gpio"
      << std::to_string(check_system::kAuthButtonNumber) << "/value";
   fd = open(ss.str().c_str(), O_RDONLY | O_NONBLOCK);
@@ -210,7 +231,7 @@ void InitSystem() {
               << std::endl;
     if (key == 0x31) {
       std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                               StateMachine::kAuth));
+                               StateMachine::kRegister));
       th.detach();
     }
   });
@@ -258,9 +279,29 @@ void InitSystem() {
     std::cout << "button " << check_system::kCheckSelfButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
-      std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                               StateMachine::kSelfTest));
-      th.detach();
+      //抬起按钮
+      //抬起时间大于10s
+      if (std::time(nullptr) - global_arg->check_btn_down >= 10) {
+        global_arg->key_file->DeleteAllExceptAdmin();
+        //如果删除成功 闪错误灯3秒
+        for (int i = 0; i < 3; i++) {
+          global_arg->led->ErrorLed(1);
+          Utils::MSleep(500);
+          global_arg->led->ErrorLed(0);
+          Utils::MSleep(500);
+        }
+      } else if (std::time(nullptr) - global_arg->check_btn_down >= 5) {
+        std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                                 StateMachine::kOther));
+        th.detach();
+      } else {
+        std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                                 StateMachine::kSelfTest));
+        th.detach();
+      }
+    } else {
+      //按下自检按钮
+      global_arg->check_btn_down = std::time(nullptr);
     }
   });
   ss.str("");
@@ -275,9 +316,9 @@ void InitSystem() {
                              global_arg->host->RecvData();
                            });
 
-  std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                           StateMachine::kSelfTest));
-  th.detach();
+  // std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+  //                          StateMachine::kSelfTest));
+  // th.detach();
 }
 
 int main(int argc, char** argv) {

@@ -166,6 +166,24 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       break;
     }
+    case kOther: {
+      std::cout << "Start Other\n";
+      int random_seed = GenerateRandomSeed();
+      std::cout << "seed:" << random_seed << std::endl;
+      global_arg->lcd->ShowBySeed(random_seed);
+      global_arg->camera->GetPic();
+      cv::Mat pic1 = global_arg->camera->GetPicMat().clone();
+      sleep(10);
+      global_arg->lcd->ShowBySeed(1);
+      global_arg->lcd->ShowBySeed(random_seed);
+
+      global_arg->camera->GetPic();
+      cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
+
+      cv::imwrite("./pic1.bmp", pic1);
+      cv::imwrite("./pic2.bmp", pic2);
+      break;
+    }
     default: {
     }
   }
@@ -178,9 +196,9 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
  *
  */
 int StateMachine::SelfTest() {
-  int laser_flag = 0;
-  int camera_flag = 0;
-  int lcd_flag = 0;
+  bool laser_err = false;
+  bool camera_err = false;
+  bool lcd_err = false;
 
   GlobalArg* global_arg = GlobalArg::GetInstance();
   assert(global_arg->led != nullptr);
@@ -196,70 +214,70 @@ int StateMachine::SelfTest() {
     std::cout << "lcd not open" << std::endl;
     return -1;
   }
-  laser_flag = global_arg->laser == nullptr ?0: global_arg->laser->ForceCheck();
+
   int n = 0;
 
   if (global_arg->laser) {
+    laser_err = global_arg->laser->ForceCheck() == 0 ? false : true;
     n = 10;
     while (n--) {
       //设置温度
-      laser_flag = global_arg->laser->SetTemperature(20);
-      if (laser_flag == 0) break;
+      laser_err = global_arg->laser->SetTemperature(20) == 0 ? false : true;
+      if (!laser_err) break;
       Utils::MSleep(2000);
     }
     n = 5;
     while (n--) {
       //电流
-      laser_flag = global_arg->laser->SetCurrent(3000);
-      if (laser_flag == 0) break;
+      laser_err = global_arg->laser->SetCurrent(3000) == 0 ? false : true;
+      if (!laser_err) break;
       Utils::MSleep(2000);
     }
     n = 5;
     while (n--) {
       //设置最大电流
-      laser_flag = global_arg->laser->SetMaxCurrent(5000);
-      if (laser_flag == 0) break;
+
+      laser_err = global_arg->laser->SetMaxCurrent(5000) == 0 ? false : true;
+      if (!laser_err) break;
       Utils::MSleep(2000);
     }
+    //打开激光器
+    laser_err = global_arg->laser->ForceOpen() == 0 ? false : true;
   } else {
-    laser_flag = 0;
+    laser_err = false;
   }
-  laser_flag = global_arg->laser==nullptr?0:global_arg->laser->ForceOpen();
 
   int random_seed = GenerateRandomSeed();
-
   if (global_arg->lcd->IsOpen()) {
+    std::cout << "random_seed:" << random_seed << std::endl;
     global_arg->lcd->ShowBySeed(random_seed);
   } else {
-    lcd_flag = -1;
+    lcd_err = true;
   }
+  sleep(3);
+  camera_err = global_arg->camera->GetPic() == 0 ? false : true;
+  cv::Mat pic = global_arg->camera->GetPicMat();
+  cv::imwrite("./randpic.bmp", pic);
 
-  camera_flag = global_arg->camera->GetPic();
+  lcd_err = global_arg->camera->CheckPic(30, 80) == 0 ? false : true;
 
-  camera_flag = global_arg->camera->CheckPic(0, 150);
-  if (camera_flag == -1) {
-    std::cout << "check pic : pic wrong" << std::endl;
-  }
-
-  //逻辑与,输出LED灯的状态
-  //错误
-  if ((laser_flag != 0) || (camera_flag != 0) || (camera_flag != 0)) {
-    if (laser_flag != 0) {
+  if (laser_err || camera_err || lcd_err) {
+    if (laser_err) {
       global_arg->led->laser_blink_ = 200;
     }
-    if (lcd_flag != 0) {
+    if (lcd_err) {
       global_arg->led->lcd_blink_ = 200;
     }
-    if (camera_flag != 0) {
+    if (camera_err) {
       global_arg->led->cmos_blink_ = 200;
     }
     global_arg->led->error_blink_ = 200;
 
     global_arg->is_fault = 1;
     std::cout << "test check fault:"
-              << " laser : " << laser_flag << " lcd : " << lcd_flag
-              << " cmos : " << camera_flag
-              << " error : " << global_arg->is_fault << std::endl;
+              << " laser : " << laser_err << " lcd : " << lcd_err
+              << " cmos : " << camera_err << " error : " << global_arg->is_fault
+              << std::endl;
     return -1;
   }
 
@@ -355,7 +373,7 @@ int StateMachine::Register() {
   }
 
   //确认激光器是打开状态
-  global_arg->laser==nullptr?:global_arg->laser->ForceOpen();
+  global_arg->laser == nullptr ?: global_arg->laser->ForceOpen();
 
   if (global_arg->sm->CheckKeyInsert() == -1) {
     std::cout << "no key insert" << std::endl;
@@ -416,7 +434,7 @@ int StateMachine::Register() {
       goto status_fault;
     }
     //确认激光器是打开状态 多次拍照可能会超过30s
-    global_arg->laser==nullptr?:global_arg->laser->ForceOpen();
+    global_arg->laser == nullptr ?: global_arg->laser->ForceOpen();
   }
   end_tick = std::chrono::steady_clock::now();
   std::cout << "add " << n << "pair"
@@ -495,6 +513,8 @@ int StateMachine::GenerateRandomSeed() {
   return std::rand();
 }
 
+int StateMachine::Other(int s) {}
+
 //库定位算法 判断一枚key是否已经建立过数据库了
 int StateMachine::FindKey() {
   GlobalArg* global_arg = GlobalArg::GetInstance();
@@ -523,6 +543,7 @@ int StateMachine::FindKey() {
     int seed =
         global_arg->key_file->GetSeed(i, available_pair_list_[seed_index]);
 
+    std::cout << "seed number:" << seed << std::endl;
     global_arg->lcd->ShowBySeed(seed);
     ret = global_arg->key_file->ReadPicAsBmp(i, seed_index);
     if (ret == -1) continue;
@@ -530,6 +551,8 @@ int StateMachine::FindKey() {
     if (ret == -1) continue;
     cv::Mat pic1 = global_arg->key_file->GetMatImage();
     cv::Mat pic2 = global_arg->camera->GetPicMat();
+    cv::imwrite("./a.bmp", pic1);
+    cv::imwrite("./b.bmp", pic2);
     //验证两张图片
     result = AuthPic(pic1, pic2);
     auto end_tick = std::chrono::steady_clock::now();
@@ -538,6 +561,7 @@ int StateMachine::FindKey() {
                      end_tick - begin_tick)
                      .count()
               << "ms" << std::endl;
+
     if (result <= kAuthThreshold) {
       std::cout << "auth pic ok" << std::endl;
       //找到相应的库
@@ -560,7 +584,7 @@ int StateMachine::CheckKeyInsert() {
   int seed = global_arg->sm->GenerateRandomSeed();
   global_arg->lcd->ShowBySeed(seed);
   global_arg->camera->GetPic();
-  return global_arg->camera->CheckPic(100, 200);
+  return global_arg->camera->CheckPic(30, 80);
 }
 
 int StateMachine::CheckKey(int key_id) {
@@ -614,14 +638,14 @@ int StateMachine::CheckKey(int key_id) {
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
     result = AuthPic(pic1, pic2);
 
-    //删除本次循环使用的Seed文件及其对应的Pic文件
-    std::cout << "delete old pair index = " << seed_index << std::endl;
-    global_arg->key_file->DeleteSeed(key_id, seed_index);
-    global_arg->key_file->DeletePic(key_id, seed_index);
-    available_pair_list_[index] = -1;
-
     //值越小说明两张图片越相似
     if (result <= kAuthThreshold) {
+      //删除本次循环使用的Seed文件及其对应的Pic文件
+      std::cout << "delete old pair index = " << seed_index << std::endl;
+      global_arg->key_file->DeleteSeed(key_id, seed_index);
+      global_arg->key_file->DeletePic(key_id, seed_index);
+      available_pair_list_[index] = -1;
+
       std::cout << "generate new a pair index = " << seed_index << std::endl;
       //认证通过
       //然后重新生成新的激励对
