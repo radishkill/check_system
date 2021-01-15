@@ -168,9 +168,9 @@ int KeyFile::CopyPicToBuffer(char *pic, int width, int height) {
   return 0;
 }
 
-int KeyFile::SavePicAsBmp(int id, int index) {
+int KeyFile::SavePic(int id, int index, cv::Mat pic) {
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  cv::imwrite(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp", image_);
+  cv::imwrite(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp", pic);
   return 0;
 }
 //保存seed
@@ -188,9 +188,9 @@ int KeyFile::SaveSeed(int id, int index, int seed)
   return 0;
 }
 
-int KeyFile::SavePicAndSeed(int key_id, int index, int seed) {
+int KeyFile::SavePicAndSeed(int key_id, int index, cv::Mat pic, int seed) {
 
-  SavePicAsBmp(key_id, index);
+  SavePic(key_id, index, pic);
   SaveSeed(key_id, index, seed);
   return 0;
 }

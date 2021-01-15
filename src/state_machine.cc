@@ -180,6 +180,8 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       global_arg->camera->GetPic();
       cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
 
+      
+
       cv::imwrite("./pic1.bmp", pic1);
       cv::imwrite("./pic2.bmp", pic2);
       break;
@@ -421,13 +423,10 @@ int StateMachine::Register() {
     int seed = global_arg->sm->GenerateRandomSeed();
     global_arg->lcd->ShowBySeed(seed);
     ret = global_arg->camera->GetPic();
-    if (ret == -1) continue;
-
-    //复制
-    global_arg->key_file->SetMatImage(global_arg->camera->GetPicMat());
+    if (ret == -1) continue; 
 
     //保存激励对
-    global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i], seed);
+    global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i], global_arg->camera->GetPicMat(), seed);
 
     //中断返回复位状态
     if (global_arg->interrupt_flag == 1) {
@@ -653,8 +652,7 @@ int StateMachine::CheckKey(int key_id) {
       global_arg->lcd->ShowBySeed(rand_seed);
       global_arg->camera->GetPic();
 
-      global_arg->key_file->SetMatImage(global_arg->camera->GetPicMat());
-      global_arg->key_file->SavePicAndSeed(key_id, seed_index, rand_seed);
+      global_arg->key_file->SavePicAndSeed(key_id, seed_index, global_arg->camera->GetPicMat(), rand_seed);
       return 1;
     }
     //被中断了

@@ -236,8 +236,7 @@ int CheckKey(int key_id) {
       if (global_arg->lcd) global_arg->lcd->ShowBySeed(rand_seed);
       global_arg->camera->GetPic();
 
-      global_arg->key_file->SetMatImage(global_arg->camera->GetPicMat());
-      global_arg->key_file->SavePicAndSeed(key_id, key_id_index, rand_seed);
+      global_arg->key_file->SavePicAndSeed(key_id, key_id_index, global_arg->camera->GetPicMat(), rand_seed);
       return 1;
     }
     available_num--;

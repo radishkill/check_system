@@ -42,9 +42,9 @@ class KeyFile {
   int SetMatImage(cv::Mat m) {image_ = m;};
   cv::Mat GetMatImage() {return image_;};
   int CopyPicToBuffer(char* pic, int width, int height);
-  int SavePicAsBmp(int id, int index);
+  int SavePic(int id, int index, cv::Mat pic);
   int SaveSeed(int id,int index,int seed);
-  int SavePicAndSeed(int key_id, int index, int seed);
+  int SavePicAndSeed(int key_id, int index, cv::Mat pic, int seed);
   int DeletePic(int id,int index);
   int DeleteSeed(int id,int index);
   int DeleteAllExceptAdmin();
