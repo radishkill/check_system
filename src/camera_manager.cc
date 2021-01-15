@@ -29,18 +29,23 @@ CameraManager::CameraManager()
     is_open_flag_ = -1;
     return;
   }
+  is_open_flag_ = 1;
 }
 
 int CameraManager::InitCameraByDefault() {
   CameraSdkStatus status;
-  //status = CameraLoadParameter(hCamera_, PARAMETER_TEAM_A);
+  // status = CameraLoadParameter(hCamera_, PARAMETER_TEAM_A);
   status = CameraSetTriggerMode(hCamera_, 1);  // soft trigger
   status = CameraSetFrameSpeed(
       hCamera_, 0);  // low speed when use high speed have some problem
+  status = CameraSetCorrectDeadPixel(hCamera_, FALSE);
+  // status = CameraSetAeState(hCamera_, TRUE);
+  // sleep(2);
   status = CameraSetAeState(hCamera_, FALSE);  // by hand
   status = CameraSetIspOutFormat(hCamera_, CAMERA_MEDIA_TYPE_MONO8);
   status = CameraSetTriggerDelayTime(hCamera_, 0);
   status = CameraSetTriggerFrameCount(hCamera_, 1);
+  status = CameraSetOnceWB(hCamera_);
   if (status != CAMERA_STATUS_SUCCESS) {
     printf("Camera init failed\n");
     is_open_flag_ = -1;
@@ -97,16 +102,26 @@ int CameraManager::SetLutMode(int value) {
   return 0;
 }
 
-int CameraManager::SetExposureTime(double value) {
+int CameraManager::SetExposureTimeAndAnalogGain(double value, int analog_gain) {
   if (value == -1) return -1;
   CameraSdkStatus status;
+  if (analog_gain != -1) {
+    status = CameraSetAnalogGain(hCamera_, (unsigned int)analog_gain);
+    if (status != CAMERA_STATUS_SUCCESS) {
+      std::cout << "Set Analog Gain Fault status=" << status << std::endl;
+      return -1;
+    }
+  }
   status = CameraSetExposureTime(hCamera_, value);
   if (status != CAMERA_STATUS_SUCCESS) {
     std::cout << "Set Exposure Time Fault status=" << status << std::endl;
     return -1;
   }
+  unsigned int gain;
   CameraGetExposureTime(hCamera_, &exposion_time_);
+  CameraGetAnalogGain(hCamera_, &gain);
   std::cout << "actual exposure time:" << exposion_time_ << "us\n";
+  std::cout << "actual analog gain:" << gain << std::endl;
   return 0;
 }
 
@@ -204,22 +219,24 @@ int CameraManager::GetPic() {
   if (status != CAMERA_STATUS_SUCCESS) {
     std::cout << "soft trigger failed : " << status << std::endl;
     //这个时候有可能是照相机突然断开连接了
+    //重启一下
     ret = Reboot();
-    if (ret == -1)
-      return -1;
+    if (ret == -1) return -1;
     status = CameraSoftTrigger(hCamera_);
     if (status != CAMERA_STATUS_SUCCESS) {
       std::cout << "soft trigger failed : " << status << std::endl;
       return -1;
     }
   }
-  pbuffer_ = CameraGetImageBufferEx(hCamera_, &image_info_, 10000);
+  pbuffer_ =
+      CameraGetImageBufferEx(hCamera_, &image_info_, 10000);  // 10s的超时时间
   if (pbuffer_ == nullptr) {
     std::cout << "can't get a frame picture status=" << std::endl;
     return -1;
   }
   picture_mat_ =
       cv::Mat(image_info_.iHeight, image_info_.iWidth, CV_8UC1, pbuffer_);
+  //对图片进行兴趣区域划分
   if (roi_x_ != -1 && roi_y_ != -1 && roi_w_ != -1 && roi_h_ != -1) {
     picture_mat_ = picture_mat_(cv::Rect(roi_x_, roi_y_, roi_w_, roi_h_));
   }
@@ -241,11 +258,7 @@ int CameraManager::GetPic() {
 }
 
 char* CameraManager::GetPicBuffer() { return (char*)pbuffer_; }
-cv::Mat CameraManager::GetPicMat() {
-  // std::memcpy(picture_mat.data, pbuffer_, dwHeight_*dwWidth_);
-  
-  return picture_mat_;
-}
+cv::Mat CameraManager::GetPicMat() { return picture_mat_; }
 cv::Mat CameraManager::GetPicMat(int x, int y, int w, int h) {
   // std::memcpy(picture_mat.data, pbuffer_, dwHeight_*dwWidth_);
   if (roi_x_ != -1 && roi_y_ != -1 && roi_w_ != -1 && roi_h_ != -1) {
@@ -292,9 +305,11 @@ int CameraManager::CheckPic(int threshold_low, int threshold_high) {
     average_data += picture_mat_.data[i];
     average_data /= 2;
   }
-  std::cout << "pic average value = " << average_data << std::endl;
+  std::cout << "pic average value=" << average_data << " : " << threshold_low
+            << "-" << threshold_high << std::endl;
 
   if (average_data <= threshold_high && average_data >= threshold_low) {
+    std::cout << "threshold_high> or threshold_low<\n";
     return 0;
   }
   return -1;
@@ -309,8 +324,11 @@ void CameraManager::ShowCameraBaseConfig() {
               << cap.tDeviceCapbility.pImageSizeDesc[i].iHeight << std::endl;
   }
   double exposion_time;
+  unsigned int analog_gain;
   CameraGetExposureTime(hCamera_, &exposion_time);
-  std::cout << "exposion time = " << exposion_time << std::endl;
+  CameraGetAnalogGain(hCamera_, &analog_gain);
+  std::cout << "exposion time = " << exposion_time << "us" << std::endl;
+  std::cout << "analog_gain = " << analog_gain << std::endl;
 }
 void CameraManager::Uninit() {
   CameraSaveParameter(hCamera_, PARAMETER_TEAM_A);

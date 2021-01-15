@@ -190,19 +190,20 @@ double AuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
 
   FHD = hamming(bw_im[0], bw_im[1]);
   cout << "FHD=" << FHD << endl;
-  if (FHD >= 0.1 && FHD <= 0.25)
-  {
-    int ret = TransformPic(speckle_database, speckle_auth, speckle_auth);
-    if (ret != -1) {
-      image[2] = Mat2Emx_U8(speckle_auth);
-      gabor_im(image[2], kWaveLength, 45, Gimage_im[2], BW_im[2], K[2]);
-      Gim_mat[2] = Emx2Mat_U8(Gimage_im[2]);
-      threshold(Gim_mat[2], bw_im[2], 0, 255, THRESH_BINARY_INV);
-      bw_im[2].convertTo(bw_im[2], CV_8U, 1, 0);
-      FHD = hamming(bw_im[0], bw_im[2]);
-      cout << "FHD2=" << FHD << endl;
-    }
-  }
+  //下面做平移复位的操作代码没有用
+  // if (FHD >= 0.1 && FHD <= 0.25)
+  // {
+  //   int ret = TransformPic(speckle_database, speckle_auth, speckle_auth);
+  //   if (ret != -1) {
+  //     image[2] = Mat2Emx_U8(speckle_auth);
+  //     gabor_im(image[2], kWaveLength, 45, Gimage_im[2], BW_im[2], K[2]);
+  //     Gim_mat[2] = Emx2Mat_U8(Gimage_im[2]);
+  //     threshold(Gim_mat[2], bw_im[2], 0, 255, THRESH_BINARY_INV);
+  //     bw_im[2].convertTo(bw_im[2], CV_8U, 1, 0);
+  //     FHD = hamming(bw_im[0], bw_im[2]);
+  //     cout << "FHD2=" << FHD << endl;
+  //   }
+  // }
 
   for (int i = 0; i < 3; i++) {
     emxDestroyArray_boolean_T(K[i]);

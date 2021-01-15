@@ -147,7 +147,7 @@ int CheckKeyInsert() {
   int seed = std::rand();
   if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
   global_arg->camera->GetPic();
-  return global_arg->camera->CheckPic(20, 70);
+  return global_arg->camera->CheckPic(30, 80);
 }
 int CheckPairStore(int id) {
   //清空empty_pairs
@@ -387,7 +387,7 @@ int main(int argc, char **argv) {
   global_arg->resolution_index == -1
       ?: global_arg->camera->SetResolution(global_arg->resolution_index);
   //设置曝光时间
-  global_arg->exposion_time == -1 ?: global_arg->camera->SetExposureTime(global_arg->exposion_time);
+  global_arg->exposion_time == -1 ?: global_arg->camera->SetExposureTimeAndAnalogGain(global_arg->exposion_time, -1);
   //设置兴趣区域
   (global_arg->roi_x == -1 || global_arg->roi_y == -1 || global_arg->roi_w == -1 || global_arg->roi_h == -1)
       ?: global_arg->camera->SetRoi(global_arg->roi_x, global_arg->roi_y, global_arg->roi_w, global_arg->roi_h);

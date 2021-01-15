@@ -86,7 +86,7 @@ void InitCmdLine(int argc, char **argv) {
       "laser-current",
       po::value<int>(&global_arg->laser_current)->default_value(-1), "uA");
   desc.add_options()(
-      "lcdwh", po::value<int>(&global_arg->lcd_wh)->default_value(-1), "");
+      "lcd-wh", po::value<int>(&global_arg->lcd_wh)->default_value(-1), "");
   desc.add_options()(
       "camera-gamma",
       po::value<int>(&global_arg->camera_gamma)->default_value(-1), "");
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
       ?: global_arg->camera->SetResolution(global_arg->resolution_index);
   //设置曝光时间
   global_arg->exposion_time == -1
-      ?: global_arg->camera->SetExposureTime(global_arg->exposion_time);
+      ?: global_arg->camera->SetExposureTimeAndAnalogGain(global_arg->exposion_time, -1);
 
   //设置兴趣区域
   (global_arg->roi_x == -1 || global_arg->roi_y == -1 ||
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
     for (int j = 0; j < n2; j++) {
       ret = global_arg->camera->GetPic();
       if (ret == -1) continue;
-      global_arg->camera->CheckPic(0, 255);
+      global_arg->camera->CheckPic(30, 80);
       if (!global_arg->mid_save_addr.empty()) {
         cv::imwrite(global_arg->mid_save_addr + std::string("camera") +
                         global_arg->temp + std::to_string(i) +

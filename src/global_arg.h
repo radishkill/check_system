@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 
 namespace check_system {
@@ -43,8 +44,7 @@ class GlobalArg {
   bool no_laser_flag;
   bool no_lcd_flag;
   bool no_led_flag;
-  int lcd_width;
-  int lcd_height;
+  int lcd_wh;
 
   int camera_gamma;
   int camera_contrast;
@@ -56,7 +56,7 @@ class GlobalArg {
 
   std::string camera_config_file_addr;
   std::string mid_save_addr;
-
+  unsigned long check_btn_down;
  private:
   static GlobalArg* global_arg_;
 };

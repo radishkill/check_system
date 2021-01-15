@@ -36,6 +36,7 @@ class KeyFile {
   int FindEmptyKeyDir();
   int GetSeed(int id,int index);
   int IsSeedAvailable(int id, int index);
+  int IsPicAvailable(int id, int index);
   int CheckKeyDirAvailable(int id);
   int ReadPicAsBmp(int id, int index);
   int SetMatImage(cv::Mat m) {image_ = m;};
@@ -46,6 +47,7 @@ class KeyFile {
   int SavePicAndSeed(int key_id, int index, int seed);
   int DeletePic(int id,int index);
   int DeleteSeed(int id,int index);
+  int DeleteAllExceptAdmin();
   bool Is_Open()const;
 
  private:
