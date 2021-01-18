@@ -232,7 +232,19 @@ int CameraManager::GetPic() {
       CameraGetImageBufferEx(hCamera_, &image_info_, 10000);  // 10s的超时时间
   if (pbuffer_ == nullptr) {
     std::cout << "can't get a frame picture status=" << std::endl;
-    return -1;
+    ret = Reboot();
+    if (ret == -1) return -1;
+    status = CameraSoftTrigger(hCamera_);
+    if (status != CAMERA_STATUS_SUCCESS) {
+      std::cout << "soft trigger failed : " << status << std::endl;
+      return -1;
+    }
+    pbuffer_ =
+      CameraGetImageBufferEx(hCamera_, &image_info_, 10000);  // 10s的超时时间
+    if (pbuffer_ == nullptr) {
+      std::cout << "can't get a frame picture status=" << std::endl;
+      return -1;
+    }
   }
   picture_mat_ =
       cv::Mat(image_info_.iHeight, image_info_.iWidth, CV_8UC1, pbuffer_);
