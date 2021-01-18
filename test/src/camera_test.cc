@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
                                 (unsigned char)global_arg->rgb[0], 0xff};
       std::cout << global_arg->rgb[0] << " " << global_arg->rgb[1] << " "
                 << global_arg->rgb[2] << std::endl;
-      global_arg->lcd->ShowByColor(color);
+      global_arg->lcd->ShowByColor(color[0]);
     } else if (!global_arg->lcd_pic_addr.empty()) {
       cv::Mat lcd_pic =
           cv::imread(global_arg->lcd_pic_addr, cv::IMREAD_UNCHANGED);

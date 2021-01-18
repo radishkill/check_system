@@ -19,7 +19,7 @@ link_directories(
     )
 
 add_definitions(
-        -o3 -w -Wall
+        # -o3 -w -Wall
         )
 
 # 指定生成目标
@@ -70,6 +70,7 @@ target_link_libraries(CheckSystem
   opencv_calib3d
   opencv_xfeatures2d
   opencv_highgui
+  tbb
   gomp
 	CKCameraSDK
 )

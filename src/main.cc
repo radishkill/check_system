@@ -126,9 +126,11 @@ void InitSystem() {
   global_arg->camera->ShowCameraBaseConfig();
 
   //设置曝光时间
-  global_arg->exposion_time == -1
-      ?: global_arg->camera->SetExposureTimeAndAnalogGain(
-             global_arg->exposion_time, 5);
+  if (global_arg->exposion_time != -1) {
+    std::cout << std::fixed << global_arg->exposion_time << " " << global_arg->analog_gain << std::endl;
+    global_arg->camera->SetExposureTimeAndAnalogGain(global_arg->exposion_time,
+                                                     global_arg->analog_gain);
+  }
 
   //设置兴趣区域
   (global_arg->roi_x == -1 || global_arg->roi_y == -1 ||
@@ -148,7 +150,8 @@ void InitSystem() {
   } else {
     std::cout << "lcd buffer connect ok!!" << std::endl;
 
-    global_arg->lcd->SetRect(global_arg->lcd_wh, global_arg->lcd_wh);
+    if (global_arg->lcd_wh != -1)
+      global_arg->lcd->SetRect(global_arg->lcd_wh, global_arg->lcd_wh);
   }
 
   global_arg->host = new HostController(check_system::kHostAddr);
@@ -279,9 +282,11 @@ void InitSystem() {
     std::cout << "button " << check_system::kCheckSelfButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
+      unsigned long up_time = std::time(nullptr);
       //抬起按钮
       //抬起时间大于10s
-      if (std::time(nullptr) - global_arg->check_btn_down >= 10) {
+      //[10, 20)时触发删除操作
+      if ((up_time - global_arg->check_btn_down >= 10) && (up_time - global_arg->check_btn_down < 20)) {
         global_arg->key_file->DeleteAllExceptAdmin();
         //如果删除成功 闪错误灯3秒
         for (int i = 0; i < 3; i++) {
@@ -290,7 +295,9 @@ void InitSystem() {
           global_arg->led->ErrorLed(0);
           Utils::MSleep(500);
         }
-      } else if (std::time(nullptr) - global_arg->check_btn_down >= 5) {
+      }
+      //[2, 10)
+      if ((up_time - global_arg->check_btn_down) >= 2 && (up_time - global_arg->check_btn_down) < 10) {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                  StateMachine::kOther));
         th.detach();

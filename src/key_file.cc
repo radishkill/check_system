@@ -128,7 +128,7 @@ int KeyFile::IsSeedAvailable(int id, int index) {
 int KeyFile::IsPicAvailable(int id, int index) {
   std::ifstream ifs;
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  ifs.open(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4));
+  ifs.open(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp");
   if (!ifs.is_open()) {
     return 0;
   }
@@ -198,7 +198,7 @@ int KeyFile::SavePicAndSeed(int key_id, int index, cv::Mat pic, int seed) {
 int KeyFile::DeletePic(int id, int index)
 {
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  std::string deletepic = base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4);
+  std::string deletepic = base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp";
   std::cout << "remove " << deletepic << std::endl;
   remove(deletepic.c_str());
   return 0;
@@ -212,6 +212,11 @@ int KeyFile::DeleteSeed(int id, int index)
   remove(deleteseed.c_str());
   return 0;
 }
+int KeyFile::DeletePicAndSeed(int id, int index) {
+  DeletePic(id, index);
+  DeleteSeed(id, index);
+  return 0;
+}
 
 int KeyFile::DeleteAllExceptAdmin() {
   const int max_key = 100;
@@ -219,7 +224,6 @@ int KeyFile::DeleteAllExceptAdmin() {
   for (int i = 1; i < max_key; i++) {
     for (int j = 0; j < max_seed; j++) {
       if (IsSeedAvailable(i, j)) {
-        
         DeleteSeed(i, j);
       }
       if (IsPicAvailable(i, j)) {
