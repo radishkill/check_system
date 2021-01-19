@@ -256,7 +256,7 @@ int CameraManager::GetPic() {
   //           << image_info_.iHeight << " total bytes:" <<
   //           image_info_.TotalBytes
   //           << std::endl;
-  std::cout << "photos info" << picture_mat_.size << " " << picture_mat_.total()
+  std::cout << "photos info:" << picture_mat_.size << " " << picture_mat_.total()
             << std::endl;
   auto end_tick = std::chrono::steady_clock::now();
   std::cout << "take photos time:"
