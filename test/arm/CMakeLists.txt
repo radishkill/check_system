@@ -134,6 +134,9 @@ add_executable(LaserTest_arm
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
 )
+target_link_libraries(LaserTest_arm
+  opencv_core
+)
 add_executable(CameraTest_arm
   ../src/camera_test.cc
   ${PROJECT_SOURCE_DIR}/src/camera_manager.cc
@@ -157,6 +160,7 @@ add_executable(GpioTest_arm
   ${PROJECT_SOURCE_DIR}/src/lcd.cc
 )
 target_link_libraries(GpioTest_arm
+opencv_core
 pthread
 boost_program_options
 )

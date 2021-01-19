@@ -81,8 +81,7 @@ int LedController::LaserLed(int s) {
   //  std::cout << "laser :" << s << std::endl;
   char key;
   if (kLaserGpioReverse)
-    s = (s==1)?0:1;
-  key = '0'+s;
+    key = '0' + ((s==1)?0:1);
   //重置读写位置到文件开头
   lseek(laser_fd_, 0, SEEK_SET);
   write(laser_fd_, &key, 1);
@@ -96,8 +95,7 @@ int LedController::LcdLed(int s) {
   //  std::cout << "lcd :" << s << std::endl;
   char key;
   if (kLcdGpioReverse)
-    s = (s==1)?0:1;
-  key = '0'+s;
+    key = '0' + ((s==1)?0:1);
   //重置读写位置到文件开头
   lseek(lcd_fd_, 0, SEEK_SET);
   write(lcd_fd_, &key, 1);
@@ -110,8 +108,7 @@ int LedController::CmosLed(int s) {
   //  std::cout << "cmos :" << s << std::endl;
   char key;
   if (kCmosGpioReverse)
-    s = (s==1)?0:1;
-  key = '0'+s;
+    key = '0' + ((s==1)?0:1);
   //重置读写位置到文件开头
   lseek(cmos_fd_, 0, SEEK_SET);
   write(cmos_fd_, &key, 1);
@@ -124,8 +121,7 @@ int LedController::ErrorLed(int s) {
   //  std::cout << "error :" << s << std::endl;
   char key;
   if (kErrorGpioReverse)
-    s = (s==1)?0:1;
-  key = '0'+s;
+    key = '0' + ((s==1)?0:1);
   //重置读写位置到文件开头
   lseek(error_fd_, 0, SEEK_SET);
   write(error_fd_, &key, 1);

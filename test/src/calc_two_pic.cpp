@@ -57,6 +57,9 @@ cv::Mat ReadPicAsBmp(int id, int index) {
 int main(int argc, char **argv) {
   InitCmdLine(argc, argv);
   cv::Mat pic1, pic2;
+  cv::Mat pic = cv::imread("./pic.bmp", cv::IMREAD_UNCHANGED);
+  Utils::CheckPic(pic, 0, 255);
+  pause();
   if (mode == 1) {
     int n1 = 10;
     int n2 = 5;

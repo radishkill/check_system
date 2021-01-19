@@ -127,7 +127,8 @@ void InitSystem() {
 
   //设置曝光时间
   if (global_arg->exposion_time != -1) {
-    std::cout << std::fixed << global_arg->exposion_time << " " << global_arg->analog_gain << std::endl;
+    std::cout << std::fixed << global_arg->exposion_time << " "
+              << global_arg->analog_gain << std::endl;
     global_arg->camera->SetExposureTimeAndAnalogGain(global_arg->exposion_time,
                                                      global_arg->analog_gain);
   }
@@ -258,6 +259,7 @@ void InitSystem() {
     std::cout << "button " << check_system::kInterruptButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
+      //抬起
       std::cout << "set interrupt flag" << std::endl;
       global_arg->interrupt_flag = 1;
     }
@@ -284,9 +286,26 @@ void InitSystem() {
     if (key == 0x31) {
       unsigned long up_time = std::time(nullptr);
       //抬起按钮
+      //[10, 20)时触发删除操作
+      if ((up_time - global_arg->check_btn_down >= 10) &&
+          (up_time - global_arg->check_btn_down < 20) &&
+          global_arg->interrupt_flag) {
+        std::cout << "delete all key!!\n";
+        global_arg->key_file->DeleteAll();
+        //如果删除成功 闪错误灯3秒
+        for (int i = 0; i < 5; i++) {
+          global_arg->led->ErrorLed(1);
+          Utils::MSleep(500);
+          global_arg->led->ErrorLed(0);
+          Utils::MSleep(500);
+        }
+      }
       //抬起时间大于10s
       //[10, 20)时触发删除操作
-      if ((up_time - global_arg->check_btn_down >= 10) && (up_time - global_arg->check_btn_down < 20)) {
+      if ((up_time - global_arg->check_btn_down >= 10) &&
+          (up_time - global_arg->check_btn_down < 20) &&
+          !global_arg->interrupt_flag) {
+        std::cout << "delete all key except admin!!\n";
         global_arg->key_file->DeleteAllExceptAdmin();
         //如果删除成功 闪错误灯3秒
         for (int i = 0; i < 3; i++) {
@@ -297,18 +316,22 @@ void InitSystem() {
         }
       }
       //[2, 10)
-      if ((up_time - global_arg->check_btn_down) >= 2 && (up_time - global_arg->check_btn_down) < 10) {
+      if ((up_time - global_arg->check_btn_down) >= 2 &&
+          (up_time - global_arg->check_btn_down) < 10) {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                  StateMachine::kOther));
         th.detach();
-      } else {
+      }
+      if ((up_time - global_arg->check_btn_down) <= 1) {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                  StateMachine::kSelfTest));
         th.detach();
       }
+      global_arg->check_btn_down = 0;
     } else {
       //按下自检按钮
       global_arg->check_btn_down = std::time(nullptr);
+      global_arg->interrupt_flag = 0;
     }
   });
   ss.str("");
@@ -323,9 +346,9 @@ void InitSystem() {
                              global_arg->host->RecvData();
                            });
 
-  // std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-  //                          StateMachine::kSelfTest));
-  // th.detach();
+  std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                           StateMachine::kSelfTest));
+  th.detach();
 }
 
 int main(int argc, char** argv) {

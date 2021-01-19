@@ -305,27 +305,6 @@ int CameraManager::Reboot() {
   return Play();
 }
 
-int CameraManager::CheckPic(int threshold_low, int threshold_high) {
-  double average_data = 0;
-  if (pbuffer_ == nullptr) {
-    std::cout << "pic buffer == nullptr" << std::endl;
-    return -1;
-  }
-  average_data = picture_mat_.data[0];
-
-  for (unsigned int i = 1; i < picture_mat_.cols * picture_mat_.rows; i++) {
-    average_data += picture_mat_.data[i];
-    average_data /= 2;
-  }
-  std::cout << "pic average value=" << average_data << " : " << threshold_low
-            << "-" << threshold_high << std::endl;
-
-  if (average_data <= threshold_high && average_data >= threshold_low) {
-    std::cout << "threshold_high> or threshold_low<\n";
-    return 0;
-  }
-  return -1;
-}
 void CameraManager::ShowCameraBaseConfig() {
   int mode;
   CameraGetCapability(hCamera_, &cap);

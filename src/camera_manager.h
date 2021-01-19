@@ -39,7 +39,6 @@ class CameraManager {
   int GetWidth() const { return picture_mat_.cols; };
   int GetHeight() const { return picture_mat_.rows; };
   int Reboot();
-  int CheckPic(int threshold_low, int threshold_high);
   void ShowCameraBaseConfig();
   int SetRoi(int x, int y, int w, int h) {
     roi_x_ = x;
