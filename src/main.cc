@@ -262,6 +262,8 @@ void InitSystem() {
       //抬起
       std::cout << "set interrupt flag" << std::endl;
       global_arg->interrupt_flag = 1;
+    } else {
+      
     }
   });
   ss.str("");

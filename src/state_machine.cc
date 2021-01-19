@@ -174,7 +174,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       global_arg->led->LcdLed(1);
       Utils::MSleep(200);
       global_arg->led->LcdLed(0);
-      // Utils::MSleep(150);
+      Utils::MSleep(150);
       global_arg->camera->GetPic();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
@@ -189,7 +189,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       global_arg->led->LcdLed(1);
       Utils::MSleep(200);
       global_arg->led->LcdLed(0);
-      // Utils::MSleep(150);
+      Utils::MSleep(150);
       global_arg->camera->GetPic();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
@@ -204,7 +204,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       int random_seed2 = GenerateRandomSeed();
       global_arg->lcd->ShowBySeed(random_seed2);
       std::cout << "seed:" << random_seed2 << std::endl;
-      // Utils::MSleep(150);
+      Utils::MSleep(150);
       global_arg->camera->GetPic();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
@@ -301,7 +301,7 @@ int StateMachine::SelfTest() {
   } else {
     lcd_err = true;
   }
-  // Utils::MSleep(150);
+  Utils::MSleep(150);
   camera_err = global_arg->camera->GetPic() == 0 ? false : true;
   global_arg->led->CmosLed(1);
   Utils::MSleep(200);
@@ -403,9 +403,9 @@ int StateMachine::Register() {
 
   //管理员key插入
   //闪烁 并给用户插入新卡的时间 10s
-  std::cout << "wait 10s\n";
+  std::cout << "wait 20s\n";
   global_arg->led->ErrorLed(0);
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 20; i++) {
     global_arg->led->CmosLed(1);
     global_arg->led->LaserLed(1);
     global_arg->led->LcdLed(1);
@@ -473,7 +473,7 @@ int StateMachine::Register() {
     global_arg->led->LcdLed(1);
     Utils::MSleep(200);
     global_arg->led->LcdLed(0);
-    // Utils::MSleep(150);
+    Utils::MSleep(150);
     ret = global_arg->camera->GetPic();
     if (ret == -1) continue;
     global_arg->led->CmosLed(1);
@@ -600,7 +600,7 @@ int StateMachine::FindKey() {
     ret =
         global_arg->key_file->ReadPicAsBmp(i, available_pair_list_[seed_index]);
     if (ret == -1) continue;
-    // Utils::MSleep(150);
+    Utils::MSleep(150);
     int ret = global_arg->camera->GetPic();
     if (ret == -1) continue;
     global_arg->led->CmosLed(1);
@@ -641,7 +641,7 @@ int StateMachine::CheckKeyInsert() {
   global_arg->led->LcdLed(1);
   Utils::MSleep(200);
   global_arg->led->LcdLed(0);
-  // Utils::MSleep(150);
+  Utils::MSleep(150);
   global_arg->camera->GetPic();
   global_arg->led->CmosLed(1);
   Utils::MSleep(200);
@@ -695,7 +695,7 @@ int StateMachine::CheckKey(int key_id) {
     if (ret == -1) {
       continue;
     }
-    // Utils::MSleep(150);
+    Utils::MSleep(150);
     global_arg->camera->GetPic();
     global_arg->led->CmosLed(1);
     Utils::MSleep(200);
@@ -731,7 +731,7 @@ int StateMachine::CheckKey(int key_id) {
       global_arg->led->LcdLed(1);
       Utils::MSleep(200);
       global_arg->led->LcdLed(0);
-      // Utils::MSleep(150);
+      Utils::MSleep(150);
       global_arg->camera->GetPic();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
