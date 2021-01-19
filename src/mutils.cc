@@ -79,3 +79,26 @@ std::pair<unsigned, unsigned> Utils::Crc16AndXmodem(const void *b, size_t l) {
   result.second = crc1.checksum();
   return result;
 }
+
+int Utils::CheckPic(cv::Mat pic, int threshold_low, int threshold_high) {
+  float average_data = 0;
+  if (pic.data == nullptr) {
+    std::cout << "pic buffer == nullptr" << std::endl;
+    return -1;
+  }
+
+  // for (unsigned int i = 1; i < pic.cols * pic.rows; i++) {
+  //   average_data += pic.data[i];
+  //   average_data /= 2;
+  // }
+  
+  average_data= cv::mean(pic)[0];
+  std::cout << "pic average value=" << average_data << " : " << threshold_low
+            << "-" << threshold_high << std::endl;
+
+  if (average_data <= threshold_high && average_data >= threshold_low) {
+    std::cout << "threshold_high> or threshold_low<\n";
+    return 0;
+  }
+  return -1;
+}

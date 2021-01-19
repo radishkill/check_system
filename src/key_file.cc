@@ -233,6 +233,21 @@ int KeyFile::DeleteAllExceptAdmin() {
   }
   return 0;
 }
+int KeyFile::DeleteAll() {
+  const int max_key = 100;
+  const int max_seed = 1000;
+  for (int i = 0; i < max_key; i++) {
+    for (int j = 0; j < max_seed; j++) {
+      if (IsSeedAvailable(i, j)) {
+        DeleteSeed(i, j);
+      }
+      if (IsPicAvailable(i, j)) {
+        DeletePic(i, j);
+      }
+    }
+  }
+  return 0;
+}
 
 bool KeyFile::Is_Open() const
 {

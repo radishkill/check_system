@@ -147,7 +147,7 @@ int CheckKeyInsert() {
   int seed = std::rand();
   if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
   global_arg->camera->GetPic();
-  return global_arg->camera->CheckPic(30, 80);
+  return Utils::CheckPic(global_arg->camera->GetPicMat(), 10, 200);
 }
 int CheckPairStore(int id) {
   //清空empty_pairs

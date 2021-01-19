@@ -49,6 +49,7 @@ class KeyFile {
   int DeleteSeed(int id,int index);
   int DeletePicAndSeed(int id, int index);
   int DeleteAllExceptAdmin();
+  int DeleteAll();
   bool Is_Open()const;
 
  private:
