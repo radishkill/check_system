@@ -32,7 +32,7 @@ class CameraManager {
   int SetSharpness(int value);
   int Play();
   int Pause();
-  int GetPic();
+  int TakePhoto();
   char* GetPicBuffer();
   cv::Mat GetPicMat();
   cv::Mat GetPicMat(int x, int y, int w, int h);

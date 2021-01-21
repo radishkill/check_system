@@ -210,7 +210,7 @@ int CameraManager::Pause() {
   return 0;
 }
 
-int CameraManager::GetPic() {
+int CameraManager::TakePhoto() {
   CameraSdkStatus status;
   int ret;
 

@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
     Utils::MSleep(1000);
     std::cout << "-----------------" << std::endl;
     for (int j = 0; j < n2; j++) {
-      ret = global_arg->camera->GetPic();
+      ret = global_arg->camera->TakePhoto();
       if (ret == -1) continue;
       cv::Mat pic = global_arg->camera->GetPicMat();
       Utils::CheckPic(pic, 30, 80);
