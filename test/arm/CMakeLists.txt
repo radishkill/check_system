@@ -117,7 +117,7 @@ target_link_libraries(CalcTwoPic_arm
   opencv_xfeatures2d
   opencv_highgui
   gomp
-	${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
+	CKCameraSDK
 )
 
 add_executable(ScreenTest_arm
