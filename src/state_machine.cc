@@ -174,7 +174,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       global_arg->led->LcdLed(1);
       Utils::MSleep(200);
       global_arg->led->LcdLed(0);
-      Utils::MSleep(150);
+      Utils::MSleep(500);
       global_arg->camera->GetPic();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
@@ -189,7 +189,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       global_arg->led->LcdLed(1);
       Utils::MSleep(200);
       global_arg->led->LcdLed(0);
-      Utils::MSleep(150);
+      Utils::MSleep(500);
       global_arg->camera->GetPic();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
@@ -204,7 +204,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       int random_seed2 = GenerateRandomSeed();
       global_arg->lcd->ShowBySeed(random_seed2);
       std::cout << "seed:" << random_seed2 << std::endl;
-      Utils::MSleep(150);
+      Utils::MSleep(500);
       global_arg->camera->GetPic();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
@@ -465,7 +465,7 @@ int StateMachine::Register() {
   }
   begin_tick = std::chrono::steady_clock::now();
   //连续拍100张照片
-  int n = 100;
+  int n = 10;
   for (unsigned int i = 0; i < empty_pair_list_.size() && i < n; i++) {
     GlobalArg* global_arg = GlobalArg::GetInstance();
     int seed = global_arg->sm->GenerateRandomSeed();

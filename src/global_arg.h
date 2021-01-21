@@ -22,6 +22,7 @@ class GlobalArg {
     no_button_flag = false;
     no_laser_flag = false;
     no_lcd_flag = false;
+    system_fault = false;
   }
   Laser* laser;
   CameraManager* camera;
@@ -45,6 +46,7 @@ class GlobalArg {
   bool no_laser_flag;
   bool no_lcd_flag;
   bool no_led_flag;
+  bool system_fault;
   int lcd_wh;
 
   int camera_gamma;
