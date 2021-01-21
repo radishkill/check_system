@@ -146,8 +146,8 @@ int CheckKeyInsert() {
   std::srand(std::time(nullptr));
   int seed = std::rand();
   if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
-  global_arg->camera->GetPic();
-  return Utils::CheckPic(global_arg->camera->GetPicMat(), 10, 200);
+  global_arg->camera->TakePhoto();
+  return Utils::CheckPic(global_arg->camera->GetPicMat(), 50, 220);
 }
 int CheckPairStore(int id) {
   //清空empty_pairs
@@ -206,11 +206,10 @@ int CheckKey(int key_id) {
       return -1;
     }
     if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
-    ret = global_arg->key_file->ReadPicAsBmp(key_id, key_id_index);
+
+    ret = global_arg->camera->TakePhoto();
     if (ret == -1) continue;
-    ret = global_arg->camera->GetPic();
-    if (ret == -1) continue;
-    cv::Mat pic1 = global_arg->key_file->GetMatImage();
+    cv::Mat pic1 = global_arg->key_file->ReadPic(key_id, key_id_index);
     cv::Mat pic2 = global_arg->camera->GetPicMat();
     cv::Mat pic3 = cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(), CV_8UC4, global_arg->lcd->GetFrameBuffer());
     
@@ -233,7 +232,7 @@ int CheckKey(int key_id) {
       //然后重新生成新的激励对
       int rand_seed = std::rand();
       if (global_arg->lcd) global_arg->lcd->ShowBySeed(rand_seed);
-      global_arg->camera->GetPic();
+      global_arg->camera->TakePhoto();
 
       global_arg->key_file->SavePicAndSeed(key_id, key_id_index, global_arg->camera->GetPicMat(), rand_seed);
       return 1;
@@ -275,11 +274,9 @@ int FindKey() {
         global_arg->key_file->GetSeed(key_id, key_id_index);
 
     if (global_arg->lcd) global_arg->lcd->ShowBySeed(seed);
-    ret = global_arg->key_file->ReadPicAsBmp(key_id, key_id_index);
+    ret = global_arg->camera->TakePhoto();
     if (ret == -1) continue;
-    ret = global_arg->camera->GetPic();
-    if (ret == -1) continue;
-    cv::Mat pic1 = global_arg->key_file->GetMatImage();
+    cv::Mat pic1 = global_arg->key_file->ReadPic(key_id, key_id_index);
     cv::Mat pic2 = global_arg->camera->GetPicMat();
     cv::Mat pic3 = cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(), CV_8UC4, global_arg->lcd->GetFrameBuffer());
     

@@ -86,11 +86,6 @@ int Utils::CheckPic(cv::Mat pic, int threshold_low, int threshold_high) {
     std::cout << "pic buffer == nullptr" << std::endl;
     return -1;
   }
-
-  // for (unsigned int i = 1; i < pic.cols * pic.rows; i++) {
-  //   average_data += pic.data[i];
-  //   average_data /= 2;
-  // }
   
   average_data= cv::mean(pic)[0];
   std::cout << "pic average value=" << average_data << " : " << threshold_low
@@ -99,6 +94,9 @@ int Utils::CheckPic(cv::Mat pic, int threshold_low, int threshold_high) {
   if (average_data <= threshold_high && average_data >= threshold_low) {
     std::cout << "threshold_high> or threshold_low<\n";
     return 0;
+  } else if (average_data < threshold_low) {
+    return -1;
+  } else {
+    return 1;
   }
-  return -1;
 }

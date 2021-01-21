@@ -21,6 +21,7 @@
 #include "mutils.h"
 #include "state_machine.h"
 #include "usart.h"
+#include "authpic.h"
 
 using check_system::CameraManager;
 using check_system::EventManager;
@@ -90,6 +91,9 @@ void InitSystem() {
   global_arg->led = new LedController();
 
   global_arg->em = new check_system::EventManager();
+
+  InitAuth();
+  
 
   if (!global_arg->no_laser_flag) {
     global_arg->laser = new Laser(check_system::kLaserAddr);

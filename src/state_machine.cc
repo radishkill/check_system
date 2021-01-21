@@ -55,9 +55,11 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
           global_arg->host->CheckStatus();
         }
         std::cout << "Self Test Success!!!" << std::endl;
+        global_arg->is_fault = false;
 
       } else {
         std::cout << "Self Test Fault!!!" << std::endl;
+        global_arg->is_fault = true;
       }
       break;
     }
@@ -65,7 +67,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "Start Run Register" << std::endl;
       if (global_arg->is_fault) {
         std::cout << "system fault" << std::endl;
-        // break;
+        break;
       }
 
       auto begin_tick = std::chrono::steady_clock::now();
@@ -117,7 +119,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "Start Run Auth" << std::endl;
       if (global_arg->is_fault) {
         std::cout << "system fault" << std::endl;
-        //        break;
+        break;
       }
 
       auto begin_tick = std::chrono::steady_clock::now();
@@ -170,12 +172,9 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "Start Other\n";
       int random_seed1 = GenerateRandomSeed();
       std::cout << "seed:" << random_seed1 << std::endl;
-      global_arg->lcd->ShowBySeed(random_seed1);
-      global_arg->led->LcdLed(1);
-      Utils::MSleep(200);
-      global_arg->led->LcdLed(0);
+      ShowBySeed(random_seed1);
       Utils::MSleep(500);
-      global_arg->camera->GetPic();
+      global_arg->camera->TakePhoto();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
       global_arg->led->CmosLed(0);
@@ -185,12 +184,11 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       global_arg->lcd->ShowByColor(0);
       sleep(5);
       std::cout << "seed:" << random_seed1 << std::endl;
-      global_arg->lcd->ShowBySeed(random_seed1);
-      global_arg->led->LcdLed(1);
-      Utils::MSleep(200);
-      global_arg->led->LcdLed(0);
+
+      ShowBySeed(random_seed1);
+
       Utils::MSleep(500);
-      global_arg->camera->GetPic();
+      global_arg->camera->TakePhoto();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
       global_arg->led->CmosLed(0);
@@ -202,10 +200,10 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "1 and 2result:" << result << std::endl;
 
       int random_seed2 = GenerateRandomSeed();
-      global_arg->lcd->ShowBySeed(random_seed2);
+      ShowBySeed(random_seed2);
       std::cout << "seed:" << random_seed2 << std::endl;
       Utils::MSleep(500);
-      global_arg->camera->GetPic();
+      global_arg->camera->TakePhoto();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
       global_arg->led->CmosLed(0);
@@ -287,13 +285,13 @@ int StateMachine::SelfTest() {
     //打开激光器
     laser_err = global_arg->laser->ForceOpen() == 0 ? false : true;
   } else {
+    //现在这不作为判断激光错误的条件
     laser_err = false;
   }
 
   int random_seed = GenerateRandomSeed();
   if (global_arg->lcd->IsOpen()) {
     std::cout << "random_seed:" << random_seed << std::endl;
-    // global_arg->lcd->ShowBySeed(random_seed);
     global_arg->lcd->ShowByColor(255);
     global_arg->led->LcdLed(1);
     Utils::MSleep(200);
@@ -301,15 +299,23 @@ int StateMachine::SelfTest() {
   } else {
     lcd_err = true;
   }
-  Utils::MSleep(150);
-  camera_err = global_arg->camera->GetPic() == 0 ? false : true;
+
   global_arg->led->CmosLed(1);
   Utils::MSleep(200);
   global_arg->led->CmosLed(0);
+  camera_err = global_arg->camera->TakePhoto() == 0 ? false : true;
+
   cv::Mat pic = global_arg->camera->GetPicMat();
   cv::imwrite("./randpic.bmp", pic);
 
-  lcd_err = Utils::CheckPic(pic, 100, 200) == 0 ? false : true;
+  int ret = Utils::CheckPic(pic, 50, 220);
+  if (ret == 1) {
+    //太亮 lcd没插入
+    lcd_err = true;
+  } else if (ret == -1) {
+    //太暗 没有激光
+    laser_err = true;
+  }
 
   if (laser_err || camera_err || lcd_err) {
     if (laser_err) {
@@ -323,11 +329,9 @@ int StateMachine::SelfTest() {
     }
     global_arg->led->error_blink_ = 200;
 
-    global_arg->is_fault = 1;
     std::cout << "test check fault:"
               << " laser : " << laser_err << " lcd : " << lcd_err
-              << " cmos : " << camera_err << " error : " << global_arg->is_fault
-              << std::endl;
+              << " cmos : " << camera_err << std::endl;
     return -1;
   }
 
@@ -347,7 +351,6 @@ int StateMachine::SelfTest() {
   global_arg->led->CmosLed(1);
   global_arg->led->LcdLed(1);
   global_arg->led->ErrorLed(0);
-  global_arg->is_fault = 0;
   return 0;
 }
 
@@ -469,16 +472,10 @@ int StateMachine::Register() {
   for (unsigned int i = 0; i < empty_pair_list_.size() && i < n; i++) {
     GlobalArg* global_arg = GlobalArg::GetInstance();
     int seed = global_arg->sm->GenerateRandomSeed();
-    global_arg->lcd->ShowBySeed(seed);
-    global_arg->led->LcdLed(1);
-    Utils::MSleep(200);
-    global_arg->led->LcdLed(0);
-    Utils::MSleep(150);
-    ret = global_arg->camera->GetPic();
+    ShowBySeed(seed);
+
+    ret = TakePhoto();
     if (ret == -1) continue;
-    global_arg->led->CmosLed(1);
-    Utils::MSleep(200);
-    global_arg->led->CmosLed(0);
 
     //保存激励对
     global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i],
@@ -563,6 +560,23 @@ int StateMachine::GenerateRandomSeed() {
   return std::rand();
 }
 
+int StateMachine::ShowBySeed(int seed) {
+  GlobalArg* global_arg = GlobalArg::GetInstance();
+  global_arg->lcd->ShowBySeed(seed);
+  global_arg->led->LcdLed(1);
+  Utils::MSleep(200);
+  global_arg->led->LcdLed(0);
+  return 0;
+}
+
+int StateMachine::TakePhoto() {
+  GlobalArg* global_arg = GlobalArg::GetInstance();
+  global_arg->led->CmosLed(1);
+  Utils::MSleep(200);
+  global_arg->led->CmosLed(0);
+  return global_arg->camera->TakePhoto();
+}
+
 int StateMachine::Other(int s) {}
 
 //库定位算法 判断一枚key是否已经建立过数据库了
@@ -593,21 +607,15 @@ int StateMachine::FindKey() {
         global_arg->key_file->GetSeed(i, available_pair_list_[seed_index]);
 
     std::cout << "seed number:" << seed << std::endl;
-    global_arg->lcd->ShowBySeed(seed);
-    global_arg->led->LcdLed(1);
-    Utils::MSleep(200);
-    global_arg->led->LcdLed(0);
-    ret =
-        global_arg->key_file->ReadPicAsBmp(i, available_pair_list_[seed_index]);
+    ShowBySeed(seed);
+
+    int ret = TakePhoto();
     if (ret == -1) continue;
-    Utils::MSleep(150);
-    int ret = global_arg->camera->GetPic();
-    if (ret == -1) continue;
-    global_arg->led->CmosLed(1);
-    Utils::MSleep(200);
-    global_arg->led->CmosLed(0);
-    cv::Mat pic1 = global_arg->key_file->GetMatImage();
+
+
+    cv::Mat pic1 = global_arg->key_file->ReadPic(i, available_pair_list_[seed_index]);
     cv::Mat pic2 = global_arg->camera->GetPicMat();
+
     //验证两张图片
     result = AuthPic(pic1.clone(), pic2.clone());
     auto end_tick = std::chrono::steady_clock::now();
@@ -617,7 +625,7 @@ int StateMachine::FindKey() {
                      .count()
               << "ms" << std::endl;
 
-    if (result <= kAuthThreshold+0.1) {
+    if (result <= kAuthThreshold + 0.1) {
       std::cout << "auth pic ok" << std::endl;
       //找到相应的库
       break;
@@ -637,12 +645,11 @@ int StateMachine::FindKey() {
 int StateMachine::CheckKeyInsert() {
   GlobalArg* global_arg = GlobalArg::GetInstance();
   int seed = global_arg->sm->GenerateRandomSeed();
-  global_arg->lcd->ShowBySeed(seed);
-  global_arg->led->LcdLed(1);
-  Utils::MSleep(200);
-  global_arg->led->LcdLed(0);
+
+  ShowBySeed(seed);
+
   Utils::MSleep(150);
-  global_arg->camera->GetPic();
+  global_arg->camera->TakePhoto();
   global_arg->led->CmosLed(1);
   Utils::MSleep(200);
   global_arg->led->CmosLed(0);
@@ -687,21 +694,11 @@ int StateMachine::CheckKey(int key_id) {
       return -1;
     }
 
-    global_arg->lcd->ShowBySeed(seed);
-    global_arg->led->LcdLed(1);
-    Utils::MSleep(200);
-    global_arg->led->LcdLed(0);
-    ret = global_arg->key_file->ReadPicAsBmp(key_id, seed_index);
-    if (ret == -1) {
-      continue;
-    }
-    Utils::MSleep(150);
-    global_arg->camera->GetPic();
-    global_arg->led->CmosLed(1);
-    Utils::MSleep(200);
-    global_arg->led->CmosLed(0);
+    ShowBySeed(seed);
 
-    cv::Mat pic1 = global_arg->key_file->GetMatImage();
+    TakePhoto();
+
+    cv::Mat pic1 = global_arg->key_file->ReadPic(key_id, seed_index);
     cv::Mat pic2 = global_arg->camera->GetPicMat();
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
@@ -727,12 +724,11 @@ int StateMachine::CheckKey(int key_id) {
       //认证通过
       //然后重新生成新的激励对
       int rand_seed = global_arg->sm->GenerateRandomSeed();
-      global_arg->lcd->ShowBySeed(rand_seed);
-      global_arg->led->LcdLed(1);
-      Utils::MSleep(200);
-      global_arg->led->LcdLed(0);
+
+      ShowBySeed(seed);
+
       Utils::MSleep(150);
-      global_arg->camera->GetPic();
+      global_arg->camera->TakePhoto();
       global_arg->led->CmosLed(1);
       Utils::MSleep(200);
       global_arg->led->CmosLed(0);
