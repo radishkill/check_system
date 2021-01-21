@@ -185,6 +185,10 @@ void InitSystem() {
     global_arg->led->LcdLed(1);
     Utils::MSleep(500);
   }
+  //开始自检
+  std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                           StateMachine::kSelfTest));
+  th.detach();
 
   //下面部分是用来打开button的
 
@@ -347,10 +351,6 @@ void InitSystem() {
                              std::cout << "recv data " << std::endl;
                              global_arg->host->RecvData();
                            });
-
-  std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                           StateMachine::kSelfTest));
-  th.detach();
 }
 
 int main(int argc, char** argv) {
