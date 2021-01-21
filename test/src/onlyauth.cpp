@@ -351,6 +351,7 @@ int Authentication() {
 int main(int argc, char **argv) {
   global_arg = new GlobalArg();
   InitCmdLine(argc, argv);
+  InitAuth();
   if (!global_arg->no_button_flag) {
     global_arg->em = new EventManager();
   }
