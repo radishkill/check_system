@@ -93,6 +93,10 @@ int HostController::RecvData() {
       th.detach();
       break;
     }
+  case 0x08:{
+    //初始化
+
+    }
     default: {
       std::cout << "bad data" << std::endl;
       return -1;
@@ -296,6 +300,34 @@ int HostController::RegisterFail(){
   usart_.SendData(data,i);
   Utils::MSleep(100);
   write(fd_ctl_gpio_, "0", 1);
+  return 0;
+}
+
+//初始化完成
+int HostController::InitializeSuccess(){
+  int i=0;
+  data[i++] = 0xDD;
+  data[i++] = 0x7E;
+  data[i++] = 0x67;
+  data[i++] = 0x01;
+  data[i++] = 0x01;
+  data[i++] = 0x5C;
+  data[i++] = 0xCB;
+  data[i] = '\0';
+  return 0;
+}
+
+//初始化失败
+int HostController::InitializeFail(){
+  int i=0;
+  data[i++] = 0xDD;
+  data[i++] = 0x7E;
+  data[i++] = 0x67;
+  data[i++] = 0x01;
+  data[i++] = 0xff;
+  data[i++] = 0x8D;
+  data[i++] = 0xC5;
+  data[i] = '\0';
   return 0;
 }
 }
