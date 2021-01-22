@@ -24,6 +24,7 @@ using check_system::KeyFile;
 using check_system::Laser;
 using check_system::Lcd;
 using check_system::LedController;
+using check_system::AuthPic;
 
 class GlobalArg {
  public:
@@ -214,7 +215,7 @@ int CheckKey(int key_id) {
     cv::Mat pic3 = cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(), CV_8UC4, global_arg->lcd->GetFrameBuffer());
     
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    result = AuthPic(pic1, pic2);
+    result = AuthPic::DoAuthPic(pic1, pic2);
     
     SavePic(pic1, key_id, key_id_index, std::string("_base") + std::to_string(seed) + std::string("_") + std::to_string(result));
     SavePic(pic2, key_id, key_id_index, std::string("_auth") + std::to_string(seed) + std::string("_") + std::to_string(result));
@@ -281,7 +282,7 @@ int FindKey() {
     cv::Mat pic3 = cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(), CV_8UC4, global_arg->lcd->GetFrameBuffer());
     
     //验证两张图片
-    result = AuthPic(pic1, pic2);
+    result = AuthPic::DoAuthPic(pic1, pic2);
 
     SavePic(pic1, key_id, key_id_index, std::string("_base") + std::to_string(seed) + std::string("_") + std::to_string(result));
     SavePic(pic2, key_id, key_id_index, std::string("_auth") + std::to_string(seed) + std::string("_") + std::to_string(result));
@@ -351,7 +352,7 @@ int Authentication() {
 int main(int argc, char **argv) {
   global_arg = new GlobalArg();
   InitCmdLine(argc, argv);
-  InitAuth();
+  AuthPic::InitAuth();
   if (!global_arg->no_button_flag) {
     global_arg->em = new EventManager();
   }
