@@ -37,6 +37,7 @@ class GlobalArg {
   int is_fault;
 
   double exposion_time;
+  int analog_gain;
   int laser_current;
   int resolution_index;
   int roi_x, roi_y, roi_w, roi_h;

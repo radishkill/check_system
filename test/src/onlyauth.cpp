@@ -223,8 +223,7 @@ int CheckKey(int key_id) {
     
     //删除本次循环使用的Seed文件及其对应的Pic文件
     std::cout << "delete old pair index = " << key_id_index << std::endl;
-    global_arg->key_file->DeleteSeed(key_id, key_id_index);
-    global_arg->key_file->DeletePic(key_id, key_id_index);
+    global_arg->key_file->DeletePicAndSeed(key_id, key_id_index);
     available_pair_list_[index] = -1;
 
     //值越小说明两张图片越相似

@@ -168,22 +168,41 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kOther: {
       std::cout << "Start Other\n";
-      int random_seed = GenerateRandomSeed();
-      std::cout << "seed:" << random_seed << std::endl;
-      global_arg->lcd->ShowBySeed(random_seed);
+      int random_seed1 = GenerateRandomSeed();
+      std::cout << "seed:" << random_seed1 << std::endl;
+      global_arg->lcd->ShowBySeed(random_seed1);
+      sleep(1);
       global_arg->camera->GetPic();
       cv::Mat pic1 = global_arg->camera->GetPicMat().clone();
-      sleep(10);
-      global_arg->lcd->ShowBySeed(1);
-      global_arg->lcd->ShowBySeed(random_seed);
-
+      global_arg->lcd->ShowByColor(255);
+      sleep(5);
+      global_arg->lcd->ShowByColor(0);
+      sleep(5);
+      std::cout << "seed:" << random_seed1 << std::endl;
+      global_arg->lcd->ShowBySeed(random_seed1);
+      sleep(1);
       global_arg->camera->GetPic();
       cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
-
-      
-
       cv::imwrite("./pic1.bmp", pic1);
       cv::imwrite("./pic2.bmp", pic2);
+      double result = AuthPic(pic1.clone(), pic2.clone());
+      std::cout << "1 and 2result:" << result << std::endl;
+
+      int random_seed2 = GenerateRandomSeed();
+      global_arg->lcd->ShowBySeed(random_seed2);
+      std::cout << "seed:" << random_seed2 << std::endl; 
+      sleep(1);
+      global_arg->camera->GetPic();
+      cv::Mat pic3 = global_arg->camera->GetPicMat().clone();
+      result = AuthPic(pic2.clone(), pic3.clone());
+      std::cout << "2 and 3 result:" << result << std::endl;
+      result = AuthPic(pic1.clone(), pic3.clone());
+      std::cout << "1 and 3 result:" << result << std::endl;
+      global_arg->key_file->SavePicAndSeed(0, 0, pic1, random_seed1);
+      global_arg->key_file->SavePicAndSeed(0, 1, pic2, random_seed1);
+      global_arg->key_file->SavePicAndSeed(4, 0, pic1, random_seed1);
+      global_arg->key_file->SavePicAndSeed(4, 1, pic2, random_seed1);
+      std::cout << "end!!\n";
       break;
     }
     default: {
@@ -261,7 +280,7 @@ int StateMachine::SelfTest() {
   cv::Mat pic = global_arg->camera->GetPicMat();
   cv::imwrite("./randpic.bmp", pic);
 
-  lcd_err = global_arg->camera->CheckPic(30, 80) == 0 ? false : true;
+  lcd_err = global_arg->camera->CheckPic(10, 80) == 0 ? false : true;
 
   if (laser_err || camera_err || lcd_err) {
     if (laser_err) {
@@ -417,11 +436,12 @@ int StateMachine::Register() {
   }
   begin_tick = std::chrono::steady_clock::now();
   //连续拍100张照片
-  int n = 100;
+  int n = 2;
   for (unsigned int i = 0; i < empty_pair_list_.size() && i < n; i++) {
     GlobalArg* global_arg = GlobalArg::GetInstance();
     int seed = global_arg->sm->GenerateRandomSeed();
     global_arg->lcd->ShowBySeed(seed);
+    sleep(1);
     ret = global_arg->camera->GetPic();
     if (ret == -1) continue; 
 
@@ -522,7 +542,6 @@ int StateMachine::FindKey() {
   assert(global_arg->key_file != nullptr);
   assert(global_arg->lcd != nullptr);
 
-  std::srand(std::time(nullptr));
   int i = -1;
   double result;
   std::cout << "find key start " << std::endl;
@@ -546,6 +565,7 @@ int StateMachine::FindKey() {
     global_arg->lcd->ShowBySeed(seed);
     ret = global_arg->key_file->ReadPicAsBmp(i, seed_index);
     if (ret == -1) continue;
+    sleep(1);
     int ret = global_arg->camera->GetPic();
     if (ret == -1) continue;
     cv::Mat pic1 = global_arg->key_file->GetMatImage();
@@ -553,7 +573,7 @@ int StateMachine::FindKey() {
     cv::imwrite("./a.bmp", pic1);
     cv::imwrite("./b.bmp", pic2);
     //验证两张图片
-    result = AuthPic(pic1, pic2);
+    result = AuthPic(pic1.clone(), pic2.clone());
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "auth pic elapsed time :"
               << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -582,8 +602,9 @@ int StateMachine::CheckKeyInsert() {
   GlobalArg* global_arg = GlobalArg::GetInstance();
   int seed = global_arg->sm->GenerateRandomSeed();
   global_arg->lcd->ShowBySeed(seed);
+  sleep(1);
   global_arg->camera->GetPic();
-  return global_arg->camera->CheckPic(30, 80);
+  return global_arg->camera->CheckPic(10, 80);
 }
 
 int StateMachine::CheckKey(int key_id) {
@@ -629,20 +650,23 @@ int StateMachine::CheckKey(int key_id) {
     if (ret == -1) {
       continue;
     }
+    sleep(1);
     global_arg->camera->GetPic();
 
     cv::Mat pic1 = global_arg->key_file->GetMatImage();
     cv::Mat pic2 = global_arg->camera->GetPicMat();
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    result = AuthPic(pic1, pic2);
+    result = AuthPic(pic1.clone(), pic2.clone());
 
     //值越小说明两张图片越相似
     if (result <= kAuthThreshold) {
+      if (result > (kAuthThreshold-0.05)) {
+        return 1;
+      }
       //删除本次循环使用的Seed文件及其对应的Pic文件
       std::cout << "delete old pair index = " << seed_index << std::endl;
-      global_arg->key_file->DeleteSeed(key_id, seed_index);
-      global_arg->key_file->DeletePic(key_id, seed_index);
+      global_arg->key_file->DeletePicAndSeed(key_id, seed_index);
       available_pair_list_[index] = -1;
 
       std::cout << "generate new a pair index = " << seed_index << std::endl;
@@ -650,6 +674,7 @@ int StateMachine::CheckKey(int key_id) {
       //然后重新生成新的激励对
       int rand_seed = global_arg->sm->GenerateRandomSeed();
       global_arg->lcd->ShowBySeed(rand_seed);
+      sleep(1);
       global_arg->camera->GetPic();
 
       global_arg->key_file->SavePicAndSeed(key_id, seed_index, global_arg->camera->GetPicMat(), rand_seed);
