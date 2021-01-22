@@ -168,8 +168,49 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       break;
     }
+    //
   case kSystemInit: {
+    std::cout << "Start Run SystemInit" << std::endl;
+    if (global_arg->is_fault) {
+      std::cout << "system fault" << std::endl;
+      break;
+    }
 
+    //全灯OFF
+    global_arg->led->CmosLed(0);
+    global_arg->led->LaserLed(0);
+    global_arg->led->LcdLed(0);
+    global_arg->led->ErrorLed(0);
+
+    ret = SystemInit();
+    if (ret < 0) {
+      std::cout << "SystemInit Fault!!!" << std::endl;
+      if (global_arg->host->IsOpen()) global_arg->host->InitializeFail();
+      if (global_arg->host->IsOpen()) global_arg->host->InitializeSuccess();
+
+      //失败打灯:红灯开,3个绿灯关
+      global_arg->led->CmosLed(0);
+      global_arg->led->LaserLed(0);
+      global_arg->led->LcdLed(0);
+      global_arg->led->ErrorLed(1);
+
+    } else if (ret == 0) {
+      std::cout << "SystemInit Success!!!" << std::endl;
+      if (global_arg->host->IsOpen()) global_arg->host->InitializeFail();
+      if (global_arg->host->IsOpen()) global_arg->host->InitializeSuccess();
+
+      //成功打灯:红灯关,3个绿灯开
+      global_arg->led->CmosLed(1);
+      global_arg->led->LaserLed(1);
+      global_arg->led->LcdLed(1);
+      global_arg->led->ErrorLed(0);
+    }
+    auto end_tick = std::chrono::steady_clock::now();
+    std::cout << "SystemInit total elapsed time :"
+              << std::chrono::duration_cast<std::chrono::milliseconds>(
+                     end_tick - begin_tick)
+                     .count()
+              << "ms" << std::endl;
     break;
   }
     case kOther: {
@@ -772,7 +813,13 @@ int StateMachine::CheckPairStore(int id) {
   }
   return 0;
 }
-int StateMachine::SystemInit(){
 
+//系统初始化
+int StateMachine::SystemInit(){
+  GlobalArg* global_arg = GlobalArg::GetInstance();
+  //删除所有除管理员的seed和pic
+  global_arg->key_file->DeleteAllExceptAdmin();
+  return 0;
 }
+
 }  // namespace check_system

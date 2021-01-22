@@ -95,10 +95,12 @@ int HostController::RecvData() {
     }
   case 0x08:{
     //初始化
-
+    std::thread th(std::bind(&StateMachine::RunMachine, arg->sm, StateMachine::kSystemInit));
+    th.detach();
+    break;
     }
     default: {
-      std::cout << "bad data" << std::endl;
+     std::cout << "bad data" << std::endl;
       return -1;
     }
   }
@@ -314,6 +316,11 @@ int HostController::InitializeSuccess(){
   data[i++] = 0x5C;
   data[i++] = 0xCB;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
+  usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 
@@ -328,6 +335,11 @@ int HostController::InitializeFail(){
   data[i++] = 0x8D;
   data[i++] = 0xC5;
   data[i] = '\0';
+  write(fd_ctl_gpio_, "1", 1);
+  Utils::MSleep(100);
+  usart_.SendData(data,i);
+  Utils::MSleep(100);
+  write(fd_ctl_gpio_, "0", 1);
   return 0;
 }
 }
