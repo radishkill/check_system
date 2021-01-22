@@ -24,7 +24,7 @@ class CameraManager {
   int ReadParameterFromFile(const char* file);
   int SaveParameterToFile(const char* file);
   int SetLutMode(int value);
-  int SetExposureTimeAndAnalogGain(double value, int analog_gain);
+  int SetExposureTimeAndAnalogGain(double value,int analog_gain);
   int SetResolution(int value);
   int SetGamma(int value);
   int SetContrast(int value);

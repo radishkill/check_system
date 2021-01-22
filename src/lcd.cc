@@ -59,7 +59,7 @@ int Lcd::Open(const char *device_file) {
   }
   return 0;
 }
-int Lcd::ShowBySeed(int seed)
+int Lcd::ShowBySeed(unsigned int seed)
 {
    const int width = var_info_.xres;
    const int height = var_info_.yres;
@@ -117,7 +117,7 @@ int Lcd::ShowByMat(cv::Mat pic) {
   }
   return 0;
 }
-int Lcd::ShowByColor(unsigned char color[4]) {
+int Lcd::ShowByColor(unsigned char color) {
   const int width = var_info_.xres;
   const int height = var_info_.yres;
   const int bytes_per_pixel = 4;
@@ -128,7 +128,11 @@ int Lcd::ShowByColor(unsigned char color[4]) {
                (x0 + var_info_.xoffset);
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
-      std::memcpy(dest + x*bytes_per_pixel, color, bytes_per_pixel);
+      *(dest + x*bytes_per_pixel) = color;
+      *(dest + x*bytes_per_pixel + 1) = color;
+      *(dest + x*bytes_per_pixel + 2) = color;
+      *(dest + x*bytes_per_pixel + 3) = 0xff;
+      // std::memcpy(dest + x*bytes_per_pixel, color, bytes_per_pixel);
     }
     dest += stride;
   }

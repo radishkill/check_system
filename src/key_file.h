@@ -47,6 +47,7 @@ class KeyFile {
   int SavePicAndSeed(int key_id, int index, cv::Mat pic, int seed);
   int DeletePic(int id,int index);
   int DeleteSeed(int id,int index);
+  int DeletePicAndSeed(int id, int index);
   int DeleteAllExceptAdmin();
   bool Is_Open()const;
 

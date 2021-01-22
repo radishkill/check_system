@@ -18,9 +18,9 @@ class Lcd {
  public:
   Lcd(const char* device_file);
   int Open(const char* device_file);
-  int ShowBySeed(int seed);
+  int ShowBySeed(unsigned int seed);
   int ShowByMat(cv::Mat pic);
-  int ShowByColor(unsigned char color[4]);
+  int ShowByColor(unsigned char color);
   int GetFbWidth() const;
   int GetFbHeight() const;
   void SetRect(int w, int h) {

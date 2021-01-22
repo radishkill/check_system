@@ -32,6 +32,9 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()("exposion-time",
                      po::value<double>(&global_arg->exposion_time)->default_value(-1),
                      "us");
+  desc.add_options()("analog-gain",
+                     po::value<int>(&global_arg->analog_gain)->default_value(-1),
+                     "");
   desc.add_options()("laser-current",
                      po::value<int>(&global_arg->laser_current)->default_value(-1),
                      "uA");

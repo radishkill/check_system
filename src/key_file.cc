@@ -198,7 +198,7 @@ int KeyFile::SavePicAndSeed(int key_id, int index, cv::Mat pic, int seed) {
 int KeyFile::DeletePic(int id, int index)
 {
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  std::string deletepic = base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4);
+  std::string deletepic = base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp";
   std::cout << "remove " << deletepic << std::endl;
   remove(deletepic.c_str());
   return 0;
@@ -210,6 +210,11 @@ int KeyFile::DeleteSeed(int id, int index)
   std::string deleteseed = base_path_ + puf_file_name + puf_file_name + "_Seed" + puf_file_name + "_Seed" + Utils::DecToStr(index, 4);
   std::cout << "remove " << deleteseed << std::endl;
   remove(deleteseed.c_str());
+  return 0;
+}
+int KeyFile::DeletePicAndSeed(int id, int index) {
+  DeletePic(id, index);
+  DeleteSeed(id, index);
   return 0;
 }
 

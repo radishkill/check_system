@@ -126,9 +126,11 @@ void InitSystem() {
   global_arg->camera->ShowCameraBaseConfig();
 
   //设置曝光时间
-  global_arg->exposion_time == -1
-      ?: global_arg->camera->SetExposureTimeAndAnalogGain(
-             global_arg->exposion_time, 5);
+  if (global_arg->exposion_time != -1) {
+    std::cout << std::fixed << global_arg->exposion_time << " " << global_arg->analog_gain << std::endl;
+    global_arg->camera->SetExposureTimeAndAnalogGain(global_arg->exposion_time,
+                                                     global_arg->analog_gain);
+  }
 
   //设置兴趣区域
   (global_arg->roi_x == -1 || global_arg->roi_y == -1 ||
@@ -148,7 +150,8 @@ void InitSystem() {
   } else {
     std::cout << "lcd buffer connect ok!!" << std::endl;
 
-    global_arg->lcd->SetRect(global_arg->lcd_wh, global_arg->lcd_wh);
+    if (global_arg->lcd_wh != -1)
+      global_arg->lcd->SetRect(global_arg->lcd_wh, global_arg->lcd_wh);
   }
 
   global_arg->host = new HostController(check_system::kHostAddr);
@@ -292,11 +295,11 @@ void InitSystem() {
         }
       } else if (std::time(nullptr) - global_arg->check_btn_down >= 5) {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                                 StateMachine::kOther));
+                                 StateMachine::kSelfTest));
         th.detach();
       } else {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                                 StateMachine::kSelfTest));
+                                 StateMachine::kOther));
         th.detach();
       }
     } else {
