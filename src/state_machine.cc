@@ -168,6 +168,10 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       break;
     }
+  case kSystemInit: {
+
+    break;
+  }
     case kOther: {
       std::cout << "Start Other\n";
       int random_seed1 = GenerateRandomSeed();
@@ -767,5 +771,8 @@ int StateMachine::CheckPairStore(int id) {
     }
   }
   return 0;
+}
+int StateMachine::SystemInit(){
+
 }
 }  // namespace check_system
