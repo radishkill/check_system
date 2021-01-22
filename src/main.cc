@@ -32,6 +32,7 @@ using check_system::Laser;
 using check_system::Lcd;
 using check_system::LedController;
 using check_system::StateMachine;
+using check_system::AuthPic;
 
 std::thread timer_thread_;
 
@@ -92,7 +93,7 @@ void InitSystem() {
 
   global_arg->em = new check_system::EventManager();
 
-  InitAuth();
+  AuthPic::InitAuth();
 
   if (!global_arg->no_laser_flag) {
     global_arg->laser = new Laser(check_system::kLaserAddr);

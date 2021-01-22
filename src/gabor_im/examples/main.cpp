@@ -11,7 +11,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgcodecs.hpp>
-#include "../../../imtrans_my.h"
 
 using namespace cv;
 using namespace std;
@@ -34,7 +33,7 @@ emxArray_uint8_T* Mat2Emx_U8(Mat& srcImage)
 	emxArray_uint8_T* dstImage;
 	// Set the size of the array.
 	// Change this size to the value that the application requires.
-	dstImage = emxCreate_uint8_T(srcImage.cols, srcImage.rows);  //ÕâÀïµÄÐÐÁÐÊÇ·´ÏòµÄ
+	dstImage = emxCreate_uint8_T(srcImage.cols, srcImage.rows);  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	//memcpy(result, Io.data, result->allocatedSize * sizeof(uchar));
 
 	// Loop over the array to initialize each element.
@@ -177,7 +176,7 @@ int main(int, const char * const [])
   Mat speckle_auth = imread("14.bmp", CV_8U);
   Mat ROI = speckle_database;//= speckle_database(Rect(50,50, speckle_database.cols-50, speckle_database.rows-50));
   Mat ROI2 = speckle_auth;//= speckle_auth(Rect(50, 50, speckle_auth.cols - 50, speckle_auth.rows - 50));
-  Mat bw_im;                                //ÏàÎ»¶þÖµ»¯
+  Mat bw_im;                                //ï¿½ï¿½Î»ï¿½ï¿½Öµï¿½ï¿½
   Mat bw_im2;
   Mat bw_im3;
   Mat Gim_mat;
