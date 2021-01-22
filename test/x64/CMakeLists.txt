@@ -9,14 +9,14 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/src/include
 )
 
-# FIND_PACKAGE(OpenMP REQUIRED)
-# if(OPENMP_FOUND)
-#   message("x86_64 OPENMP FOUND")
-#   message("${OpenMP_C_FLAGS}")
-#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-# endif()
+FIND_PACKAGE(OpenMP REQUIRED)
+if(OPENMP_FOUND)
+  message("x86_64 OPENMP FOUND")
+  message("${OpenMP_C_FLAGS}")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 add_definitions(
   -w -Wall 
@@ -108,6 +108,7 @@ target_link_libraries(CalcTwoPic_x64
   opencv_highgui
   CKCameraSDK
   omp
+  tbb
 )
 
 add_executable(ScreenTest_x64

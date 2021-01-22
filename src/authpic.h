@@ -27,7 +27,7 @@ class AuthPic {
   static int InitAuth();
   static int DestroyAuth();
 
-  static double DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth);
+  static double DoAuthPic(cv::Mat& speckle_database, cv::Mat& speckle_auth);
 
  private:
 };

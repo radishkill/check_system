@@ -221,11 +221,8 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       int random_seed1 = GenerateRandomSeed();
       std::cout << "seed:" << random_seed1 << std::endl;
       ShowBySeed(random_seed1);
-      Utils::MSleep(500);
-      global_arg->camera->TakePhoto();
-      global_arg->led->CmosLed(1);
-      Utils::MSleep(200);
-      global_arg->led->CmosLed(0);
+      TakePhoto();
+
       cv::Mat pic1 = global_arg->camera->GetPicMat().clone();
       global_arg->lcd->ShowByColor(255);
       sleep(5);
@@ -234,31 +231,23 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "seed:" << random_seed1 << std::endl;
 
       ShowBySeed(random_seed1);
-
-      Utils::MSleep(500);
-      global_arg->camera->TakePhoto();
-      global_arg->led->CmosLed(1);
-      Utils::MSleep(200);
-      global_arg->led->CmosLed(0);
+      TakePhoto();
 
       cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
       cv::imwrite("./pic1.bmp", pic1);
       cv::imwrite("./pic2.bmp", pic2);
-      double result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
+      double result = AuthPic::DoAuthPic(pic1, pic2);
       std::cout << "1 and 2result:" << result << std::endl;
 
       int random_seed2 = GenerateRandomSeed();
       ShowBySeed(random_seed2);
       std::cout << "seed:" << random_seed2 << std::endl;
-      Utils::MSleep(500);
-      global_arg->camera->TakePhoto();
-      global_arg->led->CmosLed(1);
-      Utils::MSleep(200);
-      global_arg->led->CmosLed(0);
+      TakePhoto();
+
       cv::Mat pic3 = global_arg->camera->GetPicMat().clone();
-      result = AuthPic::DoAuthPic(pic2.clone(), pic3.clone());
+      result = AuthPic::DoAuthPic(pic2, pic3);
       std::cout << "2 and 3 result:" << result << std::endl;
-      result = AuthPic::DoAuthPic(pic1.clone(), pic3.clone());
+      result = AuthPic::DoAuthPic(pic1, pic3);
       std::cout << "1 and 3 result:" << result << std::endl;
       for (int i = 0; i < 10; i++) {
         global_arg->key_file->SavePicAndSeed(0, 2 * i, pic1, random_seed1);
@@ -406,6 +395,7 @@ int StateMachine::SelfTest() {
 int StateMachine::Register() {
   GlobalArg* global_arg = GlobalArg::GetInstance();
   int ret;
+  int n;
 
   assert(global_arg->led != nullptr);
   assert(global_arg->lcd != nullptr);
@@ -476,14 +466,20 @@ int StateMachine::Register() {
   //确认激光器是打开状态
   global_arg->laser == nullptr ?: global_arg->laser->ForceOpen();
 
-  if (global_arg->sm->CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() == -1) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
   std::cout << "key insert" << std::endl;
 
   begin_tick = std::chrono::steady_clock::now();
-  int key_id = global_arg->sm->FindKey();
+  n = 3;
+  int key_id;
+  for (int i = 0; i < n; i++) {
+    key_id = FindKey();
+    if (key_id != -1)
+      break;
+  }
   end_tick = std::chrono::steady_clock::now();
   std::cout << "find key elapsed time :"
             << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -
@@ -516,7 +512,7 @@ int StateMachine::Register() {
   }
   begin_tick = std::chrono::steady_clock::now();
   //连续拍100张照片
-  int n = 10;
+  n = 10;
   for (unsigned int i = 0; i < empty_pair_list_.size() && i < n; i++) {
     GlobalArg* global_arg = GlobalArg::GetInstance();
     int seed = global_arg->sm->GenerateRandomSeed();
@@ -635,7 +631,8 @@ int StateMachine::FindKey() {
   assert(global_arg->key_file != nullptr);
   assert(global_arg->lcd != nullptr);
 
-  int i = -1;
+  //库查询 从库01号钥匙起
+  int i = 0;
   double result;
   std::cout << "find key start " << std::endl;
   while (i++ < 100) {
@@ -661,11 +658,11 @@ int StateMachine::FindKey() {
     if (ret == -1) continue;
 
 
-    cv::Mat pic1 = global_arg->key_file->ReadPic(i, available_pair_list_[seed_index]);
-    cv::Mat pic2 = global_arg->camera->GetPicMat();
+    cv::Mat pic1 = global_arg->key_file->ReadPic(i, available_pair_list_[seed_index]).clone();
+    cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
 
     //验证两张图片
-    result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
+    result = AuthPic::DoAuthPic(pic1, pic2);
     auto end_tick = std::chrono::steady_clock::now();
     std::cout << "auth pic elapsed time :"
               << std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -696,11 +693,7 @@ int StateMachine::CheckKeyInsert() {
 
   ShowBySeed(seed);
 
-  Utils::MSleep(150);
-  global_arg->camera->TakePhoto();
-  global_arg->led->CmosLed(1);
-  Utils::MSleep(200);
-  global_arg->led->CmosLed(0);
+  TakePhoto();
   return Utils::CheckPic(global_arg->camera->GetPicMat(), 10, 200);
 }
 
@@ -746,11 +739,11 @@ int StateMachine::CheckKey(int key_id) {
 
     TakePhoto();
 
-    cv::Mat pic1 = global_arg->key_file->ReadPic(key_id, seed_index);
-    cv::Mat pic2 = global_arg->camera->GetPicMat();
+    cv::Mat pic1 = global_arg->key_file->ReadPic(key_id, seed_index).clone();
+    cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
+    result = AuthPic::DoAuthPic(pic1, pic2);
 
     if (result <= kAuthThreshold + 0.15) {
       //删除本次循环使用的Seed文件及其对应的Pic文件
@@ -775,11 +768,7 @@ int StateMachine::CheckKey(int key_id) {
 
       ShowBySeed(seed);
 
-      Utils::MSleep(150);
-      global_arg->camera->TakePhoto();
-      global_arg->led->CmosLed(1);
-      Utils::MSleep(200);
-      global_arg->led->CmosLed(0);
+      TakePhoto();
 
       global_arg->key_file->SavePicAndSeed(
           key_id, seed_index, global_arg->camera->GetPicMat(), rand_seed);
