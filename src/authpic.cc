@@ -74,7 +74,6 @@ static emxArray_uint8_T *c_argInit_UnboundedxUnbounded_u() {
       result->data[idx0 + result->size[0] * idx1] = argInit_uint8_T();
     }
   }
-
   return result;
 }
 
@@ -138,26 +137,13 @@ Mat Gim_mat[3];
 int InitAuth() {
   // Initialize the application.
   // 其实就是打开OpenMp并行
-  // gabor_im_initialize();
-
-  // emxInitArray_real_T(&Gimage_im[0], 2);
-  // emxInitArray_boolean_T(&BW_im[0], 2);
-  // emxInitArray_boolean_T(&K[0], 2);
-
-  //       emxInitArray_real_T(&Gimage_im[1], 2);
-  //   emxInitArray_boolean_T(&BW_im[1], 2);
-  //   emxInitArray_boolean_T(&K[1], 2);
-
-  //       emxInitArray_real_T(&Gimage_im[2], 2);
-  //   emxInitArray_boolean_T(&BW_im[2], 2);
-  //   emxInitArray_boolean_T(&K[2], 2);
-
-  for (int i = 0; i < 3; i++) {
+  gabor_im_initialize();
+  
+    for (int i = 0; i < 3; i++) {
     emxInitArray_real_T(&Gimage_im[i], 2);
     emxInitArray_boolean_T(&BW_im[i], 2);
     emxInitArray_boolean_T(&K[i], 2);
   }
-  gabor_im_initialize();
 }
 int DestroyAuth() {
   for (int i = 0; i < 3; i++) {
