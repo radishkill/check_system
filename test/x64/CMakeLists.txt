@@ -1,5 +1,5 @@
-set(CMAKE_CXX_COMPILER "g++")
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_BUILD_TYPE Debug)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/x64)
 
 add_compile_options("-std=c++14")
@@ -19,7 +19,7 @@ if(OPENMP_FOUND)
 endif()
 
 add_definitions(
-  -g -w -Wall 
+  -w -Wall 
   )
 
 add_executable(OnlyAuth_x64

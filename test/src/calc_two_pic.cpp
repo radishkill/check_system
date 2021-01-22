@@ -1,5 +1,3 @@
-#include <omp.h>
-
 #include <boost/program_options.hpp>
 #include <cassert>
 #include <chrono>

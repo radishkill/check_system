@@ -175,6 +175,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "system fault" << std::endl;
       break;
     }
+    auto begin_tick = std::chrono::steady_clock::now();
 
     //全灯OFF
     global_arg->led->CmosLed(0);
@@ -186,6 +187,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     if (ret < 0) {
       std::cout << "SystemInit Fault!!!" << std::endl;
       if (global_arg->host->IsOpen()) global_arg->host->InitializeFail();
+      
       if (global_arg->host->IsOpen()) global_arg->host->InitializeSuccess();
 
       //失败打灯:红灯开,3个绿灯关
@@ -197,6 +199,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     } else if (ret == 0) {
       std::cout << "SystemInit Success!!!" << std::endl;
       if (global_arg->host->IsOpen()) global_arg->host->InitializeFail();
+
       if (global_arg->host->IsOpen()) global_arg->host->InitializeSuccess();
 
       //成功打灯:红灯关,3个绿灯开

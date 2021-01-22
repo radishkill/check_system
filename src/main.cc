@@ -93,7 +93,6 @@ void InitSystem() {
   global_arg->em = new check_system::EventManager();
 
   InitAuth();
-  
 
   if (!global_arg->no_laser_flag) {
     global_arg->laser = new Laser(check_system::kLaserAddr);
@@ -304,8 +303,14 @@ void InitSystem() {
         global_arg->key_file->DeleteAll();
         //如果删除成功 闪错误灯3秒
         for (int i = 0; i < 5; i++) {
+          global_arg->led->CmosLed(1);
+          global_arg->led->LaserLed(1);
+          global_arg->led->LcdLed(1);
           global_arg->led->ErrorLed(1);
           Utils::MSleep(500);
+          global_arg->led->CmosLed(0);
+          global_arg->led->LaserLed(0);
+          global_arg->led->LcdLed(0);
           global_arg->led->ErrorLed(0);
           Utils::MSleep(500);
         }
@@ -319,8 +324,14 @@ void InitSystem() {
         global_arg->key_file->DeleteAllExceptAdmin();
         //如果删除成功 闪错误灯3秒
         for (int i = 0; i < 3; i++) {
+          global_arg->led->CmosLed(1);
+          global_arg->led->LaserLed(1);
+          global_arg->led->LcdLed(1);
           global_arg->led->ErrorLed(1);
           Utils::MSleep(500);
+          global_arg->led->CmosLed(0);
+          global_arg->led->LaserLed(0);
+          global_arg->led->LcdLed(0);
           global_arg->led->ErrorLed(0);
           Utils::MSleep(500);
         }
