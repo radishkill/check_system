@@ -459,7 +459,7 @@ int AuthPic::DestroyAuth() {
   return 0;
 }
 
-double AuthPic::DoAuthPic(cv::Mat& speckle_database, cv::Mat& speckle_auth) {
+double AuthPic::DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
   if (!speckle_auth.data || !speckle_auth.data) {
     std::cout << "picture data error!!!!\n";
     return 1;
