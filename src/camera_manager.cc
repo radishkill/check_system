@@ -256,14 +256,15 @@ int CameraManager::TakePhoto() {
   //           << image_info_.iHeight << " total bytes:" <<
   //           image_info_.TotalBytes
   //           << std::endl;
-  std::cout << "photos info:" << picture_mat_.size << " " << picture_mat_.total()
+  std::cout << "photos info:" << picture_mat_.size << " " 
+            // << picture_mat_.total()
             << std::endl;
-  auto end_tick = std::chrono::steady_clock::now();
-  std::cout << "take photos time:"
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -
-                                                                     begin_tick)
-                   .count()
-            << "ms" << std::endl;
+  // auto end_tick = std::chrono::steady_clock::now();
+  // std::cout << "take photos time:"
+  //           << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -
+  //                                                                    begin_tick)
+  //                  .count()
+  //           << "ms" << std::endl;
   dwWidth_ = image_info_.iWidth;
   dwHeight_ = image_info_.iHeight;
   return 0;
