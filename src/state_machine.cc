@@ -193,6 +193,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       ret = SystemInit();
       if (ret == 0) {
+<<<<<<< HEAD
         //成功打灯:全灯闪
         for (int i = 0; i < 3; i++) {
           global_arg->led->CmosLed(1);
@@ -207,6 +208,13 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
           Utils::MSleep(500);
         }
 
+=======
+        //成功打灯:红灯关,3个绿灯开
+        global_arg->led->CmosLed(1);
+        global_arg->led->LaserLed(1);
+        global_arg->led->LcdLed(1);
+        global_arg->led->ErrorLed(0);
+>>>>>>> afe1275e37fbc7c9c9e1798896f5a8e0f5c9fb67
       } else if (ret == -1) {
         //失败打灯:红灯开,3个绿灯关
         global_arg->led->CmosLed(0);
@@ -655,10 +663,14 @@ int StateMachine::ShowBySeed(int seed) {
   if (find_key_flag_) global_arg->led->LaserLed(1);
   Utils::MSleep(200);
   global_arg->led->LcdLed(0);
+<<<<<<< HEAD
   if (find_key_flag_) global_arg->led->LaserLed(0);
   //这500ms主要是为了保证coms刷新正常
   // Utils::MSleep(500);
   sleep(1);
+=======
+  Utils::MSleep(500);
+>>>>>>> afe1275e37fbc7c9c9e1798896f5a8e0f5c9fb67
   return 0;
 }
 
@@ -831,8 +843,13 @@ int StateMachine::CheckKey(int key_id) {
 
       cv::Mat new_pic = global_arg->camera->GetPicMat().clone();
 
+<<<<<<< HEAD
       global_arg->key_file->SavePicAndSeed(key_id, seed_index, new_pic,
                                            rand_seed);
+=======
+      global_arg->key_file->SavePicAndSeed(
+          key_id, seed_index, new_pic, rand_seed);
+>>>>>>> afe1275e37fbc7c9c9e1798896f5a8e0f5c9fb67
       return 1;
     }
     //被中断了
