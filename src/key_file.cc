@@ -101,6 +101,25 @@ int KeyFile::FindEmptyKeyDir() {
   }
   return -1;
 }
+int KeyFile::GetAvailableMaxKey() {
+  const int max_key = 100;
+  const int max_seed = 1000;
+  int i = 0;
+  int j = 0;
+  for (i = 0; i < max_key; i++) {
+    for (j = 0; j < max_seed; j++) {
+      if (IsSeedAvailable(i, j)) {
+        break;
+      }
+    }
+    //如果j达到最大，则说明这个库内没有内容
+    if (j == max_seed) {
+      break;
+    }
+  }
+  i = i==0?i:(i-1);
+  return i;
+}
 //获得Seed内容
 int KeyFile::GetSeed(int id, int index) {
   std::ifstream ifs;
