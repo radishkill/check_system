@@ -25,7 +25,8 @@ namespace check_system {
 using namespace cv;
 using namespace std;
 
-StateMachine::StateMachine() : is_running_(false), find_key_flag_(false) {}
+StateMachine::StateMachine()
+    : is_running_(false), find_key_flag_(false), max_key_id_(0) {}
 
 int StateMachine::RunMachine(StateMachine::MachineState state) {
   GlobalArg* global_arg = GlobalArg::GetInstance();
@@ -193,7 +194,6 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       ret = SystemInit();
       if (ret == 0) {
-<<<<<<< HEAD
         //成功打灯:全灯闪
         for (int i = 0; i < 3; i++) {
           global_arg->led->CmosLed(1);
@@ -208,13 +208,6 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
           Utils::MSleep(500);
         }
 
-=======
-        //成功打灯:红灯关,3个绿灯开
-        global_arg->led->CmosLed(1);
-        global_arg->led->LaserLed(1);
-        global_arg->led->LcdLed(1);
-        global_arg->led->ErrorLed(0);
->>>>>>> afe1275e37fbc7c9c9e1798896f5a8e0f5c9fb67
       } else if (ret == -1) {
         //失败打灯:红灯开,3个绿灯关
         global_arg->led->CmosLed(0);
@@ -250,7 +243,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
     }
     case kOther: {
       std::cout << "Start Other\n";
-       //全灯OFF
+      //全灯OFF
       global_arg->led->CmosLed(0);
       global_arg->led->LaserLed(0);
       global_arg->led->LcdLed(0);
@@ -403,6 +396,9 @@ int StateMachine::SelfTest() {
     //太暗 没有激光
     laser_err = true;
   }
+  //得到最大的key
+  max_key_id_ = global_arg->key_file->GetAvailableMaxKey();
+  std::cout << "max key id = " << max_key_id_ << std::endl;
 
   if (laser_err || camera_err || lcd_err) {
     if (laser_err) {
@@ -541,6 +537,10 @@ int StateMachine::Register() {
       return -1;
     }
     std::cout << "append key store in " << key_id << std::endl;
+    //如果添加的key超过缓存的最大数，则更新缓存.
+    if (max_key_id_ < key_id) {
+      max_key_id_ = key_id;
+    }
   }
 
   global_arg->sm->CheckPairStore(key_id);
@@ -663,14 +663,10 @@ int StateMachine::ShowBySeed(int seed) {
   if (find_key_flag_) global_arg->led->LaserLed(1);
   Utils::MSleep(200);
   global_arg->led->LcdLed(0);
-<<<<<<< HEAD
   if (find_key_flag_) global_arg->led->LaserLed(0);
   //这500ms主要是为了保证coms刷新正常
   // Utils::MSleep(500);
   sleep(1);
-=======
-  Utils::MSleep(500);
->>>>>>> afe1275e37fbc7c9c9e1798896f5a8e0f5c9fb67
   return 0;
 }
 
@@ -694,10 +690,10 @@ int StateMachine::FindKey() {
   assert(global_arg->lcd != nullptr);
 
   //库查询 从库01号钥匙起
-  int i = 0;
+  int i = 1;
   double result;
 
-  while (i++ < 100) {
+  while (i <= max_key_id_) {
     auto begin_tick = std::chrono::steady_clock::now();
     if (global_arg->interrupt_flag) {
       //运行时，被中断
@@ -705,7 +701,10 @@ int StateMachine::FindKey() {
     }
     CheckPairStore(i);
 
-    if (available_pair_list_.empty()) continue;
+    if (available_pair_list_.empty()) {
+      i++;
+      continue;
+    }
     std::cout << "key id = " << i << std::endl;
     std::cout << "available pair list = " << available_pair_list_.size()
               << std::endl;
@@ -718,7 +717,11 @@ int StateMachine::FindKey() {
     ShowBySeed(seed);
 
     int ret = TakePhoto();
-    if (ret == -1) continue;
+    //如果拍照错误
+    if (ret == -1) {
+      i++;
+      continue;
+    }
 
     cv::Mat pic1 =
         global_arg->key_file->ReadPic(i, available_pair_list_[seed_index])
@@ -740,8 +743,10 @@ int StateMachine::FindKey() {
       //找到相应的库
       break;
     }
+    i++;
   }
-  if (i >= 100) i = -1;
+  //这是没有找到key库的情况
+  if (i > max_key_id_) i = -1;
 
   find_key_flag_ = false;
   //中断返回复位状态
@@ -827,7 +832,7 @@ int StateMachine::CheckKey(int key_id) {
       if (key_id != 0) {
         return 1;
       }
-
+      //如果是管理员就特殊处理
       // if (result > (kAuthThreshold - 0.1)) {
       //   return 1;
       // }
@@ -843,13 +848,8 @@ int StateMachine::CheckKey(int key_id) {
 
       cv::Mat new_pic = global_arg->camera->GetPicMat().clone();
 
-<<<<<<< HEAD
       global_arg->key_file->SavePicAndSeed(key_id, seed_index, new_pic,
                                            rand_seed);
-=======
-      global_arg->key_file->SavePicAndSeed(
-          key_id, seed_index, new_pic, rand_seed);
->>>>>>> afe1275e37fbc7c9c9e1798896f5a8e0f5c9fb67
       return 1;
     }
     //被中断了

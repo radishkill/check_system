@@ -25,7 +25,7 @@ class StateMachine {
   int CheckPairStore(int id);  //库遍历算法
   int SystemInit();            //系统初始化
  private:
-  
+  int max_key_id_;
   std::vector<int> empty_pair_list_;
   std::vector<int> available_pair_list_;
   bool find_key_flag_;
