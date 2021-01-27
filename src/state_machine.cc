@@ -55,9 +55,11 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
           global_arg->host->CheckStatus();
         }
         std::cout << "Self Test Success!!!" << std::endl;
+        global_arg->is_fault = false;
 
       } else {
         std::cout << "Self Test Fault!!!" << std::endl;
+        global_arg->is_fault = true;
       }
       break;
     }
@@ -65,7 +67,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "Start Run Register" << std::endl;
       if (global_arg->is_fault) {
         std::cout << "system fault" << std::endl;
-        // break;
+        break;
       }
 
       auto begin_tick = std::chrono::steady_clock::now();
@@ -117,7 +119,7 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "Start Run Auth" << std::endl;
       if (global_arg->is_fault) {
         std::cout << "system fault" << std::endl;
-        //        break;
+        break;
       }
 
       auto begin_tick = std::chrono::steady_clock::now();
@@ -166,22 +168,80 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       break;
     }
+    //
+  case kSystemInit: {
+    std::cout << "Start Run SystemInit" << std::endl;
+    if (global_arg->is_fault) {
+      std::cout << "system fault" << std::endl;
+      break;
+    }
+   auto begin_tick = std::chrono::steady_clock::now();
+    //全灯OFF
+    global_arg->led->CmosLed(0);
+    global_arg->led->LaserLed(0);
+    global_arg->led->LcdLed(0);
+    global_arg->led->ErrorLed(0);
+
+    ret = SystemInit();
+    if (ret < 0) {
+      std::cout << "SystemInit Fault!!!" << std::endl;
+      if (global_arg->host->IsOpen()) global_arg->host->InitializeFail();
+      if (global_arg->host->IsOpen()) global_arg->host->InitializeSuccess();
+
+      //失败打灯:红灯开,3个绿灯关
+      global_arg->led->CmosLed(0);
+      global_arg->led->LaserLed(0);
+      global_arg->led->LcdLed(0);
+      global_arg->led->ErrorLed(1);
+
+    } else if (ret == 0) {
+      std::cout << "SystemInit Success!!!" << std::endl;
+      if (global_arg->host->IsOpen()) global_arg->host->InitializeFail();
+      if (global_arg->host->IsOpen()) global_arg->host->InitializeSuccess();
+
+      //成功打灯:红灯关,3个绿灯开
+      global_arg->led->CmosLed(1);
+      global_arg->led->LaserLed(1);
+      global_arg->led->LcdLed(1);
+      global_arg->led->ErrorLed(0);
+    }
+    auto end_tick = std::chrono::steady_clock::now();
+    std::cout << "SystemInit total elapsed time :"
+              << std::chrono::duration_cast<std::chrono::milliseconds>(
+                     end_tick - begin_tick)
+                     .count()
+              << "ms" << std::endl;
+    break;
+  }
     case kOther: {
       std::cout << "Start Other\n";
       int random_seed1 = GenerateRandomSeed();
       std::cout << "seed:" << random_seed1 << std::endl;
-      global_arg->lcd->ShowBySeed(random_seed1);
-      sleep(1);
-      global_arg->camera->GetPic();
+
+      ShowBySeed(random_seed1);
+      Utils::MSleep(500);
+      global_arg->camera->TakePhoto();
+      global_arg->led->CmosLed(1);
+      Utils::MSleep(200);
+      global_arg->led->CmosLed(0);
+
       cv::Mat pic1 = global_arg->camera->GetPicMat().clone();
       global_arg->lcd->ShowByColor(255);
       sleep(5);
       global_arg->lcd->ShowByColor(0);
       sleep(5);
       std::cout << "seed:" << random_seed1 << std::endl;
-      global_arg->lcd->ShowBySeed(random_seed1);
-      sleep(1);
-      global_arg->camera->GetPic();
+
+
+      ShowBySeed(random_seed1);
+
+      Utils::MSleep(500);
+      global_arg->camera->TakePhoto();
+      global_arg->led->CmosLed(1);
+      Utils::MSleep(200);
+      global_arg->led->CmosLed(0);
+
+
       cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
       cv::imwrite("./pic1.bmp", pic1);
       cv::imwrite("./pic2.bmp", pic2);
@@ -189,20 +249,33 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       std::cout << "1 and 2result:" << result << std::endl;
 
       int random_seed2 = GenerateRandomSeed();
-      global_arg->lcd->ShowBySeed(random_seed2);
-      std::cout << "seed:" << random_seed2 << std::endl; 
-      sleep(1);
-      global_arg->camera->GetPic();
+
+      ShowBySeed(random_seed2);
+      std::cout << "seed:" << random_seed2 << std::endl;
+      Utils::MSleep(500);
+      global_arg->camera->TakePhoto();
+      global_arg->led->CmosLed(1);
+      Utils::MSleep(200);
+      global_arg->led->CmosLed(0);
+
       cv::Mat pic3 = global_arg->camera->GetPicMat().clone();
       result = AuthPic(pic2.clone(), pic3.clone());
       std::cout << "2 and 3 result:" << result << std::endl;
       result = AuthPic(pic1.clone(), pic3.clone());
       std::cout << "1 and 3 result:" << result << std::endl;
-      global_arg->key_file->SavePicAndSeed(0, 0, pic1, random_seed1);
-      global_arg->key_file->SavePicAndSeed(0, 1, pic2, random_seed1);
-      global_arg->key_file->SavePicAndSeed(4, 0, pic1, random_seed1);
-      global_arg->key_file->SavePicAndSeed(4, 1, pic2, random_seed1);
+
+      for (int i = 0; i < 10; i++) {
+        global_arg->key_file->SavePicAndSeed(0, 2 * i, pic1, random_seed1);
+        global_arg->key_file->SavePicAndSeed(0, 2 * i + 1, pic2, random_seed1);
+      }
       std::cout << "end!!\n";
+      for (int i = 0; i < 1; i++) {
+        global_arg->led->ErrorLed(1);
+        Utils::MSleep(500);
+        global_arg->led->ErrorLed(0);
+        Utils::MSleep(500);
+      }
+
       break;
     }
     default: {
@@ -265,22 +338,39 @@ int StateMachine::SelfTest() {
     //打开激光器
     laser_err = global_arg->laser->ForceOpen() == 0 ? false : true;
   } else {
+    //现在这不作为判断激光错误的条件
     laser_err = false;
   }
 
   int random_seed = GenerateRandomSeed();
   if (global_arg->lcd->IsOpen()) {
     std::cout << "random_seed:" << random_seed << std::endl;
-    global_arg->lcd->ShowBySeed(random_seed);
+    global_arg->lcd->ShowByColor(255);
+    global_arg->led->LcdLed(1);
+    Utils::MSleep(200);
+    global_arg->led->LcdLed(0);
   } else {
     lcd_err = true;
   }
-  sleep(3);
-  camera_err = global_arg->camera->GetPic() == 0 ? false : true;
+
+  global_arg->led->CmosLed(1);
+  Utils::MSleep(200);
+  global_arg->led->CmosLed(0);
+  camera_err = global_arg->camera->TakePhoto() == 0 ? false : true;
+
   cv::Mat pic = global_arg->camera->GetPicMat();
   cv::imwrite("./randpic.bmp", pic);
 
-  lcd_err = global_arg->camera->CheckPic(10, 80) == 0 ? false : true;
+
+  int ret = Utils::CheckPic(pic, 50, 220);
+  if (ret == 1) {
+    //太亮 lcd没插入
+    lcd_err = true;
+  } else if (ret == -1) {
+    //太暗 没有激光
+    laser_err = true;
+  }
+
 
   if (laser_err || camera_err || lcd_err) {
     if (laser_err) {
@@ -294,11 +384,9 @@ int StateMachine::SelfTest() {
     }
     global_arg->led->error_blink_ = 200;
 
-    global_arg->is_fault = 1;
     std::cout << "test check fault:"
               << " laser : " << laser_err << " lcd : " << lcd_err
-              << " cmos : " << camera_err << " error : " << global_arg->is_fault
-              << std::endl;
+              << " cmos : " << camera_err << std::endl;
     return -1;
   }
 
@@ -318,7 +406,6 @@ int StateMachine::SelfTest() {
   global_arg->led->CmosLed(1);
   global_arg->led->LcdLed(1);
   global_arg->led->ErrorLed(0);
-  global_arg->is_fault = 0;
   return 0;
 }
 
@@ -374,16 +461,16 @@ int StateMachine::Register() {
 
   //管理员key插入
   //闪烁 并给用户插入新卡的时间 10s
-  std::cout << "wait 10s\n";
+  std::cout << "wait 20s\n";
   global_arg->led->ErrorLed(0);
-  for (int i = 0; i < 10; i++) {
-    global_arg->led->CmosLed(0);
-    global_arg->led->LaserLed(0);
-    global_arg->led->LcdLed(0);
-    Utils::MSleep(500);
+  for (int i = 0; i < 20; i++) {
     global_arg->led->CmosLed(1);
     global_arg->led->LaserLed(1);
     global_arg->led->LcdLed(1);
+    Utils::MSleep(500);
+    global_arg->led->CmosLed(0);
+    global_arg->led->LaserLed(0);
+    global_arg->led->LcdLed(0);
     Utils::MSleep(500);
 
     //中断
@@ -436,17 +523,19 @@ int StateMachine::Register() {
   }
   begin_tick = std::chrono::steady_clock::now();
   //连续拍100张照片
-  int n = 2;
+
+  int n = 10;
   for (unsigned int i = 0; i < empty_pair_list_.size() && i < n; i++) {
     GlobalArg* global_arg = GlobalArg::GetInstance();
     int seed = global_arg->sm->GenerateRandomSeed();
-    global_arg->lcd->ShowBySeed(seed);
-    sleep(1);
-    ret = global_arg->camera->GetPic();
-    if (ret == -1) continue; 
+    ShowBySeed(seed);
+
+    ret = TakePhoto();
+    if (ret == -1) continue;
 
     //保存激励对
-    global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i], global_arg->camera->GetPicMat(), seed);
+    global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i],
+                                         global_arg->camera->GetPicMat(), seed);
 
     //中断返回复位状态
     if (global_arg->interrupt_flag == 1) {
@@ -456,7 +545,7 @@ int StateMachine::Register() {
     global_arg->laser == nullptr ?: global_arg->laser->ForceOpen();
   }
   end_tick = std::chrono::steady_clock::now();
-  std::cout << "add " << n << "pair"
+  std::cout << "add " << n << " pair"
             << "elapsed time :"
             << std::chrono::duration_cast<std::chrono::milliseconds>(end_tick -
                                                                      begin_tick)
@@ -515,11 +604,6 @@ int StateMachine::Authentication() {
     global_arg->led->ErrorLed(1);
     return -1;
   }
-  //  //认证成功了,绿灯1 2 3 ON
-  //  global_arg->led->LaserLed(1);
-  //  global_arg->led->LcdLed(1);
-  //  global_arg->led->CmosLed(1);
-  //  global_arg->led->ErrorLed(0);
 
   std::cout << "auth success!!!" << std::endl;
   return 0;
@@ -530,6 +614,23 @@ int StateMachine::GenerateRandomSeed() {
   std::srand(std::time(nullptr));
   //  return (int)(std::rand()*48271ll%2147483647);
   return std::rand();
+}
+
+int StateMachine::ShowBySeed(int seed) {
+  GlobalArg* global_arg = GlobalArg::GetInstance();
+  global_arg->lcd->ShowBySeed(seed);
+  global_arg->led->LcdLed(1);
+  Utils::MSleep(200);
+  global_arg->led->LcdLed(0);
+  return 0;
+}
+
+int StateMachine::TakePhoto() {
+  GlobalArg* global_arg = GlobalArg::GetInstance();
+  global_arg->led->CmosLed(1);
+  Utils::MSleep(200);
+  global_arg->led->CmosLed(0);
+  return global_arg->camera->TakePhoto();
 }
 
 int StateMachine::Other(int s) {}
@@ -562,16 +663,17 @@ int StateMachine::FindKey() {
         global_arg->key_file->GetSeed(i, available_pair_list_[seed_index]);
 
     std::cout << "seed number:" << seed << std::endl;
-    global_arg->lcd->ShowBySeed(seed);
-    ret = global_arg->key_file->ReadPicAsBmp(i, seed_index);
+
+    ShowBySeed(seed);
+
+    int ret = TakePhoto();
+
     if (ret == -1) continue;
-    sleep(1);
-    int ret = global_arg->camera->GetPic();
-    if (ret == -1) continue;
-    cv::Mat pic1 = global_arg->key_file->GetMatImage();
+
+
+    cv::Mat pic1 = global_arg->key_file->ReadPic(i, available_pair_list_[seed_index]);
     cv::Mat pic2 = global_arg->camera->GetPicMat();
-    cv::imwrite("./a.bmp", pic1);
-    cv::imwrite("./b.bmp", pic2);
+
     //验证两张图片
     result = AuthPic(pic1.clone(), pic2.clone());
     auto end_tick = std::chrono::steady_clock::now();
@@ -581,7 +683,7 @@ int StateMachine::FindKey() {
                      .count()
               << "ms" << std::endl;
 
-    if (result <= kAuthThreshold) {
+    if (result <= kAuthThreshold + 0.1) {
       std::cout << "auth pic ok" << std::endl;
       //找到相应的库
       break;
@@ -601,10 +703,17 @@ int StateMachine::FindKey() {
 int StateMachine::CheckKeyInsert() {
   GlobalArg* global_arg = GlobalArg::GetInstance();
   int seed = global_arg->sm->GenerateRandomSeed();
-  global_arg->lcd->ShowBySeed(seed);
-  sleep(1);
-  global_arg->camera->GetPic();
-  return global_arg->camera->CheckPic(10, 80);
+
+
+  ShowBySeed(seed);
+
+  Utils::MSleep(150);
+  global_arg->camera->TakePhoto();
+  global_arg->led->CmosLed(1);
+  Utils::MSleep(200);
+  global_arg->led->CmosLed(0);
+  return Utils::CheckPic(global_arg->camera->GetPicMat(), 10, 200);
+
 }
 
 int StateMachine::CheckKey(int key_id) {
@@ -645,39 +754,54 @@ int StateMachine::CheckKey(int key_id) {
       return -1;
     }
 
-    global_arg->lcd->ShowBySeed(seed);
-    ret = global_arg->key_file->ReadPicAsBmp(key_id, seed_index);
-    if (ret == -1) {
-      continue;
-    }
-    sleep(1);
-    global_arg->camera->GetPic();
 
-    cv::Mat pic1 = global_arg->key_file->GetMatImage();
+    ShowBySeed(seed);
+
+    TakePhoto();
+
+
+    cv::Mat pic1 = global_arg->key_file->ReadPic(key_id, seed_index);
     cv::Mat pic2 = global_arg->camera->GetPicMat();
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
     result = AuthPic(pic1.clone(), pic2.clone());
 
-    //值越小说明两张图片越相似
-    if (result <= kAuthThreshold) {
-      if (result > (kAuthThreshold-0.05)) {
-        return 1;
-      }
+
+
+    if (result <= kAuthThreshold + 0.15) {
+
       //删除本次循环使用的Seed文件及其对应的Pic文件
       std::cout << "delete old pair index = " << seed_index << std::endl;
       global_arg->key_file->DeletePicAndSeed(key_id, seed_index);
       available_pair_list_[index] = -1;
+    }
+    //值越小说明两张图片越相似
+    if (result <= kAuthThreshold) {
+      //如果不是管理员
+      if (key_id != 0) {
+        return 1;
+      }
+      // if (result > (kAuthThreshold - 0.1)) {
+      //   return 1;
+      // }
 
       std::cout << "generate new a pair index = " << seed_index << std::endl;
       //认证通过
       //然后重新生成新的激励对
       int rand_seed = global_arg->sm->GenerateRandomSeed();
-      global_arg->lcd->ShowBySeed(rand_seed);
-      sleep(1);
-      global_arg->camera->GetPic();
 
-      global_arg->key_file->SavePicAndSeed(key_id, seed_index, global_arg->camera->GetPicMat(), rand_seed);
+
+
+      ShowBySeed(seed);
+
+      Utils::MSleep(150);
+      global_arg->camera->TakePhoto();
+      global_arg->led->CmosLed(1);
+      Utils::MSleep(200);
+      global_arg->led->CmosLed(0);
+
+      global_arg->key_file->SavePicAndSeed(
+          key_id, seed_index, global_arg->camera->GetPicMat(), rand_seed);
       return 1;
     }
     //被中断了
@@ -711,4 +835,13 @@ int StateMachine::CheckPairStore(int id) {
   }
   return 0;
 }
+
+//系统初始化
+int StateMachine::SystemInit(){
+  GlobalArg* global_arg = GlobalArg::GetInstance();
+  //删除所有除管理员的seed和pic
+  global_arg->key_file->DeleteAllExceptAdmin();
+  return 0;
+}
+
 }  // namespace check_system

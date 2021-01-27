@@ -210,7 +210,7 @@ int CameraManager::Pause() {
   return 0;
 }
 
-int CameraManager::GetPic() {
+int CameraManager::TakePhoto() {
   CameraSdkStatus status;
   int ret;
 
@@ -232,7 +232,19 @@ int CameraManager::GetPic() {
       CameraGetImageBufferEx(hCamera_, &image_info_, 10000);  // 10s的超时时间
   if (pbuffer_ == nullptr) {
     std::cout << "can't get a frame picture status=" << std::endl;
-    return -1;
+    ret = Reboot();
+    if (ret == -1) return -1;
+    status = CameraSoftTrigger(hCamera_);
+    if (status != CAMERA_STATUS_SUCCESS) {
+      std::cout << "soft trigger failed : " << status << std::endl;
+      return -1;
+    }
+    pbuffer_ =
+      CameraGetImageBufferEx(hCamera_, &image_info_, 10000);  // 10s的超时时间
+    if (pbuffer_ == nullptr) {
+      std::cout << "can't get a frame picture status=" << std::endl;
+      return -1;
+    }
   }
   picture_mat_ =
       cv::Mat(image_info_.iHeight, image_info_.iWidth, CV_8UC1, pbuffer_);
@@ -244,7 +256,7 @@ int CameraManager::GetPic() {
   //           << image_info_.iHeight << " total bytes:" <<
   //           image_info_.TotalBytes
   //           << std::endl;
-  std::cout << "photos info" << picture_mat_.size << " " << picture_mat_.total()
+  std::cout << "photos info:" << picture_mat_.size << " " << picture_mat_.total()
             << std::endl;
   auto end_tick = std::chrono::steady_clock::now();
   std::cout << "take photos time:"
@@ -293,27 +305,6 @@ int CameraManager::Reboot() {
   return Play();
 }
 
-int CameraManager::CheckPic(int threshold_low, int threshold_high) {
-  double average_data = 0;
-  if (pbuffer_ == nullptr) {
-    std::cout << "pic buffer == nullptr" << std::endl;
-    return -1;
-  }
-  average_data = picture_mat_.data[0];
-
-  for (unsigned int i = 1; i < picture_mat_.cols * picture_mat_.rows; i++) {
-    average_data += picture_mat_.data[i];
-    average_data /= 2;
-  }
-  std::cout << "pic average value=" << average_data << " : " << threshold_low
-            << "-" << threshold_high << std::endl;
-
-  if (average_data <= threshold_high && average_data >= threshold_low) {
-    std::cout << "threshold_high> or threshold_low<\n";
-    return 0;
-  }
-  return -1;
-}
 void CameraManager::ShowCameraBaseConfig() {
   int mode;
   CameraGetCapability(hCamera_, &cap);

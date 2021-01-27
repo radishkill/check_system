@@ -25,6 +25,8 @@ class HostController {
   int ResetFail();
   int RegisterSuccess();//注册
   int RegisterFail();
+  int InitializeSuccess(); //初始化完成
+  int InitializeFail();  // 初始化失败
  private:
   int fd_ctl_gpio_;
   Usart usart_;

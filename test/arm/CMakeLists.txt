@@ -117,7 +117,7 @@ target_link_libraries(CalcTwoPic_arm
   opencv_xfeatures2d
   opencv_highgui
   gomp
-	${PROJECT_SOURCE_DIR}/lib/armhf/libCKCameraSDK.a
+	CKCameraSDK
 )
 
 add_executable(ScreenTest_arm
@@ -133,6 +133,9 @@ add_executable(LaserTest_arm
   ${PROJECT_SOURCE_DIR}/src/mutils.cc
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
+)
+target_link_libraries(LaserTest_arm
+  opencv_core
 )
 add_executable(CameraTest_arm
   ../src/camera_test.cc
@@ -157,6 +160,7 @@ add_executable(GpioTest_arm
   ${PROJECT_SOURCE_DIR}/src/lcd.cc
 )
 target_link_libraries(GpioTest_arm
+opencv_core
 pthread
 boost_program_options
 )
