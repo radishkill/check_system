@@ -350,7 +350,7 @@ int StateMachine::SelfTest() {
   cv::Mat pic = global_arg->camera->GetPicMat();
   cv::imwrite("./randpic.bmp", pic);
 
-  int ret = Utils::CheckPic(pic, 50, 220);
+  int ret = Utils::CheckPic(pic, 50, 200);
   if (ret == 1) {
     //太亮 lcd没插入
     lcd_err = true;
@@ -415,7 +415,7 @@ int StateMachine::Register() {
     return -1;
   }
 
-  if (CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
@@ -464,7 +464,7 @@ int StateMachine::Register() {
   //确认激光器是打开状态
   global_arg->laser == nullptr ?: global_arg->laser->ForceOpen();
 
-  if (CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
@@ -522,9 +522,9 @@ int StateMachine::Register() {
     ret = TakePhoto();
     if (ret == -1) continue;
 
-    for (int j = 0; j < 10; j++) {
+    for (int j = 0; j < 1; j++) {
       //保存激励对
-      global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i * 10 + j],
+      global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i],
                                            global_arg->camera->GetPicMat(),
                                            seed);
     }
@@ -562,7 +562,7 @@ int StateMachine::Authentication() {
     return -1;
   }
 
-  if (CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
     //认证失败
     return -1;
@@ -820,6 +820,9 @@ int StateMachine::CheckKey(int key_id) {
     cv::Mat pic1 = global_arg->key_file->ReadPic(key_id, seed_index).clone();
     cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
 
+    // cv::imwrite("./pic1.bmp", pic1);
+    // cv::imwrite("./pic2.bmp", pic2);
+
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
     result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
 
@@ -900,7 +903,7 @@ int StateMachine::SystemInit() {
     return -1;
   }
 
-  if (CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
