@@ -93,10 +93,13 @@ int Utils::CheckPic(cv::Mat pic, int threshold_low, int threshold_high) {
 
   if (average_data <= threshold_high && average_data >= threshold_low) {
     std::cout << "threshold_high> or threshold_low<\n";
+    //正常
     return 0;
   } else if (average_data < threshold_low) {
+    //太低
     return -1;
   } else {
+    //太高
     return 1;
   }
 }
