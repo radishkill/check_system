@@ -217,9 +217,13 @@ void InitSystem() {
     std::cout << "button " << check_system::kAuthButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
+      global_arg->led->ErrorLed(0);
       std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                StateMachine::kAuth));
       th.detach();
+    } else {
+      //按下
+      global_arg->led->ErrorLed(1);
     }
   });
   ss.str("");
@@ -242,9 +246,12 @@ void InitSystem() {
     std::cout << "button " << check_system::kAuthButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
+      global_arg->led->CmosLed(0);
       std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                StateMachine::kRegister));
       th.detach();
+    } else {
+      global_arg->led->CmosLed(1);
     }
   });
   ss.str("");
@@ -268,7 +275,7 @@ void InitSystem() {
               << std::endl;
     if (key == 0x31) {
       //抬起
-
+      global_arg->led->LcdLed(0);
       unsigned long up_time = std::time(nullptr);
       // std::cout << "set interrupt flag" << std::endl;
       global_arg->interrupt_flag = 1;
@@ -284,6 +291,7 @@ void InitSystem() {
       global_arg->check_btn_flag = 0;
     } else {
       //按下
+      global_arg->led->LcdLed(1);
       // 防止抖动
       if (global_arg->interrupt_btn_down == 0) {
         global_arg->interrupt_btn_down = time(nullptr);
@@ -311,6 +319,7 @@ void InitSystem() {
     std::cout << "button " << check_system::kCheckSelfButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
+      global_arg->led->LaserLed(0);
       unsigned long up_time = std::time(nullptr);
       global_arg->check_btn_flag = 1;
       //抬起按钮
@@ -364,6 +373,7 @@ void InitSystem() {
       }
       global_arg->check_btn_down = 0;
     } else {
+      global_arg->led->LaserLed(1);
       //按下自检按钮
       if (global_arg->check_btn_down == 0) {
         global_arg->check_btn_down = std::time(nullptr);

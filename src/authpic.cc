@@ -506,7 +506,7 @@ double AuthPic::DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
   FHD = hamming(bw_im[0], bw_im[1]);
   std::cout << "FHD=" << FHD << std::endl;
   //下面做平移复位的操作代码没有用
-  if (FHD >= kAuthThreshold && FHD <= 0.3) {
+  if (FHD >= kAuthThreshold && FHD <= 0.35) {
     int ret = TransformPic(speckle_database, speckle_auth, speckle_auth);
     if (ret != -1) {
       if (!image[1] ||
