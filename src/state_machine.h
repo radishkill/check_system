@@ -11,6 +11,7 @@ class StateMachine {
   enum MachineState {
     kSelfTest,
     kRegister,
+    kSystemInit,
     kAuth,
     kOther
   };
@@ -21,12 +22,14 @@ class StateMachine {
   int Authentication();            //认证
   int GenerateRandomSeed();        //随机生成seed
   int FindKey();                   //库定位算法
+  int ShowBySeed(int seed);
+  int TakePhoto();
   int Other(int s);
 
   int CheckKeyInsert();                  //插入检测算法
   int CheckKey(int key_id);
   int CheckPairStore(int id);      //库遍历算法
-
+  int SystemInit();                //系统初始化
  private:
   std::vector<int> empty_pair_list_;
   std::vector<int> available_pair_list_;

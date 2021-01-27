@@ -1,5 +1,5 @@
 set(CMAKE_CXX_COMPILER "g++")
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/x64)
 
 add_compile_options("-std=c++14")
@@ -108,7 +108,7 @@ target_link_libraries(CalcTwoPic_x64
   opencv_xfeatures2d
   opencv_highgui
   gomp
-	${PROJECT_SOURCE_DIR}/lib/x64/libCKCameraSDK.a
+	CKCameraSDK
 )
 
 add_executable(ScreenTest_x64
@@ -125,6 +125,9 @@ add_executable(LaserTest_x64
   ${PROJECT_SOURCE_DIR}/src/laser.cc
   ${PROJECT_SOURCE_DIR}/src/usart.cc
 )
+target_link_libraries(LaserTest_x64
+  opencv_core
+  )
 add_executable(CameraTest_x64
   ../src/camera_test.cc
   ${PROJECT_SOURCE_DIR}/src/camera_manager.cc
@@ -154,5 +157,6 @@ add_executable(GpioTest_x64
   ${PROJECT_SOURCE_DIR}/src/lcd.cc
 )
 target_link_libraries(GpioTest_x64
+opencv_core
 boost_program_options
 )

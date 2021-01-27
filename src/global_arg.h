@@ -18,7 +18,7 @@ class GlobalArg {
   GlobalArg() {
     interrupt_flag = 0;
     hsk_flag = 0;
-    is_fault = 0;
+    is_fault = false;
     no_button_flag = false;
     no_laser_flag = false;
     no_lcd_flag = false;
@@ -34,7 +34,7 @@ class GlobalArg {
 
   int interrupt_flag;
   int hsk_flag;  //上位机握手控制
-  int is_fault;
+  bool is_fault;
 
   double exposion_time;
   int analog_gain;
@@ -45,6 +45,7 @@ class GlobalArg {
   bool no_laser_flag;
   bool no_lcd_flag;
   bool no_led_flag;
+  bool system_fault;
   int lcd_wh;
 
   int camera_gamma;

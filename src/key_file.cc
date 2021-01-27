@@ -128,7 +128,7 @@ int KeyFile::IsSeedAvailable(int id, int index) {
 int KeyFile::IsPicAvailable(int id, int index) {
   std::ifstream ifs;
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
-  ifs.open(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4));
+  ifs.open(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp");
   if (!ifs.is_open()) {
     return 0;
   }
@@ -152,14 +152,14 @@ int KeyFile::CheckKeyDirAvailable(int id) {
   return 0;
 }
 
-int KeyFile::ReadPicAsBmp(int id, int index) {
+cv::Mat KeyFile::ReadPic(int id, int index) {
   std::string puf_file_name = std::string("/PUF" + Utils::DecToStr(id, 2));
   image_ = cv::imread(base_path_ + puf_file_name + puf_file_name + "_Pic" + puf_file_name + "_Pic" + Utils::DecToStr(index, 4) + ".bmp", cv::IMREAD_UNCHANGED);
   if (!image_.data) {
     std::cout << "read pic file " << "PUF" << Utils::DecToStr(id, 2) << " " << Utils::DecToStr(index, 4) << " wrong!!!" << std::endl;
-    return -1;
+    return image_;
   }
-  return 0;
+  return image_;
 }
 //复制图片到文件图片缓冲区
 int KeyFile::CopyPicToBuffer(char *pic, int width, int height) {
@@ -224,7 +224,21 @@ int KeyFile::DeleteAllExceptAdmin() {
   for (int i = 1; i < max_key; i++) {
     for (int j = 0; j < max_seed; j++) {
       if (IsSeedAvailable(i, j)) {
-        
+        DeleteSeed(i, j);
+      }
+      if (IsPicAvailable(i, j)) {
+        DeletePic(i, j);
+      }
+    }
+  }
+  return 0;
+}
+int KeyFile::DeleteAll() {
+  const int max_key = 100;
+  const int max_seed = 1000;
+  for (int i = 0; i < max_key; i++) {
+    for (int j = 0; j < max_seed; j++) {
+      if (IsSeedAvailable(i, j)) {
         DeleteSeed(i, j);
       }
       if (IsPicAvailable(i, j)) {

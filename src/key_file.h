@@ -38,9 +38,7 @@ class KeyFile {
   int IsSeedAvailable(int id, int index);
   int IsPicAvailable(int id, int index);
   int CheckKeyDirAvailable(int id);
-  int ReadPicAsBmp(int id, int index);
-  int SetMatImage(cv::Mat m) {image_ = m;};
-  cv::Mat GetMatImage() {return image_;};
+  cv::Mat ReadPic(int id, int index);
   int CopyPicToBuffer(char* pic, int width, int height);
   int SavePic(int id, int index, cv::Mat pic);
   int SaveSeed(int id,int index,int seed);
@@ -49,6 +47,7 @@ class KeyFile {
   int DeleteSeed(int id,int index);
   int DeletePicAndSeed(int id, int index);
   int DeleteAllExceptAdmin();
+  int DeleteAll();
   bool Is_Open()const;
 
  private:

@@ -213,14 +213,15 @@ int main(int argc, char *argv[]) {
     Utils::MSleep(1000);
     std::cout << "-----------------" << std::endl;
     for (int j = 0; j < n2; j++) {
-      ret = global_arg->camera->GetPic();
+      ret = global_arg->camera->TakePhoto();
       if (ret == -1) continue;
-      global_arg->camera->CheckPic(30, 80);
+      cv::Mat pic = global_arg->camera->GetPicMat();
+      Utils::CheckPic(pic, 30, 80);
       if (!global_arg->mid_save_addr.empty()) {
         cv::imwrite(global_arg->mid_save_addr + std::string("camera") +
                         global_arg->temp + std::to_string(i) +
                         std::string("_") + std::to_string(j) + ".bmp",
-                    global_arg->camera->GetPicMat());
+                    pic);
         if (!global_arg->no_lcd && global_arg->save_lcd)
           cv::imwrite(global_arg->mid_save_addr + std::string("lcd") +
                           global_arg->temp + std::to_string(i) +

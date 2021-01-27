@@ -19,8 +19,8 @@ emxArray_uint8_T *Mat2Emx_U8(Mat &srcImage) {
   // memcpy(result, Io.data, result->allocatedSize * sizeof(uchar));
 
   // Loop over the array to initialize each element.
-  for (idx0 = 0; idx0 < dstImage->size[0U]; idx0++) {
-    for (idx1 = 0; idx1 < dstImage->size[1U]; idx1++) {
+  for (idx0 = 0; idx0 < dstImage->size[0]; idx0++) {
+    for (idx1 = 0; idx1 < dstImage->size[1]; idx1++) {
       // Set the value of the array element.
       // Change this value to the value that the application requires.
       dstImage->data[idx0 + dstImage->size[0] * idx1] =
@@ -109,8 +109,8 @@ class MyLoopBody : public ParallelLoopBody {
   };
   virtual void operator()(const Range &range) const {
     for (int colIdx = range.start; colIdx < range.end; ++colIdx) {
-      gabor_im(image_[colIdx], kWaveLength, 45, Gimage_im_[colIdx], BW_im_[colIdx],
-               K_[colIdx]);
+      gabor_im(image_[colIdx], kWaveLength, 45, Gimage_im_[colIdx],
+               BW_im_[colIdx], K_[colIdx]);
 
       Gim_mat_[colIdx] = Emx2Mat_U8(Gimage_im_[colIdx]);
       //阈值
@@ -129,6 +129,46 @@ class MyLoopBody : public ParallelLoopBody {
   Mat *Gim_mat_;
   Mat *bw_im_;
 };
+emxArray_real_T *Gimage_im[3];
+emxArray_boolean_T *BW_im[3];
+emxArray_boolean_T *K[3];
+emxArray_uint8_T *image[3] = {nullptr, nullptr, nullptr};
+Mat bw_im[3];
+Mat Gim_mat[3];
+int InitAuth() {
+  // Initialize the application.
+  // 其实就是打开OpenMp并行
+  // gabor_im_initialize();
+
+  // emxInitArray_real_T(&Gimage_im[0], 2);
+  // emxInitArray_boolean_T(&BW_im[0], 2);
+  // emxInitArray_boolean_T(&K[0], 2);
+
+  //       emxInitArray_real_T(&Gimage_im[1], 2);
+  //   emxInitArray_boolean_T(&BW_im[1], 2);
+  //   emxInitArray_boolean_T(&K[1], 2);
+
+  //       emxInitArray_real_T(&Gimage_im[2], 2);
+  //   emxInitArray_boolean_T(&BW_im[2], 2);
+  //   emxInitArray_boolean_T(&K[2], 2);
+
+  for (int i = 0; i < 3; i++) {
+    emxInitArray_real_T(&Gimage_im[i], 2);
+    emxInitArray_boolean_T(&BW_im[i], 2);
+    emxInitArray_boolean_T(&K[i], 2);
+  }
+  gabor_im_initialize();
+}
+int DestroyAuth() {
+  for (int i = 0; i < 3; i++) {
+    emxDestroyArray_boolean_T(K[i]);
+    emxDestroyArray_boolean_T(BW_im[i]);
+    emxDestroyArray_real_T(Gimage_im[i]);
+    if (image[i]) emxDestroyArray_uint8_T(image[i]);
+  }
+  // Terminate the application.
+  gabor_im_terminate();
+}
 
 double AuthPic(cv::Mat speckle_database, char *auth_pic, int h2, int w2) {
   Mat speckle_auth(h2, w2, CV_8UC1);
@@ -138,30 +178,32 @@ double AuthPic(cv::Mat speckle_database, char *auth_pic, int h2, int w2) {
 }
 
 double AuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
-  double FHD = 0;
-  // Initialize the application.
-  gabor_im_initialize();
-
-  emxArray_real_T *Gimage_im[3];
-  emxArray_boolean_T *BW_im[3];
-  emxArray_boolean_T *K[3];
-  emxArray_uint8_T *image[3] = {nullptr, nullptr, nullptr};
-  Mat bw_im[3];
-  Mat Gim_mat[3];
-
-  for (int i = 0; i < 3; i++) {
-    emxInitArray_real_T(&Gimage_im[i], 2);
-    emxInitArray_boolean_T(&BW_im[i], 2);
-    emxInitArray_boolean_T(&K[i], 2);
+  if (!speckle_auth.data || !speckle_auth.data) {
+    std::cout << "picture data error!!!!\n";
+    return 1;
   }
+  double FHD = 0;
 
   // Mat ROI = speckle_database;//= speckle_database(Rect(50,50,
   // speckle_database.cols-50, speckle_database.rows-50)); Mat ROI2 =
   // speckle_auth;//= speckle_auth(Rect(50, 50, speckle_auth.cols - 50,
   // speckle_auth.rows - 50));
+  if (!image[0] || image[0]->allocatedSize !=
+                       speckle_database.cols * speckle_database.rows) {
+    if (image[0]) emxDestroyArray_uint8_T(image[0]);
+    image[0] = emxCreate_uint8_T(speckle_database.cols, speckle_database.rows);
+  }
+  memcpy(image[0]->data, speckle_database.data, image[0]->allocatedSize);
 
-  image[0] = Mat2Emx_U8(speckle_database);
-  image[1] = Mat2Emx_U8(speckle_auth);
+  if (!image[1] ||
+      image[1]->allocatedSize == speckle_auth.cols * speckle_auth.rows) {
+    if (image[1]) emxDestroyArray_uint8_T(image[1]);
+    image[1] = emxCreate_uint8_T(speckle_auth.cols, speckle_auth.rows);
+  }
+  memcpy(image[1]->data, speckle_auth.data, image[1]->allocatedSize);
+
+  // image[0] = Mat2Emx_U8(speckle_database);
+  // image[1] = Mat2Emx_U8(speckle_auth);
 
   // for (int i = 0; i < 2; i++) {
   //   std::cout << "allocatedSize " << image[i]->allocatedSize << std::endl;
@@ -170,50 +212,41 @@ double AuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
   //             << image[i]->size[1] << std::endl;
   // }
 
-  // gabor_im(image[0], 8, 45, Gimage_im[0], BW_im[0], K[0]);
-  // Gim_mat[0] = Emx2Mat_U8(Gimage_im[0]);
-  // //阈值
-  // threshold(Gim_mat[0], bw_im[0], 0, 255,
-  //           THRESH_BINARY_INV);               // INV_THRESH_BINARY
-  // bw_im[0].convertTo(bw_im[0], CV_8U, 1, 0);  // 64f->8u
+  for (int i = 0; i < 2; i++) {
+    gabor_im(image[i], kWaveLength, 45, Gimage_im[i], BW_im[i], K[i]);
+    Gim_mat[i] = Emx2Mat_U8(Gimage_im[i]);
+    //阈值
+    threshold(Gim_mat[i], bw_im[i], 0, 255,
+              THRESH_BINARY_INV);               // INV_THRESH_BINARY
+    bw_im[i].convertTo(bw_im[i], CV_8U, 1, 0);  // 64f->8u
+  }
 
-  // gabor_im(image[1], 8, 45, Gimage_im[1], BW_im[1], K[1]);
-  // Gim_mat[1] = Emx2Mat_U8(Gimage_im[1]);
-  // //阈值
-  // threshold(Gim_mat[1], bw_im[1], 0, 255,
-  //           THRESH_BINARY_INV);               // INV_THRESH_BINARY
-  // bw_im[1].convertTo(bw_im[1], CV_8U, 1, 0);  // 64f->8u
-
-  parallel_for_(Range(0, 2),
-                MyLoopBody(image, Gimage_im, BW_im, K, Gim_mat, bw_im));
-
+  // parallel_for_(Range(0, 2),
+  //               MyLoopBody(image, Gimage_im, BW_im, K, Gim_mat, bw_im));
 
   FHD = hamming(bw_im[0], bw_im[1]);
   cout << "FHD=" << FHD << endl;
   //下面做平移复位的操作代码没有用
-  // if (FHD >= 0.1 && FHD <= 0.25)
-  // {
-  //   int ret = TransformPic(speckle_database, speckle_auth, speckle_auth);
-  //   if (ret != -1) {
-  //     image[2] = Mat2Emx_U8(speckle_auth);
-  //     gabor_im(image[2], kWaveLength, 45, Gimage_im[2], BW_im[2], K[2]);
-  //     Gim_mat[2] = Emx2Mat_U8(Gimage_im[2]);
-  //     threshold(Gim_mat[2], bw_im[2], 0, 255, THRESH_BINARY_INV);
-  //     bw_im[2].convertTo(bw_im[2], CV_8U, 1, 0);
-  //     FHD = hamming(bw_im[0], bw_im[2]);
-  //     cout << "FHD2=" << FHD << endl;
-  //   }
-  // }
+  if (FHD >= 0.1 && FHD <= 0.25) {
+    int ret = TransformPic(speckle_database, speckle_auth, speckle_auth);
+    if (ret != -1) {
 
-  for (int i = 0; i < 3; i++) {
-    emxDestroyArray_boolean_T(K[i]);
-    emxDestroyArray_boolean_T(BW_im[i]);
-    emxDestroyArray_real_T(Gimage_im[i]);
-    if (image[i]) emxDestroyArray_uint8_T(image[i]);
+      if (!image[1] ||
+          image[1]->allocatedSize == speckle_auth.cols * speckle_auth.rows) {
+        if (image[1]) emxDestroyArray_uint8_T(image[1]);
+        image[1] = emxCreate_uint8_T(speckle_auth.cols, speckle_auth.rows);
+      }
+      memcpy(image[1]->data, speckle_auth.data, image[1]->allocatedSize);
+      // image[2] = Mat2Emx_U8(speckle_auth);
+
+      gabor_im(image[1], kWaveLength, 45, Gimage_im[1], BW_im[1], K[1]);
+      Gim_mat[1] = Emx2Mat_U8(Gimage_im[1]);
+      threshold(Gim_mat[1], bw_im[1], 0, 255, THRESH_BINARY_INV);
+      bw_im[1].convertTo(bw_im[1], CV_8U, 1, 0);
+      FHD = hamming(bw_im[0], bw_im[1]);
+      cout << "FHD2=" << FHD << endl;
+    }
   }
 
-  // Terminate the application.
-  gabor_im_terminate();
-  // waitKey(0);
   return FHD;
 }
