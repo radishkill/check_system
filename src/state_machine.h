@@ -16,7 +16,7 @@ class StateMachine {
   int Authentication();      //认证
   int GenerateRandomSeed();  //随机生成seed
   int FindKey();             //库定位算法
-  int ShowBySeed(int seed);
+  int ShowBySeed(unsigned int seed);
   int TakePhoto();
   int Other(int s);
 

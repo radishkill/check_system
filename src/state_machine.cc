@@ -249,46 +249,8 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
       global_arg->led->LcdLed(0);
       global_arg->led->ErrorLed(0);
 
-      int random_seed1 = GenerateRandomSeed();
-      std::cout << "seed:" << random_seed1 << std::endl;
-      ShowBySeed(random_seed1);
-      TakePhoto();
+      Other(0);
 
-      cv::Mat pic1 = global_arg->camera->GetPicMat().clone();
-      global_arg->lcd->ShowByColor(255);
-      sleep(1);
-      global_arg->lcd->ShowByColor(0);
-      std::cout << "seed:" << random_seed1 << std::endl;
-
-      ShowBySeed(random_seed1);
-      TakePhoto();
-
-      cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
-      cv::imwrite("./pic1.bmp", pic1);
-      cv::imwrite("./pic2.bmp", pic2);
-      double result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
-      std::cout << "1 and 2result:" << result << std::endl;
-
-      // int random_seed2 = GenerateRandomSeed();
-      // ShowBySeed(random_seed2);
-      // std::cout << "seed:" << random_seed2 << std::endl;
-      // TakePhoto();
-
-      // cv::Mat pic3 = global_arg->camera->GetPicMat().clone();
-      // result = AuthPic::DoAuthPic(pic2.clone(), pic3.clone());
-      // std::cout << "2 and 3 result:" << result << std::endl;
-      // result = AuthPic::DoAuthPic(pic1.clone(), pic3.clone());
-      // std::cout << "1 and 3 result:" << result << std::endl;
-      CheckPairStore(0);
-      for (int i = 0; i < 1; i++) {
-        global_arg->key_file->SavePicAndSeed(0, empty_pair_list_[0], pic1,
-                                             random_seed1);
-        global_arg->key_file->SavePicAndSeed(0, empty_pair_list_[1], pic2,
-                                             random_seed1);
-        // global_arg->key_file->SavePicAndSeed(0, 2 * i, pic1, random_seed1);
-        // global_arg->key_file->SavePicAndSeed(0, 2 * i + 1, pic2,
-        // random_seed1);
-      }
       std::cout << "end!!\n";
       //如果注册成功
       for (int i = 0; i < 10; i++) {
@@ -453,7 +415,7 @@ int StateMachine::Register() {
     return -1;
   }
 
-  if (global_arg->sm->CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() == -1) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
@@ -461,7 +423,7 @@ int StateMachine::Register() {
 
   auto begin_tick = std::chrono::steady_clock::now();
   //实际为之前的管理检查算法 用于检查此卡是否为管理员
-  ret = global_arg->sm->CheckKey(0);
+  ret = CheckKey(0);
   if (ret == 0) {
     std::cout << "is not admin key insert" << std::endl;
     return -2;
@@ -543,7 +505,7 @@ int StateMachine::Register() {
     }
   }
 
-  global_arg->sm->CheckPairStore(key_id);
+  CheckPairStore(key_id);
 
   //中断返回复位状态
   if (global_arg->interrupt_flag) {
@@ -554,8 +516,7 @@ int StateMachine::Register() {
   //连续拍100张照片
   n = 10;
   for (unsigned int i = 0; i < empty_pair_list_.size() && i < n; i++) {
-    GlobalArg* global_arg = GlobalArg::GetInstance();
-    int seed = global_arg->sm->GenerateRandomSeed();
+    int seed = GenerateRandomSeed();
     ShowBySeed(seed);
 
     ret = TakePhoto();
@@ -601,7 +562,7 @@ int StateMachine::Authentication() {
     return -1;
   }
 
-  if (global_arg->sm->CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() == -1) {
     std::cout << "no key insert" << std::endl;
     //认证失败
     return -1;
@@ -653,10 +614,10 @@ int StateMachine::Authentication() {
 int StateMachine::GenerateRandomSeed() {
   std::srand(std::time(nullptr));
   //  return (int)(std::rand()*48271ll%2147483647);
-  return std::rand();
+  return std::rand() % 1000;
 }
 
-int StateMachine::ShowBySeed(int seed) {
+int StateMachine::ShowBySeed(unsigned int seed) {
   GlobalArg* global_arg = GlobalArg::GetInstance();
   global_arg->lcd->ShowBySeed(seed);
   global_arg->led->LcdLed(1);
@@ -678,7 +639,50 @@ int StateMachine::TakePhoto() {
   return global_arg->camera->TakePhoto();
 }
 
-int StateMachine::Other(int s) {}
+int StateMachine::Other(int s) {
+  GlobalArg* global_arg = GlobalArg::GetInstance();
+  int random_seed1 = GenerateRandomSeed();
+  std::cout << "seed:" << random_seed1 << std::endl;
+  ShowBySeed(random_seed1);
+  TakePhoto();
+
+  cv::Mat pic1 = global_arg->camera->GetPicMat().clone();
+  global_arg->lcd->ShowByColor(255);
+  sleep(1);
+  global_arg->lcd->ShowByColor(0);
+  std::cout << "seed:" << random_seed1 << std::endl;
+
+  ShowBySeed(random_seed1);
+  TakePhoto();
+
+  cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
+  cv::imwrite("./pic1.bmp", pic1);
+  cv::imwrite("./pic2.bmp", pic2);
+  double result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
+  std::cout << "1 and 2result:" << result << std::endl;
+
+  // int random_seed2 = GenerateRandomSeed();
+  // ShowBySeed(random_seed2);
+  // std::cout << "seed:" << random_seed2 << std::endl;
+  // TakePhoto();
+
+  // cv::Mat pic3 = global_arg->camera->GetPicMat().clone();
+  // result = AuthPic::DoAuthPic(pic2.clone(), pic3.clone());
+  // std::cout << "2 and 3 result:" << result << std::endl;
+  // result = AuthPic::DoAuthPic(pic1.clone(), pic3.clone());
+  // std::cout << "1 and 3 result:" << result << std::endl;
+  CheckPairStore(0);
+  for (int i = 0; i < 1; i++) {
+    global_arg->key_file->SavePicAndSeed(0, empty_pair_list_[0], pic1,
+                                         random_seed1);
+    global_arg->key_file->SavePicAndSeed(0, empty_pair_list_[1], pic2,
+                                         random_seed1);
+    // global_arg->key_file->SavePicAndSeed(0, 2 * i, pic1, random_seed1);
+    // global_arg->key_file->SavePicAndSeed(0, 2 * i + 1, pic2,
+    // random_seed1);
+  }
+  return 0;
+}
 
 //库定位算法 判断一枚key是否已经建立过数据库了
 int StateMachine::FindKey() {
@@ -693,6 +697,7 @@ int StateMachine::FindKey() {
   int i = 1;
   double result;
 
+  std::cout << "max key id = " << max_key_id_ << std::endl;
   while (i <= max_key_id_) {
     auto begin_tick = std::chrono::steady_clock::now();
     if (global_arg->interrupt_flag) {
@@ -758,7 +763,7 @@ int StateMachine::FindKey() {
 //插入检测算法
 int StateMachine::CheckKeyInsert() {
   GlobalArg* global_arg = GlobalArg::GetInstance();
-  int seed = global_arg->sm->GenerateRandomSeed();
+  int seed = GenerateRandomSeed();
 
   ShowBySeed(seed);
 
@@ -774,6 +779,7 @@ int StateMachine::CheckKey(int key_id) {
     std::cout << "available pair is empty keyid = " << key_id << endl;
     return -1;
   }
+  std::srand(time(nullptr));
   //最多检查10个激励对
   int n = available_pair_list_.size() < 10 ? available_pair_list_.size() : 10;
   double result;
@@ -840,16 +846,16 @@ int StateMachine::CheckKey(int key_id) {
       std::cout << "generate new a pair index = " << seed_index << std::endl;
       //认证通过
       //然后重新生成新的激励对
-      int rand_seed = global_arg->sm->GenerateRandomSeed();
+      int new_seed = GenerateRandomSeed();
 
-      ShowBySeed(rand_seed);
+      ShowBySeed(new_seed);
 
       TakePhoto();
 
       cv::Mat new_pic = global_arg->camera->GetPicMat().clone();
 
       global_arg->key_file->SavePicAndSeed(key_id, seed_index, new_pic,
-                                           rand_seed);
+                                           new_seed);
       return 1;
     }
     //被中断了
@@ -894,7 +900,7 @@ int StateMachine::SystemInit() {
     return -1;
   }
 
-  if (global_arg->sm->CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() == -1) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
@@ -902,7 +908,7 @@ int StateMachine::SystemInit() {
 
   auto begin_tick = std::chrono::steady_clock::now();
   //实际为之前的管理检查算法 用于检查此卡是否为管理员
-  ret = global_arg->sm->CheckKey(0);
+  ret = CheckKey(0);
   if (ret == 0) {
     std::cout << "is not admin key insert" << std::endl;
     //非管理员key插入
