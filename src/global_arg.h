@@ -22,6 +22,7 @@ class GlobalArg {
     no_button_flag = false;
     no_laser_flag = false;
     no_lcd_flag = false;
+    check_btn_flag = 0;
   }
   Laser* laser;
   CameraManager* camera;
@@ -33,6 +34,7 @@ class GlobalArg {
   HostController* host;
 
   int interrupt_flag;
+  int check_btn_flag;
   int hsk_flag;  //上位机握手控制
   bool is_fault;
 
@@ -59,6 +61,7 @@ class GlobalArg {
   std::string camera_config_file_addr;
   std::string mid_save_addr;
   unsigned long check_btn_down;
+  unsigned int interrupt_btn_down;
  private:
   static GlobalArg* global_arg_;
 };

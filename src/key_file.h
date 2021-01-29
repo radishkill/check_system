@@ -34,6 +34,7 @@ class KeyFile {
   //向PufData文件夹追加一个新的文件
   int AppendPufFile();
   int FindEmptyKeyDir();
+  int GetAvailableMaxKey();
   int GetSeed(int id,int index);
   int IsSeedAvailable(int id, int index);
   int IsPicAvailable(int id, int index);
@@ -47,6 +48,7 @@ class KeyFile {
   int DeleteSeed(int id,int index);
   int DeletePicAndSeed(int id, int index);
   int DeleteAllExceptAdmin();
+  int DeleteAdmin();
   int DeleteAll();
   bool Is_Open()const;
 
