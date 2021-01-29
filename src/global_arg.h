@@ -55,6 +55,10 @@ class GlobalArg {
   int camera_saturation;
   int camera_sharpness;
 
+  int pic_avg_high;
+  int pic_avg_low;
+  double auth_threshold;
+
   int camera_lut_mode;
   int stable_flag;
 
