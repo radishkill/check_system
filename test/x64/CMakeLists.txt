@@ -1,5 +1,5 @@
-set(CMAKE_CXX_COMPILER "g++")
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_BUILD_TYPE Release)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/x64)
 
 add_compile_options("-std=c++14")
@@ -19,7 +19,7 @@ if(OPENMP_FOUND)
 endif()
 
 add_definitions(
-  -g -w -Wall 
+  -w -Wall 
   )
 
 add_executable(OnlyAuth_x64
@@ -66,7 +66,7 @@ target_link_libraries(OnlyAuth_x64
   opencv_xfeatures2d
   opencv_highgui
   gomp
-	${PROJECT_SOURCE_DIR}/lib/x64/libCKCameraSDK.a
+	CKCameraSDK
 )
 
 add_executable(CalcTwoPic_x64
@@ -97,7 +97,6 @@ add_executable(CalcTwoPic_x64
 
 target_link_libraries(CalcTwoPic_x64
   pthread
-  tbb
   boost_program_options
   #  opencv_highgui
   opencv_core
@@ -107,8 +106,9 @@ target_link_libraries(CalcTwoPic_x64
   opencv_calib3d
   opencv_xfeatures2d
   opencv_highgui
-  gomp
-	CKCameraSDK
+  CKCameraSDK
+  omp
+  tbb
 )
 
 add_executable(ScreenTest_x64
@@ -138,7 +138,7 @@ target_link_libraries(CameraTest_x64
   opencv_core
   opencv_imgcodecs
   boost_program_options
-  ${PROJECT_SOURCE_DIR}/lib/x64/libCKCameraSDK.a
+  CKCameraSDK
 )
 
 add_executable(MainTest_x64

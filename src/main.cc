@@ -8,6 +8,7 @@
 #include <sstream>
 #include <thread>
 
+#include "authpic.h"
 #include "camera_manager.h"
 #include "cmdline.h"
 #include "constant.h"
@@ -21,8 +22,8 @@
 #include "mutils.h"
 #include "state_machine.h"
 #include "usart.h"
-#include "authpic.h"
 
+using check_system::AuthPic;
 using check_system::CameraManager;
 using check_system::EventManager;
 using check_system::GlobalArg;
@@ -92,8 +93,7 @@ void InitSystem() {
 
   global_arg->em = new check_system::EventManager();
 
-  InitAuth();
-  
+  AuthPic::InitAuth();
 
   if (!global_arg->no_laser_flag) {
     global_arg->laser = new Laser(check_system::kLaserAddr);
@@ -217,9 +217,13 @@ void InitSystem() {
     std::cout << "button " << check_system::kAuthButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
+      global_arg->led->ErrorLed(0);
       std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                StateMachine::kAuth));
       th.detach();
+    } else {
+      //按下
+      global_arg->led->ErrorLed(1);
     }
   });
   ss.str("");
@@ -242,9 +246,12 @@ void InitSystem() {
     std::cout << "button " << check_system::kAuthButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
+      global_arg->led->CmosLed(0);
       std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                StateMachine::kRegister));
       th.detach();
+    } else {
+      global_arg->led->CmosLed(1);
     }
   });
   ss.str("");
@@ -268,10 +275,28 @@ void InitSystem() {
               << std::endl;
     if (key == 0x31) {
       //抬起
-      std::cout << "set interrupt flag" << std::endl;
+      global_arg->led->LcdLed(0);
+      unsigned long up_time = std::time(nullptr);
+      // std::cout << "set interrupt flag" << std::endl;
       global_arg->interrupt_flag = 1;
+
+      if ((up_time - global_arg->interrupt_btn_down >= 10) &&
+          (up_time - global_arg->interrupt_btn_down < 20) &&
+          global_arg->check_btn_flag) {
+        std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                                 StateMachine::kOther));
+        th.detach();
+      }
+      global_arg->interrupt_btn_down = 0;
+      global_arg->check_btn_flag = 0;
     } else {
-      
+      //按下
+      global_arg->led->LcdLed(1);
+      // 防止抖动
+      if (global_arg->interrupt_btn_down == 0) {
+        global_arg->interrupt_btn_down = time(nullptr);
+        global_arg->check_btn_flag = 0;
+      }
     }
   });
   ss.str("");
@@ -294,26 +319,38 @@ void InitSystem() {
     std::cout << "button " << check_system::kCheckSelfButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
+      global_arg->led->LaserLed(0);
       unsigned long up_time = std::time(nullptr);
+      global_arg->check_btn_flag = 1;
       //抬起按钮
       //[10, 20)时触发删除操作
       if ((up_time - global_arg->check_btn_down >= 10) &&
           (up_time - global_arg->check_btn_down < 20) &&
           global_arg->interrupt_flag) {
-        std::cout << "delete all key!!\n";
-        global_arg->key_file->DeleteAll();
-        //如果删除成功 闪灯3秒
-        for (int i = 0; i < 5; i++) {
+
+        //全灯OFF
+        global_arg->led->CmosLed(0);
+        global_arg->led->LaserLed(0);
+        global_arg->led->LcdLed(0);
+        global_arg->led->ErrorLed(0);
+        
+        global_arg->key_file->DeleteAdmin();
+        std::cout << "delete admin puf00!!\n";
+        //如果删除成功
+        for (int i = 0; i < 10; i++) {
+
           global_arg->led->CmosLed(1);
           global_arg->led->LaserLed(1);
           global_arg->led->LcdLed(1);
           global_arg->led->ErrorLed(1);
-          Utils::MSleep(500);
+
+          Utils::MSleep(200);
+
           global_arg->led->CmosLed(0);
           global_arg->led->LaserLed(0);
           global_arg->led->LcdLed(0);
           global_arg->led->ErrorLed(0);
-          Utils::MSleep(500);
+          Utils::MSleep(200);
         }
       }
       //抬起时间大于10s
@@ -321,21 +358,11 @@ void InitSystem() {
       if ((up_time - global_arg->check_btn_down >= 10) &&
           (up_time - global_arg->check_btn_down < 20) &&
           !global_arg->interrupt_flag) {
-        std::cout << "delete all key except admin!!\n";
-        global_arg->key_file->DeleteAllExceptAdmin();
-        //如果删除成功 闪全灯3秒
-        for (int i = 0; i < 3; i++) {
-          global_arg->led->CmosLed(1);
-          global_arg->led->LaserLed(1);
-          global_arg->led->LcdLed(1);
-          global_arg->led->ErrorLed(1);
-          Utils::MSleep(500);
-          global_arg->led->CmosLed(0);
-          global_arg->led->LaserLed(0);
-          global_arg->led->LcdLed(0);
-          global_arg->led->ErrorLed(0);
-          Utils::MSleep(500);
-        }
+
+        std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+                                 StateMachine::kSystemInit));
+        th.detach();
+
       }
       //[2, 10)
       if ((up_time - global_arg->check_btn_down) >= 2 &&
@@ -344,16 +371,20 @@ void InitSystem() {
                                  StateMachine::kSelfTest));
         th.detach();
       }
-      if ((up_time - global_arg->check_btn_down) <= 1) {
+      if ((up_time - global_arg->check_btn_down) <= 1 &&
+          global_arg->interrupt_btn_down == 0) {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                  StateMachine::kOther));
         th.detach();
       }
       global_arg->check_btn_down = 0;
     } else {
+      global_arg->led->LaserLed(1);
       //按下自检按钮
-      global_arg->check_btn_down = std::time(nullptr);
-      global_arg->interrupt_flag = 0;
+      if (global_arg->check_btn_down == 0) {
+        global_arg->check_btn_down = std::time(nullptr);
+        global_arg->interrupt_flag = 0;
+      }
     }
   });
   ss.str("");

@@ -74,7 +74,6 @@ HEADERS += \
     src/gabor_im/rtGetInf.h \
     src/gabor_im/rtGetNaN.h \
     src/gabor_im/rt_nonfinite.h \
-    src/gabor_im/sind.h \
-    src/imtrans_my.h
+    src/gabor_im/sind.h 
 
 TARGET = ../CheckSystem
