@@ -357,8 +357,7 @@ int StateMachine::SelfTest() {
   cv::Mat pic = global_arg->camera->GetPicMat();
   cv::imwrite("./randpic.bmp", pic);
 
-
-  int ret = Utils::CheckPic(pic, 50, 220);
+  int ret = Utils::CheckPic(pic, global_arg->pic_avg_low, global_arg->pic_avg_high);
   if (ret == 1) {
     //太亮 lcd没插入
     lcd_err = true;
@@ -424,7 +423,7 @@ int StateMachine::Register() {
     return -1;
   }
 
-  if (CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
@@ -473,7 +472,7 @@ int StateMachine::Register() {
   //确认激光器是打开状态
   global_arg->laser == nullptr ?: global_arg->laser->ForceOpen();
 
-  if (CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
@@ -532,12 +531,15 @@ int StateMachine::Register() {
     ret = TakePhoto();
     if (ret == -1) continue;
 
-    for (int j = 0; j < 10; j++) {
-      //保存激励对
-      global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i * 10 + j],
-                                           global_arg->camera->GetPicMat(),
-                                           seed);
-    }
+    global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i],
+                                         global_arg->camera->GetPicMat(), seed);
+
+    // for (int j = 0; j < 1; j++) {
+    //   //保存激励对
+    //   global_arg->key_file->SavePicAndSeed(key_id, empty_pair_list_[i],
+    //                                        global_arg->camera->GetPicMat(),
+    //                                        seed);
+    // }
 
     //中断返回复位状态
     if (global_arg->interrupt_flag == 1) {
@@ -572,7 +574,7 @@ int StateMachine::Authentication() {
     return -1;
   }
 
-  if (CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
     //认证失败
     return -1;
@@ -658,7 +660,7 @@ int StateMachine::Other(int s) {
 
   cv::Mat pic1 = global_arg->camera->GetPicMat().clone();
   global_arg->lcd->ShowByColor(255);
-  sleep(1);
+  sleep(10);
   global_arg->lcd->ShowByColor(0);
   std::cout << "seed:" << random_seed1 << std::endl;
 
@@ -668,7 +670,7 @@ int StateMachine::Other(int s) {
   cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
   cv::imwrite("./pic1.bmp", pic1);
   cv::imwrite("./pic2.bmp", pic2);
-  double result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
+  double result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone(), global_arg->auth_threshold);
   std::cout << "1 and 2result:" << result << std::endl;
 
   // int random_seed2 = GenerateRandomSeed();
@@ -747,7 +749,7 @@ int StateMachine::FindKey() {
     cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
 
     //验证两张图片
-    result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
+    result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone(), global_arg->auth_threshold);
     auto end_tick = std::chrono::steady_clock::now();
 
     // std::cout << "auth pic elapsed time :"
@@ -756,7 +758,7 @@ int StateMachine::FindKey() {
     //                  .count()
     //           << "ms" << std::endl;
 
-    if (result <= kAuthThreshold) {
+    if (result <= global_arg->auth_threshold) {
       std::cout << "find key ok key id = " << i << std::endl;
       //找到相应的库
       break;
@@ -782,8 +784,7 @@ int StateMachine::CheckKeyInsert() {
   ShowBySeed(seed);
 
   TakePhoto();
-  return Utils::CheckPic(global_arg->camera->GetPicMat(), 10, 200);
-
+  return Utils::CheckPic(global_arg->camera->GetPicMat(), global_arg->pic_avg_low, global_arg->pic_avg_high);
 }
 
 int StateMachine::CheckKey(int key_id) {
@@ -836,18 +837,19 @@ int StateMachine::CheckKey(int key_id) {
     cv::Mat pic1 = global_arg->key_file->ReadPic(key_id, seed_index).clone();
     cv::Mat pic2 = global_arg->camera->GetPicMat().clone();
 
+    // cv::imwrite("./pic1.bmp", pic1);
+    // cv::imwrite("./pic2.bmp", pic2);
 
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone());
+    result = AuthPic::DoAuthPic(pic1.clone(), pic2.clone(), global_arg->auth_threshold);
 
     //表示此钥匙已经被使用了一次
     available_pair_list_[index] = -1;
 
-    if (result <= kAuthThreshold) {
-
+    if (result <= global_arg->auth_threshold) {
     }
     //值越小说明两张图片越相似
-    if (result <= kAuthThreshold) {
+    if (result <= global_arg->auth_threshold) {
       //删除本次循环使用的Seed文件及其对应的Pic文件
       std::cout << "delete old pair index = " << seed_index << std::endl;
       global_arg->key_file->DeletePicAndSeed(key_id, seed_index);
@@ -857,7 +859,7 @@ int StateMachine::CheckKey(int key_id) {
         return 1;
       }
       //如果是管理员就特殊处理
-      // if (result > (kAuthThreshold - 0.1)) {
+      // if (result > (global_arg->auth_threshold - 0.1)) {
       //   return 1;
       // }
 
@@ -919,7 +921,7 @@ int StateMachine::SystemInit() {
     return -1;
   }
 
-  if (CheckKeyInsert() == -1) {
+  if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
     return -1;
   }
