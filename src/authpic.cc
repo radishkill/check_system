@@ -459,7 +459,7 @@ int AuthPic::DestroyAuth() {
   return 0;
 }
 
-double AuthPic::DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
+double AuthPic::DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth, double auth_threshold) {
   if (!speckle_auth.data || !speckle_auth.data) {
     std::cout << "picture data error!!!!\n";
     return 1;
@@ -506,7 +506,7 @@ double AuthPic::DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth) {
   FHD = hamming(bw_im[0], bw_im[1]);
   std::cout << "FHD=" << FHD << std::endl;
   //下面做平移复位的操作代码没有用
-  if (FHD >= kAuthThreshold && FHD <= 0.35) {
+  if (FHD >= auth_threshold && FHD <= 0.35) {
     int ret = TransformPic(speckle_database, speckle_auth, speckle_auth);
     if (ret != -1) {
       if (!image[1] ||

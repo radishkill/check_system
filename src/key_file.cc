@@ -225,6 +225,7 @@ int KeyFile::SaveSeed(int id, int index, int seed) {
     return 0;
   }
   ofs << seed;
+  ofs.flush();
   ofs.close();
   return 0;
 }

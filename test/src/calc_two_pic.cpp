@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
                           cv::IMREAD_UNCHANGED);
         pic2 = cv::imread(std::string("./mid_save1/") + picture_addr2,
                           cv::IMREAD_UNCHANGED);
-        AuthPic::DoAuthPic(pic1, pic2);
+        AuthPic::DoAuthPic(pic1, pic2, check_system::kAuthThreshold);
       }
     }
     return 0;
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
                             cv::IMREAD_UNCHANGED);
           pic2 = cv::imread(std::string("./mid_save1/") + picture_addr2,
                             cv::IMREAD_UNCHANGED);
-          AuthPic::DoAuthPic(pic1, pic2);
+          AuthPic::DoAuthPic(pic1, pic2,check_system::kAuthThreshold);
         }
       }
     return 0;
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
   for (int i =0 ; i < n; i++) {
     pic1 = cv::imread(pic_addr[0], cv::IMREAD_UNCHANGED);
     pic2 = cv::imread(pic_addr[1], cv::IMREAD_UNCHANGED);
-    AuthPic::DoAuthPic(pic1, pic2);
+    AuthPic::DoAuthPic(pic1, pic2, check_system::kAuthThreshold);
   }
   auto end_tick = std::chrono::steady_clock::now();
   std::cout << "test " << n << " times\n";

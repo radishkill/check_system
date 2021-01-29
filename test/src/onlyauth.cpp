@@ -215,7 +215,7 @@ int CheckKey(int key_id) {
     cv::Mat pic3 = cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(), CV_8UC4, global_arg->lcd->GetFrameBuffer());
     
     //将TEMP与Pic进行运算，得出结果值和阈值T进行比较
-    result = AuthPic::DoAuthPic(pic1, pic2);
+    result = AuthPic::DoAuthPic(pic1, pic2, check_system::kAuthThreshold);
     
     SavePic(pic1, key_id, key_id_index, std::string("_base") + std::to_string(seed) + std::string("_") + std::to_string(result));
     SavePic(pic2, key_id, key_id_index, std::string("_auth") + std::to_string(seed) + std::string("_") + std::to_string(result));
@@ -282,7 +282,7 @@ int FindKey() {
     cv::Mat pic3 = cv::Mat(global_arg->lcd->GetFbHeight(), global_arg->lcd->GetFbWidth(), CV_8UC4, global_arg->lcd->GetFrameBuffer());
     
     //验证两张图片
-    result = AuthPic::DoAuthPic(pic1, pic2);
+    result = AuthPic::DoAuthPic(pic1, pic2, check_system::kAuthThreshold);
 
     SavePic(pic1, key_id, key_id_index, std::string("_base") + std::to_string(seed) + std::string("_") + std::to_string(result));
     SavePic(pic2, key_id, key_id_index, std::string("_auth") + std::to_string(seed) + std::string("_") + std::to_string(result));
