@@ -63,7 +63,6 @@ class GlobalArg {
   int stable_flag;
 
   std::string camera_config_file_addr;
-  std::string mid_save_addr;
   unsigned long check_btn_down;
   unsigned int interrupt_btn_down;
  private:

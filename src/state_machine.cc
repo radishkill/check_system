@@ -354,10 +354,10 @@ int StateMachine::SelfTest() {
   global_arg->led->CmosLed(0);
   camera_err = global_arg->camera->TakePhoto() == 0 ? false : true;
 
-  cv::Mat pic = global_arg->camera->GetPicMat();
-  cv::imwrite("./randpic.bmp", pic);
+  cv::Mat pic1 = global_arg->camera->GetPicMat().clone();
+  cv::imwrite("./roipic.bmp", pic1);
 
-  int ret = Utils::CheckPic(pic, global_arg->pic_avg_low, global_arg->pic_avg_high);
+  int ret = Utils::CheckPic(pic1, global_arg->pic_avg_low, global_arg->pic_avg_high);
   if (ret == 1) {
     //太亮 lcd没插入
     lcd_err = true;
@@ -365,6 +365,8 @@ int StateMachine::SelfTest() {
     //太暗 没有激光
     laser_err = true;
   }
+
+
   //得到最大的key
   max_key_id_ = global_arg->key_file->GetAvailableMaxKey();
   std::cout << "max key id = " << max_key_id_ << std::endl;
@@ -522,7 +524,7 @@ int StateMachine::Register() {
   }
   begin_tick = std::chrono::steady_clock::now();
   //连续拍100张照片
-  n = 10;
+  n = 20;
 
   for (unsigned int i = 0; i < empty_pair_list_.size() && i < n; i++) {
     int seed = GenerateRandomSeed();
@@ -543,7 +545,8 @@ int StateMachine::Register() {
 
     //中断返回复位状态
     if (global_arg->interrupt_flag == 1) {
-      goto status_fault;
+      break;
+      // goto status_fault;
     }
     //确认激光器是打开状态 多次拍照可能会超过30s
     global_arg->laser == nullptr ?: global_arg->laser->ForceOpen();
@@ -804,15 +807,15 @@ int StateMachine::CheckKey(int key_id) {
     int seed_index = available_pair_list_[index];
     //如果随机到的是已经被删除了的
     if (seed_index == -1) {
-      int i = index;
+      int i = index + 1;
       //向一下个查看
-      while (i++) {
+      while (1) {
         //如果已经到最后已经，就返回第一个
         if (i == available_pair_list_.size()) i = 0;
         //找到了一个没有被删除的钥匙
         if (available_pair_list_[i] != -1) {
           index = i;
-          seed_index = available_pair_list_[index];
+          seed_index = available_pair_list_[i];
           break;
         }
         //钥匙已经被删完了
@@ -820,6 +823,7 @@ int StateMachine::CheckKey(int key_id) {
           std::cout << "available pair is empty keyid = " << key_id << endl;
           return 0;
         }
+        i++;
       }
     }
     std::cout << "key id = " << key_id << " " << seed_index << std::endl;
