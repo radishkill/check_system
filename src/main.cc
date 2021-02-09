@@ -362,19 +362,18 @@ void InitSystem() {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                  StateMachine::kSystemInit));
         th.detach();
-
       }
       //[2, 10)
       if ((up_time - global_arg->check_btn_down) >= 2 &&
           (up_time - global_arg->check_btn_down) < 10) {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                                 StateMachine::kSelfTest));
+                                 StateMachine::kOther));
         th.detach();
       }
       if ((up_time - global_arg->check_btn_down) <= 1 &&
           global_arg->interrupt_btn_down == 0) {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                                 StateMachine::kOther));
+                                 StateMachine::kSelfTest));
         th.detach();
       }
       global_arg->check_btn_down = 0;

@@ -109,17 +109,16 @@ double hamming(cv::Mat input1, cv::Mat input2) {
   return diff;
 }
 
-int TransformPic(cv::Mat &img1, cv::Mat &img2, cv::Mat rI2) {
+int TransformPic(cv::Mat img1, cv::Mat img2, cv::Mat rI2) {
   cv::Mat rI1;
 
   if (img1.empty() || img2.empty()) {
     std::cout << "Could not open or find the image!\n" << std::endl;
-
     return -1;
   }
 
   //-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
-  int minHessian = 400;
+  int minHessian = 800;
   // int minHessian = 5;
   cv::Ptr<cv::xfeatures2d::SURF> detector =
       cv::xfeatures2d::SURF::create(minHessian);
@@ -128,8 +127,7 @@ int TransformPic(cv::Mat &img1, cv::Mat &img2, cv::Mat rI2) {
   detector->detectAndCompute(img1, cv::noArray(), keypoints1, descriptors1);
   detector->detectAndCompute(img2, cv::noArray(), keypoints2, descriptors2);
 
-  // cout << "key1 key2  " << keypoints1.size() << "   " << keypoints2.size() <<
-  // endl;
+  std::cout << "key1 key2  " << keypoints1.size() << "   " << keypoints2.size() <<std::endl;
   if (keypoints1.size() == 0 || keypoints2.size() == 0) {
     return -1;
   }

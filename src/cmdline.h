@@ -19,8 +19,6 @@ void InitCmdLine(int argc, char** argv) {
       "no-lcd", po::bool_switch(&global_arg->no_lcd_flag)->default_value(false),
       "");
   desc.add_options()("no-led", "");
-  desc.add_options()("mid-save",
-                     po::value<std::string>(&global_arg->mid_save_addr), "");
   desc.add_options()(
       "resolution-index",
       po::value<int>(&global_arg->resolution_index)->default_value(-1),
