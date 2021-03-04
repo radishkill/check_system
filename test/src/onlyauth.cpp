@@ -50,8 +50,7 @@ class GlobalArg {
   int camera_saturation;
   int camera_sharpness;
 
-  int camera_lut_mode;
-  int stable_flag;
+  double wave_length;
 
 
   std::string camera_config_file_addr;
@@ -102,12 +101,8 @@ void InitCmdLine(int argc, char **argv) {
                      "");
   desc.add_options()("camera-config-addr",
                      po::value<std::string>(&global_arg->camera_config_file_addr), "");
-  desc.add_options()(
-      "camera-lut-mode",
-      po::value<int>(&global_arg->camera_lut_mode)->default_value(-1),
-      "GAMMA_DYNAMIC_MODE = 0, GAMMA_PRESET_MODE, GAMMA_USER_MODE");
-  desc.add_options()("stable-flag",po::value<int>(&global_arg->stable_flag)->default_value(-1), "no rand index");
 
+ 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -177,10 +172,9 @@ int CheckKey(int key_id) {
   double result;
   while (n--) {
     int index;
-    if (global_arg->stable_flag == -1)
-      index = std::rand() % available_pair_list_.size();
-    else
-      index = global_arg->stable_flag;
+    
+    index = std::rand() % available_pair_list_.size();
+
     int key_id_index = available_pair_list_[index];
     //如果随机到的是已经被删除了的
     if (key_id_index == -1) {
@@ -266,10 +260,8 @@ int FindKey() {
     std::cout << "empty pair list = " << empty_pair_list_.size() << std::endl;
     int index;
     int key_id_index;
-    if (global_arg->stable_flag == -1)
-      index = std::rand() % available_pair_list_.size();
-    else
-      index = global_arg->stable_flag;
+    index = std::rand() % available_pair_list_.size();
+
     key_id_index = available_pair_list_[index];
     int seed =
         global_arg->key_file->GetSeed(key_id, key_id_index);
@@ -352,7 +344,8 @@ int Authentication() {
 int main(int argc, char **argv) {
   global_arg = new GlobalArg();
   InitCmdLine(argc, argv);
-  AuthPic::InitAuth();
+  global_arg->wave_length = 8;
+  AuthPic::InitAuth(&global_arg->wave_length);
   if (!global_arg->no_button_flag) {
     global_arg->em = new EventManager();
   }
@@ -378,8 +371,6 @@ int main(int argc, char **argv) {
   if (!global_arg->camera->IsOpen()) {
     return -1;
   }
-  //设置lut模式
-  global_arg->camera_lut_mode == -1 ?: global_arg->camera->SetLutMode(global_arg->camera_lut_mode);
   //设置分辨率
   global_arg->resolution_index == -1
       ?: global_arg->camera->SetResolution(global_arg->resolution_index);

@@ -23,8 +23,9 @@ class AuthPic {
   static emxArray_uint8_T *image[3];
   static cv::Mat bw_im[3];
   static cv::Mat Gim_mat[3];
+  static double* wave_length_;
 
-  static int InitAuth();
+  static int InitAuth(double* wave_length);
   static int DestroyAuth();
 
   static double DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth, double auth_threshold);
