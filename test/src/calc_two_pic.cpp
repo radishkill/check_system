@@ -39,7 +39,9 @@ void InitCmdLine(int argc, char **argv) {
 int main(int argc, char **argv) {
   InitCmdLine(argc, argv);
   cv::Mat pic1, pic2;
-  AuthPic::InitAuth();
+  double wave_length = 8;
+  
+  AuthPic::InitAuth(&wave_length);
   
   if (mode == 1) {
     int n1 = 10;

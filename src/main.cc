@@ -93,7 +93,7 @@ void InitSystem() {
 
   global_arg->em = new check_system::EventManager();
 
-  AuthPic::InitAuth();
+  AuthPic::InitAuth(&global_arg->wave_length);
 
   if (!global_arg->no_laser_flag) {
     global_arg->laser = new Laser(check_system::kLaserAddr);
@@ -362,19 +362,18 @@ void InitSystem() {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
                                  StateMachine::kSystemInit));
         th.detach();
-
       }
       //[2, 10)
-      if ((up_time - global_arg->check_btn_down) >= 2 &&
-          (up_time - global_arg->check_btn_down) < 10) {
-        std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                                 StateMachine::kSelfTest));
-        th.detach();
-      }
+      // if ((up_time - global_arg->check_btn_down) >= 2 &&
+      //     (up_time - global_arg->check_btn_down) < 10) {
+      //   std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
+      //                            StateMachine::kOther));
+      //   th.detach();
+      // }
       if ((up_time - global_arg->check_btn_down) <= 1 &&
           global_arg->interrupt_btn_down == 0) {
         std::thread th(std::bind(&StateMachine::RunMachine, global_arg->sm,
-                                 StateMachine::kOther));
+                                 StateMachine::kSelfTest));
         th.detach();
       }
       global_arg->check_btn_down = 0;

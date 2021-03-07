@@ -36,8 +36,6 @@ class GlobalArg {
   int camera_contrast;
   int camera_sharpness;
 
-  int camera_lut_mode;
-  int stable_flag;
   int n1;
   int n2;
   int seed;
@@ -99,14 +97,7 @@ void InitCmdLine(int argc, char **argv) {
   desc.add_options()(
       "camera-config-addr",
       po::value<std::string>(&global_arg->camera_config_file_addr), "");
-  desc.add_options()(
-      "camera-lut-mode",
-      po::value<int>(&global_arg->camera_lut_mode)->default_value(-1),
-      "GAMMA_DYNAMIC_MODE = 0, GAMMA_PRESET_MODE, GAMMA_USER_MODE");
-  desc.add_options()(
-      "stable-flag",
-      po::value<int>(&global_arg->stable_flag)->default_value(-1),
-      "no rand index");
+
   desc.add_options()("n1", po::value<int>(&global_arg->n1)->default_value(1),
                      "");
   desc.add_options()("n2", po::value<int>(&global_arg->n2)->default_value(1),
@@ -147,9 +138,7 @@ int main(int argc, char *argv[]) {
   }
   global_arg->camera->ShowCameraBaseConfig();
 
-  //设置lut模式
-  global_arg->camera_lut_mode == -1
-      ?: global_arg->camera->SetLutMode(global_arg->camera_lut_mode);
+
   //设置分辨率
   global_arg->resolution_index == -1
       ?: global_arg->camera->SetResolution(global_arg->resolution_index);

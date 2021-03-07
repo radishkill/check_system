@@ -2,6 +2,7 @@
 
 #include <string>
 
+
 namespace check_system {
 class Laser;
 class CameraManager;
@@ -23,6 +24,7 @@ class GlobalArg {
     no_laser_flag = false;
     no_lcd_flag = false;
     check_btn_flag = 0;
+    num_of_additions = 10;
   }
   Laser* laser;
   CameraManager* camera;
@@ -59,11 +61,11 @@ class GlobalArg {
   int pic_avg_low;
   double auth_threshold;
 
-  int camera_lut_mode;
-  int stable_flag;
+  int num_of_additions;
+  double wave_length;
+  int waiting_time;
 
   std::string camera_config_file_addr;
-  std::string mid_save_addr;
   unsigned long check_btn_down;
   unsigned int interrupt_btn_down;
  private:

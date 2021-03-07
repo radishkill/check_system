@@ -3,7 +3,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
-#include "./global_arg.h"
+#include "global_arg.h"
 namespace check_system {
 namespace po = boost::program_options;
 
@@ -19,8 +19,6 @@ void InitCmdLine(int argc, char** argv) {
       "no-lcd", po::bool_switch(&global_arg->no_lcd_flag)->default_value(false),
       "");
   desc.add_options()("no-led", "");
-  desc.add_options()("mid-save",
-                     po::value<std::string>(&global_arg->mid_save_addr), "");
   desc.add_options()(
       "resolution-index",
       po::value<int>(&global_arg->resolution_index)->default_value(-1),
@@ -59,14 +57,6 @@ void InitCmdLine(int argc, char** argv) {
   desc.add_options()(
       "camera-config-addr",
       po::value<std::string>(&global_arg->camera_config_file_addr), "");
-  desc.add_options()(
-      "camera-lut-mode",
-      po::value<int>(&global_arg->camera_lut_mode)->default_value(-1),
-      "GAMMA_DYNAMIC_MODE = 0, GAMMA_PRESET_MODE, GAMMA_USER_MODE");
-  desc.add_options()(
-      "stable-flag",
-      po::value<int>(&global_arg->stable_flag)->default_value(-1),
-      "no rand index");
   desc.add_options()("auth-threshold",
                      po::value<double>(&global_arg->auth_threshold)
                          ->default_value(kAuthThreshold),
@@ -79,6 +69,19 @@ void InitCmdLine(int argc, char** argv) {
       "pic-avg-low",
       po::value<int>(&global_arg->pic_avg_low)->default_value(20),
       "pic average threshold low");
+  desc.add_options()(
+      "num-of-additions",
+      po::value<int>(&global_arg->num_of_additions)->default_value(10),
+      "The added quantity when register new key");
+  desc.add_options()(
+      "wave-length",
+      po::value<double>(&global_arg->wave_length)->default_value(kWaveLength),
+      "the wave length argument");
+  desc.add_options()(
+      "waiting-time",
+      po::value<int>(&global_arg->waiting_time)->default_value(20),
+      "the time when system wait user insert new key"
+  );
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);

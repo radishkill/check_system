@@ -13,7 +13,7 @@ class StateMachine {
   int RunMachine(MachineState state);
   int SelfTest();            //自检
   int Register();            //注册
-  int Authentication();      //认证
+  int AuthState();      //认证
   int GenerateRandomSeed();  //随机生成seed
   int FindKey();             //库定位算法
   int ShowBySeed(unsigned int seed);

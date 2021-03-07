@@ -23,6 +23,7 @@ emxArray_boolean_T *AuthPic::K[3];
 emxArray_uint8_T *AuthPic::image[3];
 cv::Mat AuthPic::bw_im[3];
 cv::Mat AuthPic::Gim_mat[3];
+double *AuthPic::wave_length_ = nullptr;
 
 emxArray_uint8_T *Mat2Emx_U8(cv::Mat &srcImage) {
   int idx0;
@@ -109,17 +110,16 @@ double hamming(cv::Mat input1, cv::Mat input2) {
   return diff;
 }
 
-int TransformPic(cv::Mat &img1, cv::Mat &img2, cv::Mat rI2) {
+int TransformPic(cv::Mat img1, cv::Mat img2, cv::Mat rI2) {
   cv::Mat rI1;
 
   if (img1.empty() || img2.empty()) {
     std::cout << "Could not open or find the image!\n" << std::endl;
-
     return -1;
   }
 
   //-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
-  int minHessian = 400;
+  int minHessian = 800;
   // int minHessian = 5;
   cv::Ptr<cv::xfeatures2d::SURF> detector =
       cv::xfeatures2d::SURF::create(minHessian);
@@ -128,8 +128,7 @@ int TransformPic(cv::Mat &img1, cv::Mat &img2, cv::Mat rI2) {
   detector->detectAndCompute(img1, cv::noArray(), keypoints1, descriptors1);
   detector->detectAndCompute(img2, cv::noArray(), keypoints2, descriptors2);
 
-  // cout << "key1 key2  " << keypoints1.size() << "   " << keypoints2.size() <<
-  // endl;
+  std::cout << "key1 key2  " << keypoints1.size() << "   " << keypoints2.size() <<std::endl;
   if (keypoints1.size() == 0 || keypoints2.size() == 0) {
     return -1;
   }
@@ -416,7 +415,7 @@ class MyLoopBody : public cv::ParallelLoopBody {
   };
   virtual void operator()(const cv::Range &range) const {
     for (int colIdx = range.start; colIdx < range.end; ++colIdx) {
-      gabor_im(image_[colIdx], kWaveLength, 45, Gimage_im_[colIdx],
+      gabor_im(image_[colIdx], *AuthPic::wave_length_, 45, Gimage_im_[colIdx],
                BW_im_[colIdx], K_[colIdx]);
 
       Gim_mat_[colIdx] = Emx2Mat_U8(Gimage_im_[colIdx]);
@@ -436,7 +435,7 @@ class MyLoopBody : public cv::ParallelLoopBody {
   cv::Mat *Gim_mat_;
   cv::Mat *bw_im_;
 };
-int AuthPic::InitAuth() {
+int AuthPic::InitAuth(double* wave_length) {
   // Initialize the application.
   // 其实就是打开OpenMp并行
   gabor_im_initialize();
@@ -445,6 +444,7 @@ int AuthPic::InitAuth() {
     emxInitArray_boolean_T(&BW_im[i], 2);
     emxInitArray_boolean_T(&K[i], 2);
   }
+  wave_length_ = wave_length; 
   return 0;
 }
 int AuthPic::DestroyAuth() {
@@ -492,7 +492,7 @@ double AuthPic::DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth, double
   // }
 
   for (int i = 0; i < 2; i++) {
-    gabor_im(image[i], kWaveLength, 45, Gimage_im[i], BW_im[i], K[i]);
+    gabor_im(image[i], *AuthPic::wave_length_, 45, Gimage_im[i], BW_im[i], K[i]);
     Gim_mat[i] = Emx2Mat_U8(Gimage_im[i]);
     //阈值
     threshold(Gim_mat[i], bw_im[i], 0, 255,
@@ -517,7 +517,7 @@ double AuthPic::DoAuthPic(cv::Mat speckle_database, cv::Mat speckle_auth, double
       memcpy(image[1]->data, speckle_auth.data, image[1]->allocatedSize);
       // image[2] = Mat2Emx_U8(speckle_auth);
 
-      gabor_im(image[1], kWaveLength, 45, Gimage_im[1], BW_im[1], K[1]);
+      gabor_im(image[1], *AuthPic::wave_length_, 45, Gimage_im[1], BW_im[1], K[1]);
       Gim_mat[1] = Emx2Mat_U8(Gimage_im[1]);
       threshold(Gim_mat[1], bw_im[1], 0, 255, cv::THRESH_BINARY_INV);
       bw_im[1].convertTo(bw_im[1], CV_8U, 1, 0);
