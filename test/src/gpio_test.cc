@@ -90,12 +90,15 @@ int main(int argc, char **argv) {
   int auth_button_id = global_arg->button1 == -1
                            ? check_system::kAuthButtonNumber
                            : global_arg->button1;
+
   int register_button_id = global_arg->button2 == -1
                                ? check_system::kRegisterButtonNumber
                                : global_arg->button2;
+
   int int_button_id = global_arg->button3 == -1
                           ? check_system::kInterruptButtonNumber
                           : global_arg->button3;
+                          
   int check_button_id = global_arg->button4 == -1
                             ? check_system::kCheckSelfButtonNumber
                             : global_arg->button4;

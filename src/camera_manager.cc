@@ -22,10 +22,10 @@ CameraManager::CameraManager()
   std::cout << "enumerate camera num " << camera_nums_ << std::endl;
   ShowDeviceList(camera_nums_);
   //应该只有一个摄像头
-  // status = CameraInitEx(&hCamera_, camera_nums_ - 1, -1, -1);
-  status = CameraInit(&hCamera_, camera_nums_ - 1);
+  status = CameraInitEx(&hCamera_, camera_nums_ - 1, -1, -1);
+  // status = CameraInit(&hCamera_, camera_nums_ - 1);
   if (status != CAMERA_STATUS_SUCCESS) {
-    std::cout << "Camera init failed" << status << std::endl;
+    std::cout << "Camera init failed status = " << status << std::endl;
     is_open_flag_ = -1;
     return;
   }
@@ -33,6 +33,10 @@ CameraManager::CameraManager()
 }
 
 int CameraManager::InitCameraByDefault() {
+  if (!IsOpen()) {
+    std::cout << "Camera Fault Can't Init" << std::endl;
+    return -1;
+  }
   CameraSdkStatus status;
   // status = CameraLoadParameter(hCamera_, PARAMETER_TEAM_A);
   status = CameraSetTriggerMode(hCamera_, 1);  // soft trigger
@@ -67,6 +71,10 @@ int CameraManager::ShowDeviceList(int n) {
 
 int CameraManager::ReadParameterFromFile(const char* file) {
   assert(file != nullptr);
+  if (!IsOpen()) {
+    std::cout << "Camera Fault Can't Set Parameter" << std::endl;
+    return -1;
+  }
   CameraSdkStatus status;
   status = CameraReadParameterFromFile(hCamera_, file);
   if (status != CAMERA_STATUS_SUCCESS) {
@@ -192,6 +200,10 @@ int CameraManager::SetSharpness(int value) {
 }
 
 int CameraManager::Play() {
+  if (!IsOpen()) {
+    std::cout << "Camera Fault Can't Play" << std::endl;
+    return -1;
+  }
   CameraSdkStatus status = CameraPlay(hCamera_);
   if (status != CAMERA_STATUS_SUCCESS) {
     std::cout << "Play Fault status=" << status << std::endl;
@@ -307,6 +319,10 @@ int CameraManager::Reboot() {
 }
 
 void CameraManager::ShowCameraBaseConfig() {
+  if (!IsOpen()) {
+    std::cout << "Camera Fault Can't Show Base Config" << std::endl;
+    return;
+  }
   int mode;
   CameraGetCapability(hCamera_, &cap);
   std::cout << "resolution options" << std::endl;

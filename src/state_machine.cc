@@ -297,10 +297,14 @@ int StateMachine::SelfTest() {
   assert(global_arg->camera != nullptr);
 
   if (!global_arg->camera->IsOpen()) {
+    global_arg->led->cmos_blink_ = 200;
+    global_arg->led->error_blink_ = 200;
     std::cout << "camera not open" << std::endl;
     return -1;
   }
   if (!global_arg->lcd->IsOpen()) {
+    global_arg->led->lcd_blink_ = 200;
+    global_arg->led->error_blink_ = 200;
     std::cout << "lcd not open" << std::endl;
     return -1;
   }

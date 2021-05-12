@@ -111,21 +111,17 @@ void InitSystem() {
 
   global_arg->camera = new CameraManager();
   if (global_arg->camera->is_open_flag_ == -1) {
-    global_arg->led->laser_blink_ = 200;
-    global_arg->led->lcd_blink_ = 200;
-    global_arg->led->cmos_blink_ = 200;
-    global_arg->led->error_blink_ = 200;
     std::cout << "camera connect error!!" << std::endl;
   } else {
     std::cout << "camera connect ok!!" << std::endl;
   }
+
   //从配置文件中读相机的配置
   if (!global_arg->camera_config_file_addr.empty()) {
-    // std::cout << "config addr:" << global_arg->camera_config_file_addr <<
-    // std::endl;
     global_arg->camera->ReadParameterFromFile(
         global_arg->camera_config_file_addr.c_str());
   }
+  
   global_arg->camera->InitCameraByDefault();
   global_arg->camera->ShowCameraBaseConfig();
 
@@ -146,17 +142,13 @@ void InitSystem() {
 
   global_arg->lcd = new Lcd("/dev/fb0");
   if (!global_arg->lcd->IsOpen()) {
-    global_arg->led->laser_blink_ = 200;
-    global_arg->led->lcd_blink_ = 200;
-    global_arg->led->cmos_blink_ = 200;
-    global_arg->led->error_blink_ = 200;
     std::cout << "lcd buffer connect error!!" << std::endl;
-    return;
   } else {
     std::cout << "lcd buffer connect ok!!" << std::endl;
 
     if (global_arg->lcd_wh != -1)
       global_arg->lcd->SetRect(global_arg->lcd_wh, global_arg->lcd_wh);
+      
   }
 
   global_arg->host = new HostController(check_system::kHostAddr);
@@ -214,7 +206,7 @@ void InitSystem() {
     char key;
     lseek(fd, 0, SEEK_SET);
     read(fd, &key, 1);
-    std::cout << "button " << check_system::kAuthButtonNumber << " " << key
+    std::cout << "button " << check_system::kRegisterButtonNumber << " " << key
               << std::endl;
     if (key == 0x31) {
       global_arg->led->ErrorLed(0);
