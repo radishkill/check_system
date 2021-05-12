@@ -68,6 +68,6 @@ echo -e -n 0 > /sys/class/gpio/gpio164/value
 
 # export LD_LIBRARY_PATH=/usr/local/lib/opencv2:$LD_LIBRARY_PATH
 
-#./CheckSystem
-./test/arm/GpioTest_arm --with-lcd=5
+./CheckSystem
+#./test/arm/GpioTest_arm --with-lcd=5
 
