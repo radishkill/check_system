@@ -3,8 +3,6 @@
 
 namespace check_system {
   ///one type
-
-
 // const static int kErrorGpioNumber = 223;
 // const static int kCmosGpioNumber = 139;
 // const static int kLcdGpioNumber = 255;

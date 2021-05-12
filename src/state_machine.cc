@@ -56,7 +56,6 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
         if (global_arg->host->IsOpen()) global_arg->host->CheckStatus();
 
         global_arg->is_fault = false;
-
       } else {
         std::cout << "Self Test Fault!!!" << std::endl;
         global_arg->is_fault = true;
