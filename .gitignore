@@ -1,0 +1,8 @@
+build
+build-qt
+test/arm/*_arm
+test/x64/*_x64
+test/x64/U3*
+test/res/*
+CheckSystem
+check_system.pro.user
