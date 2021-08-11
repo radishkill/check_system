@@ -7,6 +7,7 @@ INCLUDEPATH += $$PWD/src/gabor_im
 DEPENDPATH += $$PWD/src/include
 
 SOURCES += src/main.cc \
+    src/fingerprint.cpp \
     src/usart.cc \
     src/camera_manager.cc \
     src/eventmanager.cc \
@@ -46,6 +47,7 @@ HEADERS += \
     src/camera_manager.h \
     src/constant.h \
     src/eventmanager.h \
+    src/fingerprint.h \
     src/global_arg.h \
     src/hostcontroller.h \
     src/key_file.h \

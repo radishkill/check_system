@@ -2,7 +2,7 @@
 
 #include <string>
 
-
+class FingerPrint;
 namespace check_system {
 class Laser;
 class CameraManager;
@@ -12,6 +12,7 @@ class Lcd;
 class EventManager;
 class LedController;
 class HostController;
+
 
 class GlobalArg {
  public:
@@ -34,6 +35,7 @@ class GlobalArg {
   EventManager* em;
   LedController* led;
   HostController* host;
+  FingerPrint* finger_print;
 
   int interrupt_flag;
   int check_btn_flag;

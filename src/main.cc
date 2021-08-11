@@ -22,6 +22,7 @@
 #include "mutils.h"
 #include "state_machine.h"
 #include "usart.h"
+#include "fingerprint.h"
 
 using check_system::AuthPic;
 using check_system::CameraManager;
@@ -108,6 +109,7 @@ void InitSystem() {
       std::cout << "laser connect ok!!" << std::endl;
     }
   }
+  global_arg->finger_print = new FingerPrint("/dev/ttyS0");
 
   global_arg->camera = new CameraManager();
   if (global_arg->camera->is_open_flag_ == -1) {
@@ -272,6 +274,7 @@ void InitSystem() {
       // std::cout << "set interrupt flag" << std::endl;
       global_arg->interrupt_flag = 1;
 
+      //开始插入管理员
       if ((up_time - global_arg->interrupt_btn_down >= 10) &&
           (up_time - global_arg->interrupt_btn_down < 20) &&
           global_arg->check_btn_flag) {

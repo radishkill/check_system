@@ -8,7 +8,7 @@
 
 
 
-void Utils::ShowRawString(char *buf, int n) {
+void Utils::ShowRawString(const char *buf, int n) {
   std::cout << std::hex;
   for (int i = 0; i < n; i++) {
     std::cout << "\\x" << (static_cast<short>(buf[i])&0xff);

@@ -19,6 +19,7 @@
 #include "lcd.h"
 #include "led.h"
 #include "mutils.h"
+#include "fingerprint.h"
 
 namespace check_system {
 
@@ -254,8 +255,6 @@ int StateMachine::RunMachine(StateMachine::MachineState state) {
 
       Other(0);
 
-
-
       std::cout << "end!!\n";
       //如果注册成功
       for (int i = 0; i < 10; i++) {
@@ -301,6 +300,13 @@ int StateMachine::SelfTest() {
     std::cout << "camera not open" << std::endl;
     return -1;
   }
+  if (!global_arg->finger_print->IsConnect()) {
+    global_arg->led->cmos_blink_ = 200;
+    global_arg->led->error_blink_ = 200;
+    std::cout << "finger print not connect" << std::endl;
+    return -1;
+  }
+
   if (!global_arg->lcd->IsOpen()) {
     global_arg->led->lcd_blink_ = 200;
     global_arg->led->error_blink_ = 200;
@@ -428,6 +434,37 @@ int StateMachine::Register() {
     std::cout << "The camera can't turned on" << std::endl;
     return -1;
   }
+  //wait admin put finger
+  std::printf("wait %ds\n", 5);
+  global_arg->led->ErrorLed(0);
+  for (int i = 0; i < 5; i++) {
+    global_arg->led->CmosLed(1);
+    global_arg->led->LaserLed(1);
+    global_arg->led->LcdLed(1);
+    Utils::MSleep(500);
+    global_arg->led->CmosLed(0);
+    global_arg->led->LaserLed(0);
+    global_arg->led->LcdLed(0);
+    Utils::MSleep(500);
+
+    //中断
+    if (global_arg->interrupt_flag) {
+      global_arg->interrupt_flag = 0;
+      return -1;
+    }
+  }
+  if (!global_arg->finger_print->RecodeFinger(1)) {
+    std::cout << "recode finger fault!\n";
+    return -1;
+  }
+  if (!global_arg->finger_print->CheckFinger()) {
+    std::cout << "check admin finger fault!\n";
+    return -1;
+  } else {
+    std::cout << "check admin finger ok!\n";
+  }
+
+
 
   if (CheckKeyInsert() != 0) {
     std::cout << "no key insert" << std::endl;
@@ -650,7 +687,34 @@ int StateMachine::TakePhoto() {
 }
 
 int StateMachine::Other(int s) {
+  //系统初始化 注册管理员
   GlobalArg* global_arg = GlobalArg::GetInstance();
+
+  std::printf("wait %ds\n", 5);
+  global_arg->led->ErrorLed(0);
+  for (int i = 0; i < 5; i++) {
+    global_arg->led->CmosLed(1);
+    global_arg->led->LaserLed(1);
+    global_arg->led->LcdLed(1);
+    Utils::MSleep(500);
+    global_arg->led->CmosLed(0);
+    global_arg->led->LaserLed(0);
+    global_arg->led->LcdLed(0);
+    Utils::MSleep(500);
+
+    //中断
+    if (global_arg->interrupt_flag) {
+      global_arg->interrupt_flag = 0;
+      return -1;
+    }
+  }
+
+  //注册指纹
+  if (!global_arg->finger_print->RecodeFinger(2)) {
+    std::cout << "recode finger fault!\n";
+    return -1;
+  }
+
   int random_seed = GenerateRandomSeed();
   std::cout << "seed:" << random_seed << std::endl;
   ShowBySeed(random_seed);
@@ -659,6 +723,7 @@ int StateMachine::Other(int s) {
   cv::Mat pic = global_arg->camera->GetPicMat().clone();
 
   CheckPairStore(0);
+
   for (int i = 0; i < global_arg->num_of_additions; i++) {
     global_arg->key_file->SavePicAndSeed(0, empty_pair_list_[i], pic,
                                          random_seed);

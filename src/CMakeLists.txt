@@ -14,7 +14,7 @@ include_directories(
   /opt/arm/include
 	)
 link_directories(
-    /opt/arm/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
+  #    /opt/arm/gcc-6.3.1/arm-linux-gnueabihf/libc/usr/lib
     /opt/arm/lib
     )
 
@@ -31,6 +31,7 @@ add_executable(CheckSystem
     key_file.cc
     lcd.cc
     led.cc
+    fingerprint.cpp
     camera_manager.cc
     eventmanager.cc 
     laser.cc
@@ -62,7 +63,7 @@ add_executable(CheckSystem
 
 target_link_libraries(CheckSystem
   pthread
-  boost_program_options
+  boost_program_options.a
   opencv_core
   opencv_imgproc
   opencv_features2d
